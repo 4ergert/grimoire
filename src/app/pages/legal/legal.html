@@ -1,0 +1,129 @@
+<main>
+  <nav aria-label="Rechtliche Seiten">
+    <a routerLink="/">Zurück zu Grimoire</a>
+    <a routerLink="/impressum">Impressum</a>
+    <a routerLink="/datenschutz">Datenschutzerklärung</a>
+  </nav>
+
+  <h1>{{ routeData()?.['privacy'] ? 'Datenschutzerklärung' : 'Impressum' }}</h1>
+
+  @if (routeData()?.['privacy']) {
+    <section>
+      <h2>1. Verantwortlicher</h2>
+      <p>
+        Julian Hergert<br />
+        Sandhövelstraße 32<br />
+        48429 Rheine<br />
+        Deutschland
+      </p>
+      <p>
+        E-Mail für Datenschutzanfragen:
+        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
+      </p>
+    </section>
+    <section>
+      <h2>2. Hosting und Serverprotokolle</h2>
+      <p>
+        Grimoire wird bei ALL-INKL gehostet. Beim Aufruf werden technisch erforderliche
+        Verbindungsdaten verarbeitet, insbesondere die IP-Adresse, Zeitpunkt und Ziel der Anfrage
+        sowie Browser- und Geräteinformationen.
+      </p>
+      <p>
+        [Genaue Anbieterbezeichnung, tatsächlich protokollierte Daten, Zweck, Rechtsgrundlage und
+        Löschfrist anhand der Hosting-Einstellungen ergänzen. Vertrag zur Auftragsverarbeitung
+        prüfen und abschließen.]
+      </p>
+    </section>
+    <section>
+      <h2>3. Registrierung und Anmeldung mit Firebase</h2>
+      <p>
+        Für Nutzerkonten verwenden wir Firebase Authentication und für den Nutzernamen Firebase
+        Realtime Database. Verarbeitet werden E-Mail-Adresse, Nutzername, eine Nutzer-ID und
+        technische Anmeldedaten. Das Passwort wird an Firebase Authentication übermittelt; es wird
+        nicht in unserer Realtime Database gespeichert. Die Angaben werden zur Einrichtung und
+        Nutzung des Kontos benötigt.
+      </p>
+      <p>
+        Nutzerkonto und Nutzerprofil bleiben grundsätzlich bis zu einer Löschanfrage gespeichert.
+        Eine automatische Löschung wegen Inaktivität findet nicht statt. Eine Kontolöschung kann per
+        E-Mail an
+        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
+        angefragt werden. Nach Prüfung der Berechtigung wird die Löschung manuell in Firebase
+        Authentication und für das zugehörige Profil in der Realtime Database bearbeitet. Bitte
+        keine Passwörter per E-Mail senden. Abmelden allein löscht das Konto nicht.
+      </p>
+      <p>
+        [Vertragspartner von Google, Rechtsgrundlage und Auftragsverarbeitungsvertrag prüfen und
+        ergänzen. Technische Löschfristen, etwa für Protokolle und Sicherungskopien, sowie
+        gegebenenfalls erforderliche Aufbewahrungspflichten klären.]
+      </p>
+      <p>
+        Die Realtime Database verwendet eine europäische Region. Das bedeutet nicht, dass sämtliche
+        Firebase-Dienste ausschließlich in der EU Daten verarbeiten. [Mögliche
+        Drittlandübermittlungen und die konkret geltenden Garantien prüfen und beschreiben.] Weitere
+        Informationen:
+        <a href="https://firebase.google.com/support/privacy">Datenschutz bei Firebase</a>.
+      </p>
+    </section>
+    <section>
+      <h2>4. Lokale Speicherung und weitere Dienste</h2>
+      <p>
+        Firebase speichert den Anmeldestatus lokal im Browser, damit die Sitzung beim erneuten
+        Öffnen wiederhergestellt werden kann. Beim Abmelden wird die aktive Sitzung auf diesem Gerät
+        beendet.
+      </p>
+      <p>
+        Im Anwendungscode wird Firebase Analytics nicht initialisiert. Werbung und zusätzliche
+        Trackingdienste sind nicht vorgesehen. [Tatsächliche Browser-Speicher, ihre Dauer und die
+        Rechtsgrundlagen einschließlich eines gegebenenfalls erforderlichen Einwilligungsverfahrens
+        vor Veröffentlichung prüfen.]
+      </p>
+    </section>
+    <section>
+      <h2>5. Deine Rechte</h2>
+      <p>
+        Im Rahmen der gesetzlichen Voraussetzungen bestehen Rechte auf Auskunft, Berichtigung,
+        Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Bei einer Verarbeitung
+        aufgrund berechtigter Interessen kann ein Widerspruchsrecht bestehen. Eine erteilte
+        Einwilligung kann mit Wirkung für die Zukunft widerrufen werden. Außerdem besteht ein
+        Beschwerderecht bei einer Datenschutzaufsichtsbehörde.
+      </p>
+      <p>
+        Datenschutzanfragen und die Ausübung deiner Rechte kannst du an
+        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
+        richten.
+      </p>
+      <p>
+        Für den Betreiber in Nordrhein-Westfalen ist die
+        <a href="https://www.ldi.nrw.de/kontakt">
+          Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen
+        </a>
+        eine zuständige Anlaufstelle. Das Beschwerderecht bei einer anderen zuständigen
+        Datenschutzaufsichtsbehörde bleibt unberührt.
+      </p>
+    </section>
+  } @else {
+    <section>
+      <h2>Betreiber von Grimoire</h2>
+      <p>Privates, öffentlich zugängliches Projekt mit Sitz in Deutschland.</p>
+      <p>
+        Julian Hergert<br />
+        Sandhövelstraße 32<br />
+        48429 Rheine<br />
+        Deutschland
+      </p>
+    </section>
+    <section>
+      <h2>Kontakt</h2>
+      <p>E-Mail: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a></p>
+    </section>
+    <section>
+      <h2>Vor Veröffentlichung prüfen</h2>
+      <p>
+        Das Projekt wird privat, ohne Werbung und ohne kostenpflichtige Angebote betrieben.
+        Journalistischer oder redaktioneller Inhalt ist nicht vorgesehen. Die für das konkrete
+        Angebot erforderlichen Angaben sind vor Veröffentlichung rechtlich zu prüfen.
+      </p>
+    </section>
+  }
+</main>

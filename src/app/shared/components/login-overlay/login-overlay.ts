@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FirebaseError } from 'firebase/app';
+import { RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { MenuOverlay } from '../menu-overlay/menu-overlay';
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay],
+  imports: [MenuOverlay, RouterLink],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })

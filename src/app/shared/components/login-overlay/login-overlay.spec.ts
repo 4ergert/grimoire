@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FirebaseError } from 'firebase/app';
 import { vi } from 'vitest';
+import { provideRouter } from '@angular/router';
 
 import { LoginOverlay } from './login-overlay';
 import { Auth } from '../../services/auth';
@@ -21,7 +22,7 @@ describe('LoginOverlay', () => {
     auth.user.set(null);
     await TestBed.configureTestingModule({
       imports: [LoginOverlay],
-      providers: [{ provide: Auth, useValue: auth }],
+      providers: [provideRouter([]), { provide: Auth, useValue: auth }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginOverlay);
@@ -31,6 +32,18 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should link to public legal pages in both login and sign up', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/datenschutz"]')).not.toBeNull();
+
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+
+    expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/datenschutz"]')).not.toBeNull();
   });
 
   it('should show the login form initially', () => {

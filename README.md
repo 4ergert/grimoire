@@ -46,6 +46,27 @@ form; no separate post-login application route exists yet.
 Firebase restores the session on reload. Enable password policy and email
 enumeration protection in Firebase before a public launch.
 
+## Legal pages (unfinished drafts)
+
+The login and registration form link to `/impressum` and `/datenschutz`, accessible
+without authentication. These are explicitly incomplete German-language drafts
+for a private public project hosted at ALL-INKL using Firebase Auth and Realtime
+Database. They are not a guarantee of legal compliance.
+
+Before publication, replace every bracketed placeholder in
+`src/app/pages/legal/legal.html`. Complete operator/contact details locally, verify
+hosting logs and retention, Google contractual entities and international data
+transfers, processing agreements, legal bases and browser storage, and obtain a legal
+review. The stated account policy is retention until a deletion request, without
+automatic inactivity deletion. Deletion requests are handled by email: verify the
+requester's authority, then manually delete both the Firebase Auth account and its
+`/users/{uid}` profile; signing out does not delete either. Technical retention for
+provider logs/backups still needs verification. Processing agreements have not yet
+been confirmed; complete that setup before public operation.
+Do not publish the drafts as final notices.
+Configure the web host to serve Angular's `index.html` for client routes, including
+direct visits to `/impressum` and `/datenschutz`.
+
 ## Development server
 
 To start a local development server, run:
