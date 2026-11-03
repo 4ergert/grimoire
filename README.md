@@ -2,6 +2,49 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.20.
 
+## Firebase authentication
+
+The app uses Firebase Authentication (email/password) for credentials and Realtime
+Database for `/users/{uid}/username`. Passwords are never stored in the database.
+The public web configuration is in `src/app/shared/services/auth.ts`; it is not an
+Admin SDK credential. Analytics is not initialized.
+
+Before using the login:
+
+1. Enable **Authentication > Sign-in method > Email/Password** in the Firebase console.
+2. Under **Authentication > Settings > Authorized domains**, add your deployment
+   domain and `localhost` for local development if needed.
+3. Review existing Realtime Database rules before publishing the following rules.
+   Do not leave a public read/write grant at the root or at `/users`, as grants
+   cascade to child paths.
+
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['username'])",
+        "username": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}
+```
+
+Registration creates the Auth account, sets its display name, and saves the username.
+If saving the profile fails, the new Auth account is deleted so registration can be
+retried; rollback failures are explicitly reported. Successful login displays the
+current user and a logout button; no post-login application route exists yet.
+Firebase restores the session on reload. Enable password policy and email
+enumeration protection in Firebase before a public launch.
+
 ## Development server
 
 To start a local development server, run:

@@ -3,15 +3,68 @@
     <img src="icon/favicon.png" alt="Grimoire Icon" />
     <h1>Grimoire</h1>
   </header>
-  <form>
-    <div class="form_field">
-      <label for="email">eMail</label>
-      <input type="email" id="email" name="email" />
-    </div>
-    <div class="form_field">
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" />
-    </div>
-    <button type="submit">Login</button>
-  </form>
+  @if (auth.user(); as user) {
+    <p class="auth_status" role="status">
+      {{ pending() ? 'Please wait...' : 'Logged in as ' + (user.displayName || user.email) }}
+    </p>
+    <button class="logout_button" type="button" [disabled]="pending()" (click)="logout()">
+      Log Out
+    </button>
+  } @else {
+    <form #authForm (submit)="submit($event, authForm)" [attr.aria-busy]="pending()">
+      <fieldset [disabled]="pending()">
+        @if (isSignUp()) {
+          <div class="form_field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required />
+          </div>
+        }
+        <div class="form_field">
+          <label for="email">eMail</label>
+          <input type="email" id="email" name="email" autocomplete="email" required />
+        </div>
+        <div class="form_field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [autocomplete]="isSignUp() ? 'new-password' : 'current-password'"
+            required
+            [attr.minlength]="isSignUp() ? 6 : null"
+          />
+        </div>
+        @if (isSignUp()) {
+          <div class="form_field">
+            <label for="confirm-password">Confirm Password</label>
+            <input
+              type="password"
+              id="confirm-password"
+              name="confirm-password"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+        }
+        <button type="submit">
+          {{ pending() ? 'Please wait...' : isSignUp() ? 'Sign Up' : 'Log In' }}
+        </button>
+      </fieldset>
+    </form>
+    <p class="signup_prompt">
+      {{ isSignUp() ? 'Already have an account?' : "Don't have an account?" }}
+      <br />
+      <button
+        type="button"
+        class="auth_switch"
+        [disabled]="pending()"
+        (click)="switchAuthMode(authForm)"
+      >
+        &middot; {{ isSignUp() ? 'Log In' : 'Sign Up' }}
+      </button>
+    </p>
+  }
+  @if (error()) {
+    <p class="auth_error" role="alert">{{ error() }}</p>
+  }
 </section>
