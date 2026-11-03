@@ -37,6 +37,7 @@ describe('LoginOverlay', () => {
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.querySelector('#name')).toBeNull();
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
     expect(element.querySelector('#confirm-password')).toBeNull();
     expect(element.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Log In');
     expect(element.querySelector('#password')?.getAttribute('autocomplete')).toBe(
@@ -162,11 +163,33 @@ describe('LoginOverlay', () => {
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Test User');
+    expect(element.querySelector('app-menu-overlay')).not.toBeNull();
     expect(element.querySelector('form')).toBeNull();
     element.querySelector<HTMLButtonElement>('.logout_button')!.click();
     await fixture.whenStable();
 
     expect(auth.logout).toHaveBeenCalledOnce();
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
     expect(element.querySelector('form')).not.toBeNull();
+  });
+
+  it('should show the menu after login and retain it if logout fails', async () => {
+    const form = fillForm();
+    auth.login.mockImplementation(async () => {
+      auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    });
+    await component.submit(new Event('submit'), form);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('app-menu-overlay')).not.toBeNull();
+    expect(element.querySelector('form')).toBeNull();
+
+    auth.logout.mockRejectedValue(new FirebaseError('auth/network-request-failed', 'Offline'));
+    element.querySelector<HTMLButtonElement>('.logout_button')!.click();
+    await fixture.whenStable();
+
+    expect(element.querySelector('app-menu-overlay')).not.toBeNull();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Connection failed');
   });
 });

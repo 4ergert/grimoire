@@ -41,7 +41,8 @@ Before using the login:
 Registration creates the Auth account, sets its display name, and saves the username.
 If saving the profile fails, the new Auth account is deleted so registration can be
 retried; rollback failures are explicitly reported. Successful login displays the
-current user and a logout button; no post-login application route exists yet.
+menu overlay with the current user and a logout button. Logout returns to the login
+form; no separate post-login application route exists yet.
 Firebase restores the session on reload. Enable password policy and email
 enumeration protection in Firebase before a public launch.
 

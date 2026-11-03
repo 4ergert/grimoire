@@ -1,0 +1,25 @@
+<section class="login_overlay">
+  <header>
+    <img src="icon/favicon.png" alt="Grimoire Icon" />
+    <h1>Grimoire</h1>
+  </header>
+  @if (!isPlaying()) {
+    <p class="auth_status" role="status">
+      {{ pending() ? 'Please wait...' : 'Welcome back ' + username() }}
+    </p>
+  }
+
+  @if (isPlaying()) {
+    <img class="chessboard" src="img/chessboard.png" alt="Chessboard with coordinates a to h and 1 to 8" />
+  } @else {
+    <button class="play_button" type="button" [disabled]="pending()" (click)="isPlaying.set(true)">
+      Play
+    </button>
+  }
+  <button class="logout_button" type="button" [disabled]="pending()" (click)="logout.emit()">
+    Log Out
+  </button>
+  @if (error()) {
+  <p class="auth_error" role="alert">{{ error() }}</p>
+  }
+</section>

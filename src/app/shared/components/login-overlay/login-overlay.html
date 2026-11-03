@@ -1,16 +1,16 @@
-<section class="login_overlay">
-  <header>
-    <img src="icon/favicon.png" alt="Grimoire Icon" />
-    <h1>Grimoire</h1>
-  </header>
-  @if (auth.user(); as user) {
-    <p class="auth_status" role="status">
-      {{ pending() ? 'Please wait...' : 'Logged in as ' + (user.displayName || user.email) }}
-    </p>
-    <button class="logout_button" type="button" [disabled]="pending()" (click)="logout()">
-      Log Out
-    </button>
-  } @else {
+@if (auth.user(); as user) {
+  <app-menu-overlay
+    [username]="user.displayName || user.email || ''"
+    [pending]="pending()"
+    [error]="error()"
+    (logout)="logout()"
+  />
+} @else {
+  <section class="login_overlay">
+    <header>
+      <img src="icon/favicon.png" alt="Grimoire Icon" />
+      <h1>Grimoire</h1>
+    </header>
     <form #authForm (submit)="submit($event, authForm)" [attr.aria-busy]="pending()">
       <fieldset [disabled]="pending()">
         @if (isSignUp()) {
@@ -63,8 +63,8 @@
         &middot; {{ isSignUp() ? 'Log In' : 'Sign Up' }}
       </button>
     </p>
-  }
-  @if (error()) {
-    <p class="auth_error" role="alert">{{ error() }}</p>
-  }
-</section>
+    @if (error()) {
+      <p class="auth_error" role="alert">{{ error() }}</p>
+    }
+  </section>
+}
