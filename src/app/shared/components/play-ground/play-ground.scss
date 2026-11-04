@@ -6,7 +6,7 @@
 }
 
 .board-frame {
-  width: min(620px, 100%);
+  width: 100%;
   box-sizing: border-box;
   padding: 8px;
   background:
@@ -24,14 +24,93 @@
   grid-column: 2;
   grid-row: 2;
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
   grid-template-rows: repeat(8, minmax(0, 1fr));
   aspect-ratio: 1;
   overflow: hidden;
 }
 
 .square {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
   background-color: #80432f;
+}
+
+.game {
+  width: min(620px, 100%);
+  padding: 24px 0 100px;
+}
+
+.game-toolbar,
+.promotion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #ffdfbc;
+}
+
+.restart,
+.promotion button {
+  padding: 8px 12px;
+  border: 1px solid #ffdfbc;
+  border-radius: 4px;
+  background: #451710;
+  color: #ffdfbc;
+  cursor: pointer;
+  font: inherit;
+}
+
+.promotion {
+  padding-bottom: 16px;
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.piece {
+  font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
+  font-size: clamp(18px, 7vw, 52px);
+  line-height: 1;
+  color: #17110e;
+  text-shadow: 0 1px 1px #fff9;
+}
+
+.white-piece .piece {
+  color: #fff8e6;
+  text-shadow:
+    0 1px 2px #24100a,
+    1px 0 1px #24100a,
+    -1px 0 1px #24100a;
+}
+
+.square.selected {
+  box-shadow: inset 0 0 0 4px #ffdf56;
+}
+
+.square.legal-target::after {
+  content: '';
+  position: absolute;
+  inset: 36%;
+  border-radius: 50%;
+  background: #203b25a6;
+  pointer-events: none;
+}
+
+.square:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+  z-index: 1;
 }
 
 .square.light {

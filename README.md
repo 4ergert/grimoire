@@ -56,6 +56,24 @@ form; no separate post-login application route exists yet.
 Firebase restores the session on reload. Enable password policy and email
 enumeration protection in Firebase before a public launch.
 
+## Local chess
+
+After signing in, select **Play** to start a local two-player game. White moves
+first. Click a piece to highlight its legal destinations, then click a destination
+to move or capture. Click the selected piece again to deselect it.
+
+The board uses classic Unicode chess symbols rendered by the system's symbol
+font. `chess.js` validates turns and legal moves, including castling, en passant,
+and king safety. Pawn promotion offers queen, rook, bishop, and knight; cancel
+returns to the board without making the move.
+
+The status announces check, checkmate, stalemate, insufficient material,
+threefold repetition, and the fifty-move rule. For this casual local mode,
+threefold repetition and fifty moves automatically end the game rather than
+requiring a draw claim. **New game** immediately resets the position.
+Games are held only in memory and reset on reload or logout; there is no clock,
+online opponent, computer opponent, or game persistence.
+
 ## Legal pages (unfinished drafts)
 
 The login and registration form link to `/impressum` and `/datenschutz`, accessible

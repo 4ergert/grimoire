@@ -1,40 +1,77 @@
-<section class="board-frame" aria-label="Chessboard">
-  <div class="board-layout">
-    <div class="file-labels file-labels-top" aria-hidden="true">
-      @for (file of files; track file) {
-        <span>{{ file }}</span>
+<section class="game" aria-label="Local two-player chess">
+  <div class="game-toolbar">
+    <p role="status" aria-live="polite">{{ status() }}</p>
+    <button type="button" class="restart" (click)="restart()">New game</button>
+  </div>
+  @if (promotion(); as move) {
+    <div class="promotion" role="group" aria-label="Choose promotion piece">
+      <p>Promote pawn on {{ move.to }}:</p>
+      @for (piece of promotions; track piece) {
+        <button type="button" (click)="promote(piece)">{{ pieceNames[piece] }}</button>
       }
+      <button type="button" (click)="promotion.set(null)">Cancel</button>
     </div>
-
-    <div class="rank-labels" aria-hidden="true">
-      @for (rank of ranks; track rank) {
-        <span>{{ rank }}</span>
-      }
-    </div>
-
-    <div class="chessboard" role="grid" aria-label="Chessboard, files a to h and ranks 1 to 8">
-      @for (rank of ranks; track rank; let row = $index) {
-        @for (file of files; track file; let column = $index) {
-          <div
-            class="square"
-            [class.light]="(row + column) % 2 === 0"
-            role="gridcell"
-            [attr.aria-label]="file + rank"
-          ></div>
+  }
+  <div class="board-frame">
+    <div class="board-layout">
+      <div class="file-labels file-labels-top" aria-hidden="true">
+        @for (file of files; track file) {
+          <span>{{ file }}</span>
         }
-      }
-    </div>
+      </div>
 
-    <div class="rank-labels rank-labels-right" aria-hidden="true">
-      @for (rank of ranks; track rank) {
-        <span>{{ rank }}</span>
-      }
-    </div>
+      <div class="rank-labels" aria-hidden="true">
+        @for (rank of ranks; track rank) {
+          <span>{{ rank }}</span>
+        }
+      </div>
 
-    <div class="file-labels" aria-hidden="true">
-      @for (file of files; track file) {
-        <span>{{ file }}</span>
-      }
+      <div class="chessboard" role="grid" aria-label="Chessboard, files a to h and ranks 1 to 8">
+        @for (rank of board(); track $index; let row = $index) {
+          <div class="board-row" role="row">
+            @for (piece of rank; track $index; let column = $index) {
+              @let square = squares[row * 8 + column];
+              <div role="gridcell">
+                <button
+                  type="button"
+                  class="square"
+                  [class.light]="(row + column) % 2 === 0"
+                  [class.selected]="selected() === square"
+                  [class.legal-target]="legalTargets().includes(square)"
+                  [class.white-piece]="piece?.color === 'w'"
+                  [disabled]="promotion() !== null"
+                  [attr.aria-pressed]="selected() === square"
+                  [attr.aria-label]="
+                    square +
+                    (piece
+                      ? ' ' + (piece.color === 'w' ? 'White ' : 'Black ') + pieceNames[piece.type]
+                      : '')
+                  "
+                  (click)="select(square)"
+                >
+                  @if (piece) {
+                    <span class="piece" aria-hidden="true">{{
+                      pieceGlyph(piece.type, piece.color)
+                    }}</span>
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="rank-labels rank-labels-right" aria-hidden="true">
+        @for (rank of ranks; track rank) {
+          <span>{{ rank }}</span>
+        }
+      </div>
+
+      <div class="file-labels" aria-hidden="true">
+        @for (file of files; track file) {
+          <span>{{ file }}</span>
+        }
+      </div>
     </div>
   </div>
 </section>
