@@ -21,3 +21,9 @@ h1 {
   text-shadow: 0 0 5px rgba(255, 237, 132, 0.7);
   font-size: 42px;
 }
+
+@media (max-width: 500px) {
+  body {
+    padding: 0 8px;
+  }
+}

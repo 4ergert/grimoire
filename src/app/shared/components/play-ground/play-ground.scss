@@ -47,6 +47,13 @@
   padding: 24px 0 100px;
 }
 
+.copyright {
+  margin-top: 12px;
+  color: #ffdfbc;
+  text-align: center;
+  font-size: 12px;
+}
+
 .game-toolbar,
 .promotion {
   display: flex;
@@ -80,7 +87,7 @@
 
 .piece {
   font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
-  font-size: clamp(18px, 7vw, 52px);
+  font-size: clamp(24px, 9vw, 64px);
   line-height: 1;
   color: #17110e;
   text-shadow: 0 1px 1px #fff9;
@@ -127,49 +134,32 @@
   font-size: clamp(12px, 2.5vw, 16px);
   line-height: 1;
   text-shadow: 0 1px 2px #190806;
+  justify-items: center;
+  align-items: center;
 }
 
 .rank-labels {
   grid-column: 1;
   grid-row: 2;
   grid-template-rows: repeat(8, minmax(0, 1fr));
-  justify-items: start;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.rank-labels span {
-  transform: translateY(-50%);
 }
 
 .rank-labels-right {
   grid-column: 3;
-  justify-items: end;
 }
 
 .file-labels {
   grid-column: 2;
   grid-row: 3;
   grid-template-columns: repeat(8, minmax(0, 1fr));
-  justify-items: center;
-  align-items: end;
-  margin-top: 4px;
 }
 
 .file-labels-top {
   grid-row: 1;
-  align-items: start;
-  margin-top: -4px;
 }
 
 @media (max-width: 500px) {
   .board-frame {
-    padding: 12px;
-    border-width: 6px;
-  }
-
-  .board-layout {
-    grid-template-columns: 20px minmax(0, 1fr) 20px;
-    grid-template-rows: 20px auto 20px;
+    padding: 0;
   }
 }
