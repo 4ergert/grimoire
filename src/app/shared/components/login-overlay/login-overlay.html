@@ -1,10 +1,23 @@
 @if (auth.user(); as user) {
-  <app-menu-overlay
-    [username]="user.displayName || user.email || ''"
-    [pending]="pending()"
-    [error]="error()"
-    (logout)="logout()"
-  />
+  <main class="authenticated_view">
+    @if (isPlaying()) {
+      <app-play-ground />
+      <button class="logout_button game_logout" type="button" [disabled]="pending()" (click)="logout()">
+        Log Out
+      </button>
+      @if (error()) {
+        <p class="auth_error game_error" role="alert">{{ error() }}</p>
+      }
+    } @else {
+      <app-menu-overlay
+        [username]="user.displayName || user.email || ''"
+        [pending]="pending()"
+        [error]="error()"
+        (play)="startPlaying()"
+        (logout)="logout()"
+      />
+    }
+  </main>
 } @else {
   <section class="login_overlay">
     <header>

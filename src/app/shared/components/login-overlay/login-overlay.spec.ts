@@ -205,4 +205,25 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('Connection failed');
   });
+
+  it('should replace the menu with a centered playground and keep logout at the bottom right', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+
+    element.querySelector<HTMLButtonElement>('.play_button')!.click();
+    await fixture.whenStable();
+
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
+    expect(element.querySelector('app-play-ground')).not.toBeNull();
+    expect(element.querySelector('.game_logout')).not.toBeNull();
+
+    auth.logout.mockImplementation(async () => auth.user.set(null));
+    element.querySelector<HTMLButtonElement>('.game_logout')!.click();
+    await fixture.whenStable();
+
+    expect(auth.logout).toHaveBeenCalledOnce();
+    expect(element.querySelector('app-play-ground')).toBeNull();
+    expect(element.querySelector('form')).not.toBeNull();
+  });
 });

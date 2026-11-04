@@ -3,18 +3,24 @@ import { FirebaseError } from 'firebase/app';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { MenuOverlay } from '../menu-overlay/menu-overlay';
+import { PlayGround } from '../play-ground/play-ground';
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, RouterLink],
+  imports: [MenuOverlay, PlayGround, RouterLink],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
 export class LoginOverlay {
   readonly auth = inject(Auth);
   readonly isSignUp = signal(false);
+  readonly isPlaying = signal(false);
   readonly pending = signal(false);
   readonly error = signal('');
+
+  startPlaying(): void {
+    this.isPlaying.set(true);
+  }
 
   switchAuthMode(form: HTMLFormElement): void {
     form.reset();
@@ -63,6 +69,7 @@ export class LoginOverlay {
     this.pending.set(true);
     try {
       await this.auth.logout();
+      this.isPlaying.set(false);
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {

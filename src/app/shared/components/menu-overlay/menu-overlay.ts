@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-menu-overlay',
@@ -11,5 +11,5 @@ export class MenuOverlay {
   readonly pending = input(false);
   readonly error = input('');
   readonly logout = output<void>();
-  readonly isPlaying = signal(false);
+  readonly play = output<void>();
 }

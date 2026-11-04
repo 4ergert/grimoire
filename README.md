@@ -9,6 +9,16 @@ Database for `/users/{uid}/username`. Passwords are never stored in the database
 The public web configuration is in `src/app/shared/services/auth.ts`; it is not an
 Admin SDK credential. Analytics is not initialized.
 
+Firebase web API keys are public identifiers, not authentication secrets, and are
+expected to be present in client code. In Google Cloud Console, open **APIs &
+Services > Credentials** and verify that this is the Firebase-provisioned browser
+key and its API restrictions allow only the required Firebase APIs. Do not allow
+the Gemini Developer API or other unrelated APIs on a public Firebase key. If
+these checks pass, a GitHub secret-scanning alert for this key can be closed as a
+false positive; do not remove it from the client bundle as a substitute for
+Firebase Security Rules or App Check. If the key is used for non-Firebase APIs,
+restrict it or use a separate key for those APIs.
+
 Before using the login:
 
 1. Enable **Authentication > Sign-in method > Email/Password** in the Firebase console.

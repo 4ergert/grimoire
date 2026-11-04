@@ -35,19 +35,15 @@ describe('MenuOverlay', () => {
     expect(buttons[1].disabled).toBe(true);
   });
 
-  it('should show the chessboard after clicking Play and keep logout available', async () => {
+  it('should notify the parent when Play is clicked', async () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.chessboard')).toBeNull();
-    expect(element.querySelector('.auth_status')).not.toBeNull();
+    const play = vi.fn();
+    component.play.subscribe(play);
 
     element.querySelector<HTMLButtonElement>('.play_button')!.click();
     await fixture.whenStable();
 
-    const board = element.querySelector<HTMLImageElement>('.chessboard');
-    expect(board?.getAttribute('src')).toBe('img/chessboard.png');
-    expect(board?.alt).toContain('Chessboard');
-    expect(element.querySelector('.play_button')).toBeNull();
-    expect(element.querySelector('.auth_status')).toBeNull();
-    expect(element.querySelector<HTMLButtonElement>('.logout_button')?.disabled).toBe(false);
+    expect(play).toHaveBeenCalledOnce();
+    expect(element.querySelector('.auth_status')).not.toBeNull();
   });
 });

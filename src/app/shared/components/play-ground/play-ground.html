@@ -1,0 +1,40 @@
+<section class="board-frame" aria-label="Chessboard">
+  <div class="board-layout">
+    <div class="file-labels file-labels-top" aria-hidden="true">
+      @for (file of files; track file) {
+        <span>{{ file }}</span>
+      }
+    </div>
+
+    <div class="rank-labels" aria-hidden="true">
+      @for (rank of ranks; track rank) {
+        <span>{{ rank }}</span>
+      }
+    </div>
+
+    <div class="chessboard" role="grid" aria-label="Chessboard, files a to h and ranks 1 to 8">
+      @for (rank of ranks; track rank; let row = $index) {
+        @for (file of files; track file; let column = $index) {
+          <div
+            class="square"
+            [class.light]="(row + column) % 2 === 0"
+            role="gridcell"
+            [attr.aria-label]="file + rank"
+          ></div>
+        }
+      }
+    </div>
+
+    <div class="rank-labels rank-labels-right" aria-hidden="true">
+      @for (rank of ranks; track rank) {
+        <span>{{ rank }}</span>
+      }
+    </div>
+
+    <div class="file-labels" aria-hidden="true">
+      @for (file of files; track file) {
+        <span>{{ file }}</span>
+      }
+    </div>
+  </div>
+</section>

@@ -51,6 +51,29 @@ fieldset {
   text-align: center;
 }
 
+.authenticated_view {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.game_logout {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1;
+}
+
+.game_error {
+  position: fixed;
+  right: 24px;
+  bottom: 80px;
+  z-index: 1;
+}
+
 .legal_links {
   display: flex;
   flex-wrap: wrap;
