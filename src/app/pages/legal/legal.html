@@ -41,7 +41,9 @@
         Realtime Database. Verarbeitet werden E-Mail-Adresse, Nutzername, eine Nutzer-ID und
         technische Anmeldedaten. Das Passwort wird an Firebase Authentication übermittelt; es wird
         nicht in unserer Realtime Database gespeichert. Die Angaben werden zur Einrichtung und
-        Nutzung des Kontos benötigt.
+        Nutzung des Kontos benötigt. Freiwillig gespeicherte Schachpartien werden als PGN zusammen
+        mit selbst vergebenen Ordner- und Partienamen unter der Nutzer-ID in der Realtime Database
+        gespeichert und dem jeweiligen Konto zugeordnet.
       </p>
       <p>
         Nutzerkonto und Nutzerprofil bleiben grundsätzlich bis zu einer Löschanfrage gespeichert.
@@ -49,7 +51,8 @@
         E-Mail an
         <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
         angefragt werden. Nach Prüfung der Berechtigung wird die Löschung manuell in Firebase
-        Authentication und für das zugehörige Profil in der Realtime Database bearbeitet. Bitte
+        Authentication sowie für das zugehörige Profil und die gespeicherten Ordner und Partien
+        in der Realtime Database bearbeitet. Bitte
         keine Passwörter per E-Mail senden. Abmelden allein löscht das Konto nicht.
       </p>
       <p>

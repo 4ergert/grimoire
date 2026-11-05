@@ -1,19 +1,40 @@
 @if (auth.user(); as user) {
   <main class="authenticated_view">
+    @if (libraryOpen()) {
+      <app-game-library
+        [pgn]="savePgn()"
+        (close)="libraryOpen.set(false)"
+        (openGame)="openReplay($event)"
+        (practise)="startTraining($event)"
+      />
+    }
     @if (isPlaying()) {
-      <app-play-ground />
-      <button class="logout_button game_logout" type="button" [disabled]="pending()" (click)="logout()">
+      <div class="game-container" [hidden]="libraryOpen()">
+        <app-play-ground
+          [replayPgn]="replayPgn()"
+          [trainingFolder]="trainingFolder()"
+          (saveGame)="openLibrary($event)"
+          (back)="returnToMenu()"
+        />
+      </div>
+      <button
+        class="logout_button game_logout"
+        type="button"
+        [disabled]="pending()"
+        (click)="logout()"
+      >
         Log Out
       </button>
       @if (error()) {
         <p class="auth_error game_error" role="alert">{{ error() }}</p>
       }
-    } @else {
+    } @else if (!libraryOpen()) {
       <app-menu-overlay
         [username]="user.displayName || user.email || ''"
         [pending]="pending()"
         [error]="error()"
         (play)="startPlaying()"
+        (library)="openLibrary()"
         (logout)="logout()"
       />
     }

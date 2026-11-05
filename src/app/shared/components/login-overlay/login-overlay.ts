@@ -4,10 +4,12 @@ import { RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { MenuOverlay } from '../menu-overlay/menu-overlay';
 import { PlayGround } from '../play-ground/play-ground';
+import { GameLibrary } from '../game-library/game-library';
+import { GameFolder } from '../../services/game-library';
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, PlayGround, RouterLink],
+  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
@@ -17,8 +19,40 @@ export class LoginOverlay {
   readonly isPlaying = signal(false);
   readonly pending = signal(false);
   readonly error = signal('');
+  readonly libraryOpen = signal(false);
+  readonly savePgn = signal('');
+  readonly replayPgn = signal('');
+  readonly trainingFolder = signal<GameFolder | null>(null);
+
+  startTraining(folder: GameFolder): void {
+    this.trainingFolder.set(folder);
+    this.replayPgn.set('');
+    this.isPlaying.set(true);
+    this.libraryOpen.set(false);
+  }
+
+  returnToMenu(): void {
+    this.isPlaying.set(false);
+    this.replayPgn.set('');
+    this.trainingFolder.set(null);
+  }
+
+  openLibrary(pgn = ''): void {
+    this.savePgn.set(pgn);
+    this.libraryOpen.set(true);
+  }
+
+  openReplay(pgn: string): void {
+    this.trainingFolder.set(null);
+    this.replayPgn.set(pgn);
+    this.isPlaying.set(true);
+    this.libraryOpen.set(false);
+  }
 
   startPlaying(): void {
+    this.trainingFolder.set(null);
+    this.replayPgn.set('');
+    this.trainingFolder.set(null);
     this.isPlaying.set(true);
   }
 
@@ -70,6 +104,9 @@ export class LoginOverlay {
     try {
       await this.auth.logout();
       this.isPlaying.set(false);
+      this.libraryOpen.set(false);
+      this.savePgn.set('');
+      this.replayPgn.set('');
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {

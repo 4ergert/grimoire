@@ -16,6 +16,9 @@
   <button class="logout_button" type="button" [disabled]="pending()" (click)="logout.emit()">
     Log Out
   </button>
+  <button class="play_button" type="button" [disabled]="pending()" (click)="library.emit()">
+    Saved games
+  </button>
 
   @if (error()) {
   <p class="auth_error" role="alert">{{ error() }}</p>

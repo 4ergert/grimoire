@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlayGround } from './play-ground';
 import { Square } from 'chess.js';
+import { vi } from 'vitest';
 
 describe('PlayGround', () => {
   let component: PlayGround;
@@ -43,6 +44,121 @@ describe('PlayGround', () => {
     component['position'].set(component['game'].fen());
   }
 
+  it('should train a folder without revealing the game name or move list', async () => {
+    fixture.componentRef.setInput('trainingFolder', {
+      id: 'folder',
+      name: 'Spanish',
+      games: [{ id: 'game', name: 'Secret variation', pgn: '1. e4 e5 2. Nf3 Nc6 *' }],
+    });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const click = async (label: string) => {
+      const button = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
+        (button) => button.textContent?.trim() === label,
+      )!;
+      button.click();
+      await fixture.whenStable();
+    };
+    expect(element.querySelector('.move-history')).toBeNull();
+    expect(element.textContent).not.toContain('Secret variation');
+    await click('Train White');
+    move('d2', 'd4');
+    await fixture.whenStable();
+    expect(component.training()?.mistakes()).toBe(1);
+    expect(component.board()[6][3]?.type).toBe('p');
+    await click('Hint');
+    expect(
+      element.querySelector('[aria-label="e2 White Pawn"]')?.classList.contains('hint-square'),
+    ).toBe(true);
+    expect(element.querySelectorAll('.legal-target')).toHaveLength(0);
+    await click('Show move');
+    expect(element.textContent).toContain('Saved move: e4');
+    await click('Play shown move');
+    expect(component.board()[3][4]?.color).toBe('b');
+    move('g1', 'f3');
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Round complete!');
+    await click('Restart round');
+    expect(component.training()?.ply()).toBe(0);
+    expect(component.training()?.mistakes()).toBe(0);
+  });
+
+  it('should export PGN and replay all positions without changing the saved game', async () => {
+    move('e2', 'e4');
+    move('e7', 'e5');
+    const saved = vi.fn();
+    component.saveGame.subscribe(saved);
+    component.save();
+    const pgn: string = saved.mock.calls[0][0];
+    expect(pgn).toContain('1. e4 e5');
+    expect(pgn).toContain('[Result "*"]');
+    fixture.componentRef.setInput('replayPgn', pgn);
+    await fixture.whenStable();
+    expect(component.replayMoves()).toEqual(['e4', 'e5']);
+    expect(component.board()[6][4]?.type).toBe('p');
+    const element: HTMLElement = fixture.nativeElement;
+    const next = Array.from(element.querySelectorAll<HTMLButtonElement>('nav button')).find(
+      (button) => button.textContent?.trim() === 'Next',
+    )!;
+    next.click();
+    await fixture.whenStable();
+    expect(component.board()[4][4]?.color).toBe('w');
+    component.select('d2');
+    expect(component.selected()).toBeNull();
+    next.click();
+    await fixture.whenStable();
+    expect(component.board()[3][4]?.color).toBe('b');
+    expect(next.disabled).toBe(true);
+    const previous = Array.from(element.querySelectorAll<HTMLButtonElement>('nav button')).find(
+      (button) => button.textContent?.trim() === 'Previous',
+    )!;
+    previous.click();
+    await fixture.whenStable();
+    expect(component.board()[1][4]?.color).toBe('b');
+    expect(component.board()[4][4]?.color).toBe('w');
+    component.restart();
+    expect(component.replayPositions()).toEqual([]);
+    expect(component.moveHistory()).toEqual([]);
+  });
+
+  it('should replay a saved setup position including castling', async () => {
+    position('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');
+    move('e1', 'g1');
+    const saved = vi.fn();
+    component.saveGame.subscribe(saved);
+    component.save();
+    fixture.componentRef.setInput('replayPgn', saved.mock.calls[0][0]);
+    await fixture.whenStable();
+    expect(component.board()[7][4]?.type).toBe('k');
+    component.replayIndex.set(1);
+    expect(component.board()[7][6]?.type).toBe('k');
+    expect(component.board()[7][5]?.type).toBe('r');
+  });
+
+  it('should record legal moves by turn and clear the rendered history on restart', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.move-history')?.textContent).toContain('No moves yet.');
+    component.select('e2');
+    component.select('e5');
+    expect(component.moveHistory()).toEqual([]);
+    move('e2', 'e4');
+    expect(component.moveHistory()).toEqual([{ number: 1, white: 'e4', black: '' }]);
+    move('e7', 'e5');
+    move('g1', 'f3');
+    await fixture.whenStable();
+    const rows = element.querySelectorAll('.move-history tbody tr');
+    expect(
+      Array.from(rows, (row) => Array.from(row.children, (cell) => cell.textContent?.trim())),
+    ).toEqual([
+      ['1.', 'e4', 'e5'],
+      ['2.', 'Nf3', ''],
+    ]);
+    component.restart();
+    await fixture.whenStable();
+    expect(component.moveHistory()).toEqual([]);
+    expect(element.querySelector('.move-history table')).toBeNull();
+  });
+
   it('should start with 32 pieces and White to move', () => {
     expect(fixture.nativeElement.querySelectorAll('.piece')).toHaveLength(32);
     expect(component.status()).toBe('White to move.');
@@ -72,6 +188,7 @@ describe('PlayGround', () => {
     move('e5', 'd6');
     expect(component.board()[2][3]?.color).toBe('w');
     expect(component.board()[3][3]).toBeNull();
+    expect(component.moveHistory()[2].white).toBe('exd6');
   });
 
   it('should castle and move the rook with the king', () => {
@@ -83,6 +200,7 @@ describe('PlayGround', () => {
     move('e8', 'c8');
     expect(component.board()[0][2]?.type).toBe('k');
     expect(component.board()[0][3]?.type).toBe('r');
+    expect(component.moveHistory()).toEqual([{ number: 1, white: 'O-O', black: 'O-O-O' }]);
   });
 
   it('should disallow castling through check and moves exposing the king', () => {
@@ -102,11 +220,13 @@ describe('PlayGround', () => {
     expect(element.querySelectorAll('.promotion button')).toHaveLength(5);
     expect(component.promotions).toEqual(['q', 'r', 'b', 'n']);
     expect(component.board()[1][0]?.type).toBe('p');
+    expect(component.moveHistory()).toEqual([]);
     component.select('h1');
     expect(component.promotion()).toEqual({ from: 'a7', to: 'a8' });
     component.promote('n');
     expect(component.board()[0][0]?.type).toBe('n');
     expect(component.promotion()).toBeNull();
+    expect(component.moveHistory()[0].white).toBe('a8=N');
   });
 
   it('should report checkmate, stop play and restart', () => {
@@ -115,6 +235,7 @@ describe('PlayGround', () => {
     move('g2', 'g4');
     move('d8', 'h4');
     expect(component.status()).toBe('Checkmate! Black wins.');
+    expect(component.moveHistory()[1].black).toBe('Qh4#');
     component.select('e2');
     expect(component.selected()).toBeNull();
     component.restart();

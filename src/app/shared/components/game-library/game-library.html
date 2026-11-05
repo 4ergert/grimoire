@@ -1,0 +1,65 @@
+<section aria-label="Saved games" [attr.aria-busy]="pending()">
+  <h2>Saved games</h2>
+  <button type="button" (click)="close.emit()" [disabled]="pending()">Back</button>
+  <form (submit)="$event.preventDefault(); createFolder(folderName.value)">
+    <label for="folder-name">New folder</label>
+    <input id="folder-name" #folderName required maxlength="100" />
+    <button [disabled]="pending()">Create folder</button>
+  </form>
+  @if (pgn()) {
+    <form (submit)="$event.preventDefault(); save(gameName.value)">
+      <label for="game-name">Game name</label>
+      <input id="game-name" #gameName required maxlength="100" />
+      <label for="save-folder">Save in folder</label>
+      <select
+        id="save-folder"
+        required
+        [value]="selectedFolder()"
+        (change)="selectedFolder.set(folderSelect.value)"
+        #folderSelect
+      >
+        <option value="" disabled>Select folder</option>
+        @for (folder of folders(); track folder.id) {
+          <option [value]="folder.id">{{ folder.name }}</option>
+        }
+      </select>
+      <button [disabled]="pending()">Save PGN</button>
+    </form>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p role="status">{{ message() }}</p>
+  }
+  @if (pending()) {
+    <p role="status">Please wait...</p>
+  }
+  @for (folder of folders(); track folder.id) {
+    <details>
+      <summary>{{ folder.name }} ({{ folder.games.length }})</summary>
+      <button
+        type="button"
+        [disabled]="pending() || !folder.games.length"
+        (click)="practise.emit(folder)"
+      >
+        Practise folder
+      </button>
+      <ul>
+        @for (game of folder.games; track game.id) {
+          <li>
+            <button type="button" [disabled]="pending()" (click)="openGame.emit(game.pgn)">
+              {{ game.name }} — Replay
+            </button>
+          </li>
+        } @empty {
+          <li>No games in this folder.</li>
+        }
+      </ul>
+    </details>
+  } @empty {
+    @if (!pending() && !error()) {
+      <p>No folders yet. Create your first folder above.</p>
+    }
+  }
+</section>

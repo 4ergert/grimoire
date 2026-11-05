@@ -61,6 +61,8 @@ enumeration protection in Firebase before a public launch.
 After signing in, select **Play** to start a local two-player game. White moves
 first. Click a piece to highlight its legal destinations, then click a destination
 to move or capture. Click the selected piece again to deselect it.
+Moves are recorded below the board in standard algebraic notation (SAN), grouped
+by move number with White and Black columns. **New game** also clears this list.
 
 The board uses classic Unicode chess symbols rendered by the system's symbol
 font. `chess.js` validates turns and legal moves, including castling, en passant,
@@ -71,8 +73,36 @@ The status announces check, checkmate, stalemate, insufficient material,
 threefold repetition, and the fifty-move rule. For this casual local mode,
 threefold repetition and fifty moves automatically end the game rather than
 requiring a draw claim. **New game** immediately resets the position.
-Games are held only in memory and reset on reload or logout; there is no clock,
-online opponent, computer opponent, or game persistence.
+Use **Save game** to save a PGN in a named folder in Firebase Realtime Database.
+Create folders in the save screen or via **Saved games** in the menu. Open a
+folder and select a game to replay it using Start, Previous, Next, and End.
+Saved games are private to the signed-in user and stored as PGN text under
+`gameLibrary/{uid}/folders/{folderId}/games/{gameId}`, not as Storage files.
+Unsaved games reset on reload or logout. Returning to Menu also discards the
+current board; save first. There is no clock, online or computer opponent.
+
+Before using saved games, review and publish `database.rules.json` in Firebase
+Console > Realtime Database > Rules. Merge with any existing application rules;
+do not retain public root read/write grants. The checked-in rules are not
+automatically deployed. Verify with two accounts that each account can access
+only its own library and that unauthenticated access is denied.
+Account deletion must also remove `/gameLibrary/{uid}`.
+
+### Folder training
+
+Open a saved folder and select **Practise folder**, then **Train White** or
+**Train Black**. Games are shuffled and each is practised once per round.
+Opponent moves follow the saved PGN automatically. Only the exact recorded move
+is accepted; a deviation leaves the position unchanged and counts as a mistake,
+not as a judgement of chess quality. Game names, notation and legal-target dots
+are hidden during training.
+
+**Hint** highlights the piece to move. **Show move** reveals the expected SAN;
+**Play shown move** executes it. Progress, mistakes, hints and shown moves are
+counted for the current round only. **Next game** advances after completion;
+**Restart round** reshuffles and clears scores. Saved PGNs are never changed.
+Each game must contain a move for the chosen color; invalid or untrainable PGNs
+are reported explicitly rather than silently skipped.
 
 ## Legal pages (unfinished drafts)
 

@@ -26,7 +26,7 @@ const firebaseConfig = {
 export class Auth {
   private readonly app = initializeApp(firebaseConfig);
   private readonly auth = getAuth(this.app);
-  private readonly database = getDatabase(this.app);
+  readonly database = getDatabase(this.app);
   private readonly currentUser = signal<User | null>(null);
   readonly user = this.currentUser.asReadonly();
 

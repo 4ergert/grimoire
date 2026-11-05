@@ -6,6 +6,7 @@ import { provideRouter } from '@angular/router';
 
 import { LoginOverlay } from './login-overlay';
 import { Auth } from '../../services/auth';
+import { GameLibrary } from '../../services/game-library';
 
 describe('LoginOverlay', () => {
   let component: LoginOverlay;
@@ -22,7 +23,22 @@ describe('LoginOverlay', () => {
     auth.user.set(null);
     await TestBed.configureTestingModule({
       imports: [LoginOverlay],
-      providers: [provideRouter([]), { provide: Auth, useValue: auth }],
+      providers: [
+        provideRouter([]),
+        { provide: Auth, useValue: auth },
+        {
+          provide: GameLibrary,
+          useValue: {
+            list: async () => [
+              {
+                id: 'folder',
+                name: 'Training',
+                games: [{ id: 'game', name: 'Opening', pgn: '1. e4 e5 *' }],
+              },
+            ],
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginOverlay);
@@ -32,6 +48,28 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should open a saved game from the menu and return from replay', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const libraryButton = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Saved games',
+    )!;
+    libraryButton.click();
+    await fixture.whenStable();
+    expect(element.querySelector('summary')?.textContent).toContain('Training');
+    element.querySelector<HTMLButtonElement>('app-game-library li button')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-game-library')).toBeNull();
+    expect(element.querySelector('nav[aria-label="Replay controls"]')).not.toBeNull();
+    const menuButton = Array.from(
+      element.querySelectorAll<HTMLButtonElement>('app-play-ground button'),
+    ).find((button) => button.textContent?.trim() === 'Menu')!;
+    menuButton.click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-menu-overlay')).not.toBeNull();
   });
 
   it('should link to public legal pages in both login and sign up', async () => {
@@ -44,6 +82,34 @@ describe('LoginOverlay', () => {
 
     expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();
     expect(element.querySelector('a[href="/datenschutz"]')).not.toBeNull();
+  });
+
+  it('should launch folder training from the menu, play Black and return to normal play', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const click = async (label: string) => {
+      Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+        .find((button) => button.textContent?.trim() === label)!
+        .click();
+      await fixture.whenStable();
+    };
+    await click('Saved games');
+    await click('Practise folder');
+    expect(element.querySelector('app-game-library')).toBeNull();
+    expect(element.querySelector('.move-history')).toBeNull();
+    await click('Train Black');
+    expect(element.querySelector('[aria-label="e4 White Pawn"]')).not.toBeNull();
+    element.querySelector<HTMLButtonElement>('[aria-label="e7 Black Pawn"]')!.click();
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('[aria-label="e5"]')!.click();
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Round complete!');
+    await click('Menu');
+    await click('Play');
+    expect(element.querySelector('.training-panel')).toBeNull();
+    expect(element.querySelector('.move-history')).not.toBeNull();
+    expect(element.querySelector('[aria-label="e2 White Pawn"]')).not.toBeNull();
   });
 
   it('should show the login form initially', () => {
