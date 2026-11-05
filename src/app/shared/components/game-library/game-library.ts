@@ -18,6 +18,7 @@ export class GameLibrary implements OnInit {
   readonly pending = signal(false);
   readonly error = signal('');
   readonly message = signal('');
+  readonly deleteTarget = signal<{ folderId: string; gameId: string } | null>(null);
 
   ngOnInit(): void {
     this.tasks.run(() => this.run(() => this.reload()));
@@ -43,8 +44,26 @@ export class GameLibrary implements OnInit {
     });
   }
 
+  async deleteGame(): Promise<void> {
+    const target = this.deleteTarget();
+    if (!target) return;
+    await this.run(async () => {
+      await this.library.deleteGame(target.folderId, target.gameId);
+      this.folders.update((folders) =>
+        folders.map((folder) =>
+          folder.id === target.folderId
+            ? { ...folder, games: folder.games.filter((game) => game.id !== target.gameId) }
+            : folder,
+        ),
+      );
+      this.deleteTarget.set(null);
+      this.message.set('Game deleted.');
+    });
+  }
+
   private async run(action: () => Promise<void>): Promise<void> {
     if (this.pending()) return;
+    const complete = this.tasks.add();
     this.pending.set(true);
     this.error.set('');
     this.message.set('');
@@ -59,6 +78,7 @@ export class GameLibrary implements OnInit {
       );
     } finally {
       this.pending.set(false);
+      complete();
     }
   }
 }

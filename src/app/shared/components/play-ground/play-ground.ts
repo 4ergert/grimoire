@@ -2,12 +2,13 @@ import { Component, computed, effect, input, output, signal } from '@angular/cor
 import { Chess, Color, PieceSymbol, Square, SQUARES } from 'chess.js';
 import { GameFolder } from '../../services/game-library';
 import { TrainingSession } from './training-session';
+import { BoardMotion } from './board-motion';
 
 type Promotion = 'q' | 'r' | 'b' | 'n';
 
 @Component({
   selector: 'app-play-ground',
-  imports: [],
+  imports: [BoardMotion],
   templateUrl: './play-ground.html',
   styleUrl: './play-ground.scss',
 })
@@ -25,6 +26,12 @@ export class PlayGround {
   readonly ranks = [8, 7, 6, 5, 4, 3, 2, 1];
   readonly files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   readonly squares = SQUARES;
+  readonly flipped = signal(false);
+  readonly displayRanks = computed(() => (this.flipped() ? [...this.ranks].reverse() : this.ranks));
+  readonly displayFiles = computed(() => (this.flipped() ? [...this.files].reverse() : this.files));
+  readonly displaySquares = computed(() =>
+    this.flipped() ? [...this.squares].reverse() : this.squares,
+  );
   private readonly game = new Chess();
   private readonly position = signal(this.game.fen());
   readonly selected = signal<Square | null>(null);
@@ -38,13 +45,21 @@ export class PlayGround {
     n: 'Knight',
     p: 'Pawn',
   };
-  readonly board = computed(() => {
+  readonly displayPosition = computed(() => {
     const training = this.training();
-    if (training) return new Chess(training.position()).board();
-    if (this.trainingFolder()) return new Chess().board();
+    if (training) return training.position();
+    if (this.trainingFolder()) return new Chess().fen();
     const positions = this.replayPositions();
-    return new Chess(positions.length ? positions[this.replayIndex()] : this.position()).board();
+    return positions.length ? positions[this.replayIndex()] : this.position();
   });
+  readonly board = computed(() => new Chess(this.displayPosition()).board());
+  readonly orientedBoard = computed(() =>
+    this.flipped()
+      ? this.board()
+          .map((row) => [...row].reverse())
+          .reverse()
+      : this.board(),
+  );
   constructor() {
     effect(() => {
       this.trainingFolder();

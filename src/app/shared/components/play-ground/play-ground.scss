@@ -6,6 +6,8 @@
 }
 
 .board-frame {
+  margin-top: 16px;
+
   width: 100%;
   box-sizing: border-box;
   padding: 8px;
@@ -111,6 +113,8 @@
 }
 
 .piece {
+  position: relative;
+  pointer-events: none;
   font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
   font-size: clamp(24px, 9vw, 64px);
   line-height: 1;

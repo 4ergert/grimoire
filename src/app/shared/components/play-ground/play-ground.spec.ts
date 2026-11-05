@@ -44,6 +44,37 @@ describe('PlayGround', () => {
     component['position'].set(component['game'].fen());
   }
 
+  it('should flip coordinates and pieces while preserving correct move input', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const flip = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Flip board',
+    )!;
+    flip.click();
+    await fixture.whenStable();
+    expect(flip.getAttribute('aria-pressed')).toBe('true');
+    expect(element.querySelector('.square')?.getAttribute('data-square')).toBe('h1');
+    expect(
+      Array.from(element.querySelectorAll('.file-labels-top span'), (span) =>
+        span.textContent?.trim(),
+      ),
+    ).toEqual(['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']);
+    expect(
+      Array.from(element.querySelectorAll('.rank-labels-right span'), (span) =>
+        span.textContent?.trim(),
+      ),
+    ).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
+    element.querySelector<HTMLButtonElement>('[data-square="e2"]')!.click();
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('[data-square="e4"]')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('[data-square="e4"] .piece')).not.toBeNull();
+    expect(component.moveHistory()[0].white).toBe('e4');
+    flip.click();
+    await fixture.whenStable();
+    expect(element.querySelector('.square')?.getAttribute('data-square')).toBe('a8');
+    expect(component.board()[4][4]?.color).toBe('w');
+  });
+
   it('should train a folder without revealing the game name or move list', async () => {
     fixture.componentRef.setInput('trainingFolder', {
       id: 'folder',

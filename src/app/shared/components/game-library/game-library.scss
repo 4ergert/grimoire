@@ -45,6 +45,29 @@ li {
   margin-top: 8px;
 }
 
+.saved-game {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.delete-game {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffb4ab;
+}
+
+.delete-confirmation {
+  flex-basis: 100%;
+
+  button {
+    margin: 0 8px 8px 0;
+  }
+}
+
 [role='alert'] {
   color: #ffb4ab;
 }

@@ -47,10 +47,47 @@
       </button>
       <ul>
         @for (game of folder.games; track game.id) {
-          <li>
+          <li class="saved-game">
             <button type="button" [disabled]="pending()" (click)="openGame.emit(game.pgn)">
               {{ game.name }} — Replay
             </button>
+            <button
+              type="button"
+              class="delete-game"
+              [disabled]="pending()"
+              [attr.aria-label]="'Delete ' + game.name"
+              title="Delete game"
+              (click)="deleteTarget.set({ folderId: folder.id, gameId: game.id })"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+              </svg>
+            </button>
+            @if (deleteTarget()?.folderId === folder.id && deleteTarget()?.gameId === game.id) {
+              <div
+                class="delete-confirmation"
+                role="group"
+                [attr.aria-label]="'Confirm deletion of ' + game.name"
+              >
+                <p>Delete "{{ game.name }}" permanently?</p>
+                <button type="button" [disabled]="pending()" (click)="deleteGame()">
+                  Delete permanently
+                </button>
+                <button type="button" [disabled]="pending()" (click)="deleteTarget.set(null)">
+                  Cancel
+                </button>
+              </div>
+            }
           </li>
         } @empty {
           <li>No games in this folder.</li>

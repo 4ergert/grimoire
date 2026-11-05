@@ -8,6 +8,7 @@ import { GameLibrary } from './game-library';
 const database = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
+  remove: vi.fn(),
   ref: vi.fn((_db: unknown, path: string) => path),
   push: vi.fn((path: string) => `${path}/new-id`),
 }));
@@ -21,6 +22,7 @@ describe('GameLibrary', () => {
     vi.clearAllMocks();
     user.set({ uid: 'user-a' });
     database.set.mockResolvedValue(undefined);
+    database.remove.mockResolvedValue(undefined);
     database.get.mockResolvedValue({ exists: () => true });
     TestBed.configureTestingModule({
       providers: [{ provide: Auth, useValue: { user, database: {} } }],
@@ -58,6 +60,24 @@ describe('GameLibrary', () => {
   it('should propagate denied writes rather than reporting success', async () => {
     database.set.mockRejectedValue(new Error('Permission denied'));
     await expect(library.createFolder('Training')).rejects.toThrow('Permission denied');
+  });
+
+  it('should delete only the selected game belonging to the signed-in user', async () => {
+    await library.deleteGame('folder-1', 'game-1');
+    expect(database.remove).toHaveBeenCalledWith(
+      'gameLibrary/user-a/folders/folder-1/games/game-1',
+    );
+    database.remove.mockClear();
+    await expect(library.deleteGame('../other', 'game-1')).rejects.toThrow('valid');
+    await expect(library.deleteGame('folder-1', '')).rejects.toThrow('valid');
+    user.set(null);
+    await expect(library.deleteGame('folder-1', 'game-1')).rejects.toThrow('sign in');
+    expect(database.remove).not.toHaveBeenCalled();
+  });
+
+  it('should propagate rejected deletions', async () => {
+    database.remove.mockRejectedValue(new Error('Permission denied'));
+    await expect(library.deleteGame('folder-1', 'game-1')).rejects.toThrow('Permission denied');
   });
 
   it('should list folder names and their saved PGNs', async () => {

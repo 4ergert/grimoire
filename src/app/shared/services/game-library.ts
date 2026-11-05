@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { get, push, ref, set } from 'firebase/database';
+import { get, push, ref, remove, set } from 'firebase/database';
 import { Chess } from 'chess.js';
 import { Auth } from './auth';
 
@@ -54,6 +54,13 @@ export class GameLibrary {
   async createFolder(name: string): Promise<void> {
     const value = this.name(name);
     await set(push(ref(this.auth.database, this.path())), { name: value });
+  }
+
+  async deleteGame(folderId: string, gameId: string): Promise<void> {
+    if (![folderId, gameId].every((id) => /^[A-Za-z0-9_-]+$/.test(id))) {
+      throw new Error('Please select a valid folder and game.');
+    }
+    await remove(ref(this.auth.database, `${this.path()}/${folderId}/games/${gameId}`));
   }
 
   async save(folderId: string, name: string, pgn: string): Promise<void> {
