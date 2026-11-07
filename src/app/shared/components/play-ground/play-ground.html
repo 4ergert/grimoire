@@ -1,14 +1,8 @@
 <section class="game" aria-label="Local two-player chess">
   <app-game-controls
-    [status]="trainingFolder() ? 'Folder training' : replayPositions().length ? 'Replay' : status()"
     [training]="mode() === 'training'"
-    [replaying]="!!replayPositions().length"
-    [flipped]="flipped()"
-    [canSave]="!!moveHistory().length && promotion() === null"
     (back)="back.emit()"
-    (flip)="flipped.set(!flipped())"
     (restart)="restart()"
-    (save)="save()"
   />
 
   @if (replayError()) {
@@ -38,6 +32,21 @@
     [disabled]="promotion() !== null"
     (squareSelected)="select($event)"
   />
+  <div class="game-status-row">
+    <p class="game-status" role="status" aria-live="polite">
+      {{ trainingFolder() ? 'Folder training' : replayPositions().length ? 'Replay' : status() }}
+    </p>
+    <button
+      class="flip-board"
+      type="button"
+      aria-label="Flip board"
+      title="Flip board"
+      [attr.aria-pressed]="flipped()"
+      (click)="flipped.set(!flipped())"
+    >
+      <span aria-hidden="true" class="flip-icon">&#x21BB;</span>
+    </button>
+  </div>
   @if (mode() === 'training') {
     <app-training-panel
       [session]="training()"
@@ -51,6 +60,8 @@
       [replaying]="!!replayPositions().length"
       [replayMoves]="replayMoves()"
       [history]="moveHistory()"
+      [canSave]="!!moveHistory().length && promotion() === null"
+      (save)="save()"
     />
   }
   <footer class="copyright">&copy; Julian Hergert</footer>

@@ -7,7 +7,7 @@
   color: #ffdfbc;
 
   h2 {
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 18px;
   }
 
@@ -25,4 +25,12 @@
     border-bottom: 1px solid #ffdfbc40;
     overflow-wrap: anywhere;
   }
+}
+
+.move-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
 }

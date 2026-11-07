@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { GameTurn } from '../../sessions/game-session';
 
 @Component({
@@ -6,7 +6,14 @@ import { GameTurn } from '../../sessions/game-session';
   styleUrl: './move-history.scss',
   template: `
     <section class="move-history" aria-label="Move history">
-      <h2>Moves</h2>
+      <header class="move-history-header">
+        <h2>Moves</h2>
+        @if (!replaying()) {
+          <button type="button" [disabled]="!canSave()" (click)="save.emit()">
+            Save game
+          </button>
+        }
+      </header>
       @if (replaying()) {
         <ol>
           @for (move of replayMoves(); track $index) {
@@ -42,4 +49,6 @@ export class MoveHistory {
   readonly replaying = input.required<boolean>();
   readonly replayMoves = input.required<string[]>();
   readonly history = input.required<GameTurn[]>();
+  readonly canSave = input.required<boolean>();
+  readonly save = output<void>();
 }

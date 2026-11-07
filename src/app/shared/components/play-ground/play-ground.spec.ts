@@ -22,6 +22,50 @@ describe('PlayGround', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should save from a native button in the move history header only outside replay', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const button = element.querySelector<HTMLButtonElement>('.move-history-header button')!;
+    const saved = vi.fn();
+    component.saveGame.subscribe(saved);
+
+    expect(button.textContent).toContain('Save game');
+    expect(button.hasAttribute('custom-button')).toBe(false);
+    expect(button.disabled).toBe(true);
+    expect(element.querySelector('app-game-controls')?.textContent).not.toContain('Save game');
+
+    move('e2', 'e4');
+    await fixture.whenStable();
+    expect(button.disabled).toBe(false);
+    button.click();
+    expect(saved).toHaveBeenCalledWith(expect.stringContaining('1. e4'));
+
+    component.promotion.set({ from: 'a7', to: 'a8' });
+    await fixture.whenStable();
+    expect(button.disabled).toBe(true);
+
+    fixture.componentRef.setInput('replayPgn', saved.mock.calls[0][0]);
+    await fixture.whenStable();
+    expect(element.querySelector('.move-history-header button')).toBeNull();
+  });
+
+  it('should display the live game status directly below the board', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const board = element.querySelector('app-chess-board')!;
+    const row = board.nextElementSibling!;
+    const status = row.querySelector('.game-status')!;
+
+    expect(row.classList.contains('game-status-row')).toBe(true);
+    expect(status.classList.contains('game-status')).toBe(true);
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.textContent).toContain('White to move.');
+    expect(element.querySelector('app-game-controls [role="status"]')).toBeNull();
+
+    move('e2', 'e4');
+    await fixture.whenStable();
+    expect(status.textContent).toContain('Black to move.');
+  });
+
   it('should render an 8 by 8 board with coordinates and alternating squares', () => {
     const element: HTMLElement = fixture.nativeElement;
     const squares = element.querySelectorAll<HTMLElement>('.square');
@@ -46,9 +90,10 @@ describe('PlayGround', () => {
 
   it('should flip coordinates and pieces while preserving correct move input', async () => {
     const element: HTMLElement = fixture.nativeElement;
-    const flip = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.textContent?.trim() === 'Flip board',
-    )!;
+    const flip = element.querySelector<HTMLButtonElement>('button[aria-label="Flip board"]')!;
+    expect(flip.textContent?.trim()).toBe('\u21bb');
+    expect(flip.previousElementSibling?.classList.contains('game-status')).toBe(true);
+    expect(flip.getAttribute('aria-pressed')).toBe('false');
     flip.click();
     await fixture.whenStable();
     expect(flip.getAttribute('aria-pressed')).toBe('true');

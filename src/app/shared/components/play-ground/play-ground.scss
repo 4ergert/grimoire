@@ -10,6 +10,37 @@
   padding: 24px 0 100px;
 }
 
+.game-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #ffdfbc;
+}
+
+.flip-icon {
+  width: 45px;
+  height: 45px;
+  display: inline-block;
+  color: #000000d1;
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.flip-board:hover .flip-icon {
+  transform: scale(1.1) rotate(180deg);
+}
+
+.flip-board {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 28px;
+  cursor: pointer;
+}
+
 .copyright {
   margin-top: 12px;
   color: #ffdfbc;
