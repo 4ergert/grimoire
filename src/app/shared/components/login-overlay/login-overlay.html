@@ -18,6 +18,7 @@
         />
       </div>
       <button
+        custom-button
         class="logout_button game_logout"
         type="button"
         [disabled]="pending()"
@@ -80,7 +81,7 @@
             />
           </div>
         }
-        <button type="submit">
+        <button custom-button class="auth_button" type="submit">
           {{ pending() ? 'Please wait...' : isSignUp() ? 'Sign Up' : 'Log In' }}
         </button>
       </fieldset>
@@ -97,6 +98,7 @@
         &middot; {{ isSignUp() ? 'Log In' : 'Sign Up' }}
       </button>
     </p>
+
     @if (error()) {
       <p class="auth_error" role="alert">{{ error() }}</p>
     }

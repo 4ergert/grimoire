@@ -1,8 +1,9 @@
 import { Component, input, output } from '@angular/core';
+import { CustomButton } from '../button/button';
 
 @Component({
   selector: 'app-menu-overlay',
-  imports: [],
+  imports: [CustomButton],
   templateUrl: './menu-overlay.html',
   styleUrl: './menu-overlay.scss',
 })

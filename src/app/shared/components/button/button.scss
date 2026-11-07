@@ -1,0 +1,26 @@
+:host {
+  background-image: linear-gradient(to right, #870000 0%, #190A05 51%, #870000 100%);
+  padding: 15px 32px;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: rgba(255, 255, 255, 0.718);
+  box-shadow: 0 0 5px #000000;
+  border-radius: 10px;
+  display: block;
+  outline: none;
+  border: none;
+}
+
+:host(:hover:not(:disabled)) {
+  background-position: right center;
+  color: #fefefe;
+  text-shadow: 0 0 10px #fff;
+  text-decoration: none;
+    box-shadow: 0 0 15px #ffffff;
+
+}

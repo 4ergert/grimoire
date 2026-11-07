@@ -1,20 +1,26 @@
 import { Component, input, output } from '@angular/core';
+import { CustomButton } from '../../../button/button';
 
 @Component({
-  selector: 'app-game-controls',
+  selector:'app-game-controls',
+  imports: [CustomButton],
   styleUrl: '../controls.scss',
   template: `
     <div class="game-toolbar">
       <p role="status" aria-live="polite">{{ status() }}</p>
-      <button type="button" class="restart" (click)="back.emit()">Menu</button>
-      <button type="button" class="restart" [attr.aria-pressed]="flipped()" (click)="flip.emit()">
+      <button custom-button type="button" class="restart" (click)="back.emit()">
+        Menu
+      </button>
+      <button custom-button type="button" class="restart" [attr.aria-pressed]="flipped()" (click)="flip.emit()">
         Flip board
       </button>
       @if (!training()) {
-        <button type="button" class="restart" (click)="restart.emit()">New game</button>
+        <button custom-button type="button" class="restart" (click)="restart.emit()">
+          New game
+        </button>
       }
       @if (!training() && !replaying()) {
-        <button type="button" class="restart" [disabled]="!canSave()" (click)="save.emit()">
+        <button custom-button type="button" class="restart" [disabled]="!canSave()" (click)="save.emit()">
           Save game
         </button>
       }

@@ -6,10 +6,11 @@ import { MenuOverlay } from '../menu-overlay/menu-overlay';
 import { PlayGround } from '../play-ground/play-ground';
 import { GameLibrary } from '../game-library/game-library';
 import { GameFolder } from '../../services/game-library';
+import { CustomButton } from '../button/button';
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink],
+  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
