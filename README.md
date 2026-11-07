@@ -245,7 +245,7 @@ of these. Provider logs and backup retention require separate verification.
 
 | Location | Responsibility |
 | --- | --- |
-| [play-ground/](./src/app/shared/components/play-ground/) | Chessboard, rules integration, notation, replay, training, and animations |
+| [play-ground/](./src/app/shared/components/play-ground/) | Playground coordinator, chessboard and controls, local game/replay/training sessions, and board animations |
 | [game-library/](./src/app/shared/components/game-library/) | Folder browser, save forms, and deletion confirmation |
 | [login-overlay/](./src/app/shared/components/login-overlay/) | Authentication forms and navigation between menu, library, and board |
 | [menu-overlay/](./src/app/shared/components/menu-overlay/) | Signed-in menu |

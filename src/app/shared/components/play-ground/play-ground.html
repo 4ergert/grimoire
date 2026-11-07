@@ -1,236 +1,57 @@
 <section class="game" aria-label="Local two-player chess">
-  <div class="game-toolbar">
-    <p role="status" aria-live="polite">
-      {{ trainingFolder() ? 'Folder training' : replayPositions().length ? 'Replay' : status() }}
-    </p>
-    <button type="button" class="restart" (click)="back.emit()">Menu</button>
-    <button
-      type="button"
-      class="restart"
-      [attr.aria-pressed]="flipped()"
-      (click)="flipped.set(!flipped())"
-    >
-      Flip board
-    </button>
-    @if (!trainingFolder()) {
-      <button type="button" class="restart" (click)="restart()">New game</button>
-    }
-    @if (!trainingFolder() && !replayPositions().length) {
-      <button
-        type="button"
-        class="restart"
-        [disabled]="!moveHistory().length || promotion() !== null"
-        (click)="save()"
-      >
-        Save game
-      </button>
-    }
-  </div>
+  <app-game-controls
+    [status]="trainingFolder() ? 'Folder training' : replayPositions().length ? 'Replay' : status()"
+    [training]="mode() === 'training'"
+    [replaying]="!!replayPositions().length"
+    [flipped]="flipped()"
+    [canSave]="!!moveHistory().length && promotion() === null"
+    (back)="back.emit()"
+    (flip)="flipped.set(!flipped())"
+    (restart)="restart()"
+    (save)="save()"
+  />
 
   @if (replayError()) {
     <p role="alert">{{ replayError() }}</p>
   }
-  @if (!trainingFolder() && replayPositions().length) {
-    <nav class="game-toolbar" aria-label="Replay controls">
-      <button
-        class="restart"
-        type="button"
-        [disabled]="replayIndex() === 0"
-        (click)="replayIndex.set(0)"
-      >
-        Start
-      </button>
-      <button
-        class="restart"
-        type="button"
-        [disabled]="replayIndex() === 0"
-        (click)="replayIndex.set(replayIndex() - 1)"
-      >
-        Previous
-      </button>
-      <span role="status"
-        >{{ replayIndex() }} / {{ replayMoves().length }}
-        {{ replayMoves()[replayIndex() - 1] || '' }}</span
-      >
-      <button
-        class="restart"
-        type="button"
-        [disabled]="replayIndex() === replayMoves().length"
-        (click)="replayIndex.set(replayIndex() + 1)"
-      >
-        Next
-      </button>
-      <button
-        class="restart"
-        type="button"
-        [disabled]="replayIndex() === replayMoves().length"
-        (click)="replayIndex.set(replayMoves().length)"
-      >
-        End
-      </button>
-    </nav>
+  @if (mode() === 'replay' && replayPositions().length) {
+    <app-replay-controls
+      [index]="replayIndex()"
+      [moves]="replayMoves()"
+      (navigate)="replayIndex.set($event)"
+    />
   }
   @if (promotion(); as move) {
-    <div class="promotion" role="group" aria-label="Choose promotion piece">
-      <p>Promote pawn on {{ move.to }}:</p>
-      @for (piece of promotions; track piece) {
-        <button type="button" (click)="promote(piece)">{{ pieceNames[piece] }}</button>
-      }
-      <button type="button" (click)="promotion.set(null)">Cancel</button>
-    </div>
+    <app-promotion-controls
+      [square]="move.to"
+      (choose)="promote($event)"
+      (cancel)="promotion.set(null)"
+    />
   }
 
-  <div class="board-frame">
-    <div class="board-layout">
-      <div class="file-labels file-labels-top" aria-hidden="true">
-        @for (file of displayFiles(); track file) {
-          <span>{{ file }}</span>
-        }
-      </div>
-
-      <div class="rank-labels" aria-hidden="true">
-        @for (rank of displayRanks(); track rank) {
-          <span>{{ rank }}</span>
-        }
-      </div>
-
-      <div
-        class="chessboard"
-        [appBoardMotion]="displayPosition()"
-        [boardFlipped]="flipped()"
-        role="grid"
-        aria-label="Chessboard, files a to h and ranks 1 to 8"
-      >
-        @for (rank of orientedBoard(); track $index; let row = $index) {
-          <div class="board-row" role="row">
-            @for (piece of rank; track $index; let column = $index) {
-              @let square = displaySquares()[row * 8 + column];
-              <div role="gridcell">
-                <button
-                  type="button"
-                  class="square"
-                  [attr.data-square]="square"
-                  [class.light]="(row + column) % 2 === 0"
-                  [class.selected]="!replayPositions().length && selected() === square"
-                  [class.legal-target]="
-                    !trainingFolder() &&
-                    !replayPositions().length &&
-                    legalTargets().includes(square)
-                  "
-                  [class.hint-square]="training()?.hintSquare() === square"
-                  [class.white-piece]="piece?.color === 'w'"
-                  [disabled]="promotion() !== null"
-                  [attr.aria-pressed]="selected() === square"
-                  [attr.aria-label]="
-                    square +
-                    (piece
-                      ? ' ' + (piece.color === 'w' ? 'White ' : 'Black ') + pieceNames[piece.type]
-                      : '')
-                  "
-                  (click)="select(square)"
-                >
-                  @if (piece) {
-                    <span class="piece" aria-hidden="true">{{
-                      pieceGlyph(piece.type, piece.color)
-                    }}</span>
-                  }
-                </button>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <div class="rank-labels rank-labels-right" aria-hidden="true">
-        @for (rank of displayRanks(); track rank) {
-          <span>{{ rank }}</span>
-        }
-      </div>
-
-      <div class="file-labels" aria-hidden="true">
-        @for (file of displayFiles(); track file) {
-          <span>{{ file }}</span>
-        }
-      </div>
-    </div>
-  </div>
-  @if (trainingFolder()) {
-    <section class="training-panel" aria-label="Folder training">
-      @if (training(); as session) {
-        <p>
-          Playing {{ session.color() === 'w' ? 'White' : 'Black' }}. Game
-          {{ session.gameIndex() + 1 }} / {{ session.gameCount() }}. Moves {{ session.ply() }} /
-          {{ session.moveCount() }}.
-        </p>
-        <p>
-          Round totals: {{ session.mistakes() }} mistakes, {{ session.hints() }} hints,
-          {{ session.shownMoves() }} shown moves.
-        </p>
-        <p role="status" aria-live="polite">{{ session.feedback() }}</p>
-        @if (session.complete()) {
-          <h2>{{ session.roundComplete() ? 'Round complete!' : 'Game complete!' }}</h2>
-          @if (session.roundComplete()) {
-            <button type="button" class="restart" (click)="startTraining(session.color())">
-              Restart round
-            </button>
-          } @else {
-            <button type="button" class="restart" (click)="nextTrainingGame()">Next game</button>
-          }
-        } @else {
-          <button type="button" class="restart" (click)="session.hint()">Hint</button>
-          <button type="button" class="restart" (click)="session.reveal()">Show move</button>
-          @if (session.revealedMove()) {
-            <p>Saved move: {{ session.revealedMove() }}</p>
-            <button type="button" class="restart" (click)="playTrainingSolution()">
-              Play shown move
-            </button>
-          }
-        }
-      } @else {
-        <p>
-          Choose your side. Practise each saved game once in random order. Only the exact saved move
-          is accepted, not every good chess move.
-        </p>
-        <button type="button" class="restart" (click)="startTraining('w')">Train White</button>
-        <button type="button" class="restart" (click)="startTraining('b')">Train Black</button>
-      }
-      @if (trainingError()) {
-        <p role="alert">{{ trainingError() }}</p>
-      }
-    </section>
-  }
-  @if (!trainingFolder()) {
-    <section class="move-history" aria-label="Move history">
-      <h2>Moves</h2>
-      @if (replayPositions().length) {
-        <ol>
-          @for (move of replayMoves(); track $index) {
-            <li>{{ move }}</li>
-          }
-        </ol>
-      } @else if (moveHistory().length) {
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Move</th>
-              <th scope="col">White</th>
-              <th scope="col">Black</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (turn of moveHistory(); track turn.number) {
-              <tr>
-                <th scope="row">{{ turn.number }}.</th>
-                <td>{{ turn.white }}</td>
-                <td>{{ turn.black }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <p>No moves yet.</p>
-      }
-    </section>
+  <app-chess-board
+    [position]="displayPosition()"
+    [flipped]="flipped()"
+    [selected]="replayPositions().length ? null : selected()"
+    [targets]="mode() === 'play' ? legalTargets() : []"
+    [hint]="training()?.hintSquare() ?? null"
+    [disabled]="promotion() !== null"
+    (squareSelected)="select($event)"
+  />
+  @if (mode() === 'training') {
+    <app-training-panel
+      [session]="training()"
+      [error]="trainingError()"
+      (start)="startTraining($event)"
+      (next)="nextTrainingGame()"
+      (playSolution)="playTrainingSolution()"
+    />
+  } @else {
+    <app-move-history
+      [replaying]="!!replayPositions().length"
+      [replayMoves]="replayMoves()"
+      [history]="moveHistory()"
+    />
   }
   <footer class="copyright">&copy; Julian Hergert</footer>
 </section>

@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.move-history {
+  margin-top: 20px;
+  color: #ffdfbc;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #451710;
+  }
+
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ffdfbc40;
+    overflow-wrap: anywhere;
+  }
+}

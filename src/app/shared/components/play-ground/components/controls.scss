@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.game-toolbar,
+.promotion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #ffdfbc;
+}
+
+.restart,
+.promotion button {
+  padding: 8px 12px;
+  border: 1px solid #ffdfbc;
+  border-radius: 4px;
+  background: #451710;
+  color: #ffdfbc;
+  cursor: pointer;
+  font: inherit;
+}
+
+.promotion {
+  padding-bottom: 16px;
+}
+
+.training-panel {
+  margin: 16px 0;
+  color: #ffdfbc;
+  overflow-wrap: anywhere;
+
+  button {
+    margin: 0 8px 8px 0;
+  }
+}

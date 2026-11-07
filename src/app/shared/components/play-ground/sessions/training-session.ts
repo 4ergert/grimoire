@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { Chess, Color, Move, Square } from 'chess.js';
-import { SavedGame } from '../../services/game-library';
+import { SavedGame } from '../../../services/game-library';
 
 interface TrainingLine {
   initial: string;

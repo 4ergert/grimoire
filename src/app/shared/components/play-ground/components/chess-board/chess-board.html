@@ -1,0 +1,66 @@
+<div class="board-frame">
+  <div class="board-layout">
+    <div class="file-labels file-labels-top" aria-hidden="true">
+      @for (file of files(); track file) {
+        <span>{{ file }}</span>
+      }
+    </div>
+    <div class="rank-labels" aria-hidden="true">
+      @for (rank of ranks(); track rank) {
+        <span>{{ rank }}</span>
+      }
+    </div>
+    <div
+      class="chessboard"
+      [appBoardMotion]="position()"
+      [boardFlipped]="flipped()"
+      role="grid"
+      aria-label="Chessboard, files a to h and ranks 1 to 8"
+    >
+      @for (rank of board(); track $index; let row = $index) {
+        <div class="board-row" role="row">
+          @for (piece of rank; track $index; let column = $index) {
+            @let square = squares()[row * 8 + column];
+            <div role="gridcell">
+              <button
+                type="button"
+                class="square"
+                [attr.data-square]="square"
+                [class.light]="(row + column) % 2 === 0"
+                [class.selected]="selected() === square"
+                [class.legal-target]="targets().includes(square)"
+                [class.hint-square]="hint() === square"
+                [class.white-piece]="piece?.color === 'w'"
+                [disabled]="disabled()"
+                [attr.aria-pressed]="selected() === square"
+                [attr.aria-label]="
+                  square +
+                  (piece
+                    ? ' ' + (piece.color === 'w' ? 'White ' : 'Black ') + pieceNames[piece.type]
+                    : '')
+                "
+                (click)="squareSelected.emit(square)"
+              >
+                @if (piece) {
+                  <span class="piece" aria-hidden="true">{{
+                    pieceGlyph(piece.type, piece.color)
+                  }}</span>
+                }
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="rank-labels rank-labels-right" aria-hidden="true">
+      @for (rank of ranks(); track rank) {
+        <span>{{ rank }}</span>
+      }
+    </div>
+    <div class="file-labels" aria-hidden="true">
+      @for (file of files(); track file) {
+        <span>{{ file }}</span>
+      }
+    </div>
+  </div>
+</div>

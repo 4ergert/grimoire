@@ -72,6 +72,34 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
   });
 
+  it('should preserve the game and selection when returning from the save library', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const click = async (label: string) => {
+      Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+        .find((button) => button.textContent?.trim() === label)!
+        .click();
+      await fixture.whenStable();
+    };
+    await click('Play');
+    element.querySelector<HTMLButtonElement>('[data-square="e2"]')!.click();
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('[data-square="e4"]')!.click();
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('[data-square="e7"]')!.click();
+    await fixture.whenStable();
+    const playground = element.querySelector('app-play-ground');
+    await click('Save game');
+    expect(element.querySelector('app-game-library #game-name')).not.toBeNull();
+    expect(component.savePgn()).toContain('1. e4');
+    await click('Back');
+    expect(element.querySelector('app-play-ground')).toBe(playground);
+    expect(element.querySelector('[aria-label="e4 White Pawn"]')).not.toBeNull();
+    expect(element.querySelector('[data-square="e7"]')?.classList.contains('selected')).toBe(true);
+    expect(element.querySelector('.move-history')?.textContent).toContain('e4');
+  });
+
   it('should link to public legal pages in both login and sign up', async () => {
     const element: HTMLElement = fixture.nativeElement;
     expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();

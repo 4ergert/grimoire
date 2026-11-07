@@ -40,8 +40,8 @@ describe('PlayGround', () => {
   }
 
   function position(fen: string): void {
-    component['game'].load(fen);
-    component['position'].set(component['game'].fen());
+    component.game['game'].load(fen);
+    component.game.position.set(component.game['game'].fen());
   }
 
   it('should flip coordinates and pieces while preserving correct move input', async () => {
@@ -73,6 +73,35 @@ describe('PlayGround', () => {
     await fixture.whenStable();
     expect(element.querySelector('.square')?.getAttribute('data-square')).toBe('a8');
     expect(component.board()[4][4]?.color).toBe('w');
+  });
+
+  it('should animate moves in the flipped board direction', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    component.flipped.set(true);
+    await fixture.whenStable();
+    const board = element.querySelector<HTMLElement>('.chessboard')!;
+    vi.spyOn(board, 'getBoundingClientRect').mockReturnValue({
+      ...board.getBoundingClientRect(),
+      width: 400,
+    });
+    const animate = vi.fn(() => ({ cancel: vi.fn() }));
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
+    Object.defineProperty(HTMLElement.prototype, 'animate', { configurable: true, value: animate });
+    try {
+      move('e2', 'e4');
+      await fixture.whenStable();
+      expect(animate).toHaveBeenCalledWith(
+        [
+          { transform: 'translate(0px, -100px)', zIndex: '2' },
+          { transform: 'translate(0, 0)', zIndex: '2' },
+        ],
+        expect.objectContaining({ duration: 260 }),
+      );
+    } finally {
+      fixture.destroy();
+      if (original) Object.defineProperty(HTMLElement.prototype, 'animate', original);
+      else Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+    }
   });
 
   it('should train a folder without revealing the game name or move list', async () => {
@@ -249,7 +278,11 @@ describe('PlayGround', () => {
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
     expect(element.querySelectorAll('.promotion button')).toHaveLength(5);
-    expect(component.promotions).toEqual(['q', 'r', 'b', 'n']);
+    expect(
+      Array.from(element.querySelectorAll('.promotion button'), (button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(['Queen', 'Rook', 'Bishop', 'Knight', 'Cancel']);
     expect(component.board()[1][0]?.type).toBe('p');
     expect(component.moveHistory()).toEqual([]);
     component.select('h1');
