@@ -61,13 +61,6 @@ fieldset {
   min-height: 100vh;
 }
 
-.game_logout {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 1;
-}
-
 .game_error {
   position: fixed;
   right: 24px;
@@ -120,10 +113,9 @@ label {
 input {
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(253, 253, 253, 0.394);
-  background-color: rgba(126, 125, 125, 0.262);
+  border: 1px solid rgb(253, 253, 253);
+  background-color: transparent;
   backdrop-filter: blur(2px);
-  border: 1px solid #ffed84a3;
 }
 
 input {

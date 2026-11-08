@@ -1,6 +1,7 @@
 :host {
   display: block;
 }
+
 .board-frame {
   margin-top: 16px;
   width: 100%;
@@ -8,13 +9,15 @@
   padding: 8px;
   background:
     repeating-linear-gradient(105deg, transparent 0 7px, #ffffff08 8px, transparent 9px 15px),
-    linear-gradient(135deg, #541e17, #70281f9c 45%, #45171069);
+    linear-gradient(155deg, #fffffeab, #000000bf 42%, #7b7b7b4d);
 }
+
 .board-layout {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr) 16px;
   grid-template-rows: 16px auto 16px;
 }
+
 .chessboard {
   grid-column: 2;
   grid-row: 2;
@@ -23,11 +26,13 @@
   aspect-ratio: 1;
   overflow: hidden;
 }
+
 .board-row {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   min-height: 0;
 }
+
 .square {
   position: relative;
   display: grid;
@@ -38,48 +43,54 @@
   border: 0;
   border-radius: 0;
   cursor: pointer;
-  background-color: #80432f;
+  background-color: #0000003e;
 }
+
 .square.light {
   background:
-    repeating-linear-gradient(105deg, transparent 0 8px, #8b694522 9px, transparent 10px 17px),
-    #e8d2a9;
+    repeating-linear-gradient(115deg, transparent 0 8px, #8b694522 9px, transparent 10px 17px),
+    #fafafab0;
 }
+
 .piece {
   position: relative;
   pointer-events: none;
   font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
   font-size: clamp(24px, 9vw, 64px);
   line-height: 1;
-  color: #17110e;
-  text-shadow: 0 1px 1px #fff9;
+  color: #4d0000;
+  text-shadow: 0 0 11px #ffffffe4;
 }
+
 .white-piece .piece {
-  color: #fff8e6;
+  color: #fee6a9;
   text-shadow:
-    0 1px 2px #24100a,
-    1px 0 1px #24100a,
-    -1px 0 1px #24100a;
+    0 0 8px #000;
 }
+
 .square.selected {
-  box-shadow: inset 0 0 0 4px #ffdf56;
+  box-shadow: inset 0 0 8px 3px #ffda38;
 }
+
 .square.hint-square {
   box-shadow: inset 0 0 0 4px #66d9ef;
 }
+
 .square.legal-target::after {
   content: '';
   position: absolute;
   inset: 36%;
   border-radius: 50%;
-  background: #203b25a6;
+  background: #08801e76;
   pointer-events: none;
 }
+
 .square:focus-visible {
   outline: 3px solid #fff;
   outline-offset: -3px;
   z-index: 1;
 }
+
 .rank-labels,
 .file-labels {
   display: grid;
@@ -87,26 +98,31 @@
   font-family: Georgia, serif;
   font-size: clamp(12px, 2.5vw, 16px);
   line-height: 1;
-  text-shadow: 0 1px 2px #190806;
+  text-shadow: 0 1px 4px #000000;
   justify-items: center;
   align-items: center;
 }
+
 .rank-labels {
   grid-column: 1;
   grid-row: 2;
   grid-template-rows: repeat(8, minmax(0, 1fr));
 }
+
 .rank-labels-right {
   grid-column: 3;
 }
+
 .file-labels {
   grid-column: 2;
   grid-row: 3;
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
+
 .file-labels-top {
   grid-row: 1;
 }
+
 @media (max-width: 500px) {
   .board-frame {
     padding: 0;

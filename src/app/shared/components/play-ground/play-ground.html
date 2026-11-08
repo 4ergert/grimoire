@@ -1,8 +1,10 @@
 <section class="game" aria-label="Local two-player chess">
   <app-game-controls
     [training]="mode() === 'training'"
+    [pending]="pending()"
     (back)="back.emit()"
     (restart)="restart()"
+    (logout)="logout.emit()"
   />
 
   @if (replayError()) {

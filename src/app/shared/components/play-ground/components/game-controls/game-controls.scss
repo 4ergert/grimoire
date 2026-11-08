@@ -1,0 +1,54 @@
+:host {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.game-menu {
+  position: relative;
+  color: #ffdfbc;
+
+  summary {
+    padding: 4px 8px;
+    list-style: none;
+    font-size: 32px;
+    cursor: pointer;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+}
+
+.game-menu-actions {
+  position: absolute;
+  right: 0;
+  z-index: 3;
+  display: grid;
+  min-width: 150px;
+  padding: 8px;
+  border: 1px solid #ffdfbc40;
+  border-radius: 8px;
+  background: #451710;
+  box-shadow: 0 4px 12px #00000060;
+
+  button {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background: #ffdfbc20;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+}

@@ -13,19 +13,12 @@
         <app-play-ground
           [replayPgn]="replayPgn()"
           [trainingFolder]="trainingFolder()"
+          [pending]="pending()"
           (saveGame)="openLibrary($event)"
           (back)="returnToMenu()"
+          (logout)="logout()"
         />
       </div>
-      <button
-        custom-button
-        class="logout_button game_logout"
-        type="button"
-        [disabled]="pending()"
-        (click)="logout()"
-      >
-        Log Out
-      </button>
       @if (error()) {
         <p class="auth_error game_error" role="alert">{{ error() }}</p>
       }

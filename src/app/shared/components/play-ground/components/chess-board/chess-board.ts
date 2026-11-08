@@ -42,6 +42,7 @@ export class ChessBoard {
     const glyphs = {
       w: { k: '\u2654', q: '\u2655', r: '\u2656', b: '\u2657', n: '\u2658', p: '\u2659' },
       b: { k: '\u265a', q: '\u265b', r: '\u265c', b: '\u265d', n: '\u265e', p: '\u265f' },
+      // b: { k: '\u265a', q: '\u265b', r: '\u265c', b: '\u265d', n: '\🦄', p: '\u265f' },
     };
     return glyphs[color][type];
   }

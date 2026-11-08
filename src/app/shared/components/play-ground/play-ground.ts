@@ -31,6 +31,8 @@ export class PlayGround {
   readonly trainingError = signal('');
   readonly saveGame = output<string>();
   readonly back = output<void>();
+  readonly logout = output<void>();
+  readonly pending = input(false);
   readonly replay = new ReplaySession();
   readonly replayPositions = this.replay.positions;
   readonly replayIndex = this.replay.index;

@@ -300,7 +300,7 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('Connection failed');
   });
 
-  it('should replace the menu with a centered playground and keep logout at the bottom right', async () => {
+  it('should replace the menu with a playground and log out through its burger menu', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
@@ -310,10 +310,16 @@ describe('LoginOverlay', () => {
 
     expect(element.querySelector('app-menu-overlay')).toBeNull();
     expect(element.querySelector('app-play-ground')).not.toBeNull();
-    expect(element.querySelector('.game_logout')).not.toBeNull();
+    const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
+    expect(menu.open).toBe(false);
+    menu.querySelector('summary')!.click();
+    expect(menu.open).toBe(true);
 
     auth.logout.mockImplementation(async () => auth.user.set(null));
-    element.querySelector<HTMLButtonElement>('.game_logout')!.click();
+    const logout = Array.from(menu.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Log Out',
+    )!;
+    logout.click();
     await fixture.whenStable();
 
     expect(auth.logout).toHaveBeenCalledOnce();

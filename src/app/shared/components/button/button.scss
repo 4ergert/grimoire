@@ -1,5 +1,6 @@
 :host {
-  background-image: linear-gradient(to right, #870000 0%, #190A05 51%, #870000 100%);
+  background-image: linear-gradient(to right, #190a059a 10%, #ffffff3c 100%);
+  background-color: transparent;
   padding: 15px 32px;
   font-size: 16px;
   font-weight: bold;
@@ -8,7 +9,7 @@
   text-transform: uppercase;
   transition: 0.5s;
   background-size: 200% auto;
-  color: rgba(255, 255, 255, 0.718);
+  color: rgba(255, 255, 255, 0.781);
   box-shadow: 0 0 5px #000000;
   border-radius: 10px;
   display: block;
@@ -19,7 +20,7 @@
 :host(:hover:not(:disabled)) {
   background-position: right center;
   color: #fefefe;
-  text-shadow: 0 0 10px #fff;
+  text-shadow: 0 0 5px #000000;
   text-decoration: none;
     box-shadow: 0 0 15px #ffffff;
 

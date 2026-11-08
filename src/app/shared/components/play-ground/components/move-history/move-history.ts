@@ -9,8 +9,8 @@ import { GameTurn } from '../../sessions/game-session';
       <header class="move-history-header">
         <h2>Moves</h2>
         @if (!replaying()) {
-          <button type="button" [disabled]="!canSave()" (click)="save.emit()">
-            Save game
+          <button class="save_button" type="button" [disabled]="!canSave()" (click)="save.emit()">
+            Save to repertoire
           </button>
         }
       </header>

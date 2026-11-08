@@ -22,6 +22,41 @@ describe('PlayGround', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should toggle the burger menu, restart the game and forward logout', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
+    const trigger = menu.querySelector('summary')!;
+    const buttons = Array.from(menu.querySelectorAll('button'));
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Menu', 'New game', 'Log Out',
+    ]);
+    expect(menu.open).toBe(false);
+    trigger.click();
+    expect(menu.open).toBe(true);
+    trigger.click();
+    expect(menu.open).toBe(false);
+
+    move('e2', 'e4');
+    await fixture.whenStable();
+    trigger.click();
+    buttons[1].click();
+    await fixture.whenStable();
+    expect(component.moveHistory()).toHaveLength(0);
+    expect(menu.open).toBe(false);
+
+    const logout = vi.fn();
+    component.logout.subscribe(logout);
+    fixture.componentRef.setInput('pending', true);
+    await fixture.whenStable();
+    expect(buttons[2].disabled).toBe(true);
+    fixture.componentRef.setInput('pending', false);
+    await fixture.whenStable();
+    trigger.click();
+    buttons[2].click();
+    expect(logout).toHaveBeenCalledOnce();
+    expect(menu.open).toBe(false);
+  });
+
   it('should save from a native button in the move history header only outside replay', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const button = element.querySelector<HTMLButtonElement>('.move-history-header button')!;
