@@ -7,7 +7,7 @@ import { GameTurn } from '../../sessions/game-session';
   template: `
     <section class="move-history" aria-label="Move history">
       <header class="move-history-header">
-        <h2>Moves</h2>
+        <h2>History</h2>
         @if (!replaying()) {
           <button class="save_button" type="button" [disabled]="!canSave()" (click)="save.emit()">
             Save to repertoire

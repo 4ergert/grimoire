@@ -6,6 +6,11 @@
 .game-menu {
   position: relative;
   color: #ffdfbc;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    text-shadow: 0 0 10px #fefdfde2;
+  }
 
   summary {
     padding: 4px 8px;
@@ -26,9 +31,9 @@
   display: grid;
   min-width: 150px;
   padding: 8px;
-  border: 1px solid #ffdfbc40;
+  border: 1px solid #ffdfbc90;
   border-radius: 8px;
-  background: #451710;
+  background: #636363c1;
   box-shadow: 0 4px 12px #00000060;
 
   button {

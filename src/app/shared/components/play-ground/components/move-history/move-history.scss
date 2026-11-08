@@ -5,6 +5,10 @@
 .move-history {
   margin-top: 20px;
   color: #ffdfbc;
+  background: #3f3f3f9a;
+  border: solid 1px #ffdfbc54;
+  box-shadow: 0 0 8px 2px #0000004d;
+  padding: 4px;
 
   h2 {
     margin: 0;
@@ -15,7 +19,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    background: #451710;
+    background: #0505059a;
   }
 
   th,
