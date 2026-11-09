@@ -1,4 +1,5 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, computed, effect, input, output, signal, viewChild } from '@angular/core';
 import { Chess, Color, Square } from 'chess.js';
 import { GameFolder } from '../../services/game-library';
 import { TrainingSession } from './sessions/training-session';
@@ -10,21 +11,29 @@ import { ReplayControls } from './components/replay-controls/replay-controls';
 import { Promotion, PromotionControls } from './components/promotion-controls/promotion-controls';
 import { TrainingPanel } from './components/training-panel/training-panel';
 import { MoveHistory } from './components/move-history/move-history';
+import {
+  EngineMode,
+  EngineMove,
+  StockfishPanel,
+} from './components/stockfish-panel/stockfish-panel';
 
 @Component({
   selector: 'app-play-ground',
   imports: [
+    NgTemplateOutlet,
     ChessBoard,
     GameControls,
     ReplayControls,
     PromotionControls,
     TrainingPanel,
     MoveHistory,
+    StockfishPanel,
   ],
   templateUrl: './play-ground.html',
   styleUrl: './play-ground.scss',
 })
 export class PlayGround {
+  readonly stockfishPanel = viewChild(StockfishPanel);
   readonly replayPgn = input('');
   readonly trainingFolder = input<GameFolder | null>(null);
   readonly training = signal<TrainingSession | null>(null);
@@ -40,6 +49,10 @@ export class PlayGround {
   readonly replayError = this.replay.error;
   readonly flipped = signal(false);
   readonly game = new GameSession();
+  readonly engineMode = signal<EngineMode>('off');
+  readonly engineAnalysis = signal(false);
+  readonly playerColor = signal<Color>('w');
+  readonly engineError = signal('');
   readonly mode = computed<'play' | 'replay' | 'training'>(() =>
     this.trainingFolder()
       ? 'training'
@@ -57,9 +70,27 @@ export class PlayGround {
     return positions.length ? positions[this.replayIndex()] : this.game.position();
   });
   readonly board = computed(() => new Chess(this.displayPosition()).board());
+  readonly engineTurn = computed(() => {
+    this.game.position();
+    return (
+      this.mode() === 'play' &&
+      this.engineMode() === 'opponent' &&
+      this.game.turn() !== this.playerColor() &&
+      !this.game.isGameOver()
+    );
+  });
+  readonly enginePosition = computed(() =>
+    this.mode() === 'play' ? this.game.enginePosition() : `fen ${this.displayPosition()}`,
+  );
+  readonly gameOver = computed(() => {
+    this.game.position();
+    return this.mode() === 'play'
+      ? this.game.isGameOver()
+      : new Chess(this.displayPosition()).isGameOver();
+  });
   constructor() {
     effect(() => {
-      this.trainingFolder();
+      if (this.trainingFolder()) this.setEngineMode('off');
       this.training.set(null);
       this.trainingError.set('');
       this.selected.set(null);
@@ -68,10 +99,43 @@ export class PlayGround {
     effect(() => {
       const pgn = this.replayPgn();
       if (!pgn) return;
+      this.setEngineMode('off');
       this.replay.load(pgn);
       this.selected.set(null);
       this.promotion.set(null);
     });
+  }
+
+  setEngineMode(mode: EngineMode): void {
+    if (mode === 'analysis' && this.engineMode() === 'opponent') {
+      this.engineAnalysis.update((enabled) => !enabled);
+      return;
+    }
+    this.engineMode.set(mode);
+    this.engineAnalysis.set(mode === 'analysis');
+    this.engineError.set('');
+    this.clearSelection();
+  }
+
+  startEngineGame(color: Color): void {
+    const analyse = this.engineAnalysis();
+    this.restart();
+    this.playerColor.set(color);
+    this.flipped.set(color === 'b');
+    this.setEngineMode('opponent');
+    this.engineAnalysis.set(analyse);
+  }
+
+  playEngineMove(result: EngineMove): void {
+    if (!this.engineTurn() || result.fen !== this.game.position()) return;
+    try {
+      const move = new Chess(result.fen).move(result.move);
+      this.game.move(move.from, move.to, move.promotion);
+      this.clearSelection();
+    } catch (error) {
+      console.error('Stockfish move could not be played', error);
+      this.engineError.set('Stockfish returned an invalid move. Retry or switch off the engine.');
+    }
   }
 
   startTraining(color: Color): void {
@@ -142,6 +206,7 @@ export class PlayGround {
     if (
       this.replayPositions().length ||
       this.replayError() ||
+      this.engineTurn() ||
       this.game.isGameOver() ||
       this.promotion()
     )
@@ -176,6 +241,7 @@ export class PlayGround {
   }
 
   restart(): void {
+    this.engineError.set('');
     this.replay.clear();
     this.game.reset();
     this.clearSelection();

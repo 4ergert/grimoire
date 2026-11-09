@@ -14,6 +14,7 @@ Firebase Authentication, and Firebase Realtime Database.
 - Click-to-move controls, legal destination highlights, and SAN move notation.
 - Castling, en passant, promotion, check, checkmate, and draw detection.
 - Animated piece movement and a reversible board perspective.
+- Local Stockfish analysis and games against the engine as White or Black.
 - Personal folders containing games saved as PGN text in Firebase.
 - Step-by-step replay and randomized folder training for either color.
 - Individual game deletion with confirmation.
@@ -208,9 +209,42 @@ untrainable games are reported explicitly, not silently skipped.
 
 Training never changes saved PGNs. Scores are held only in memory.
 
+## Stockfish analysis and opponent
+
+The separate Stockfish panel below the board offers:
+
+- **Analyse position** (magnifying-glass PNG button, below the board): evaluation from White's perspective, search depth, and
+  the best line in SAN, displayed to the right of the button. Replay positions can also be analysed. During an engine
+  game, this button toggles analysis without leaving opponent mode, including
+  analysis on your own turn.
+- **Play as White / Play as Black**: starts a new game against Stockfish and
+  orients the board towards your side. The board is locked during engine turns.
+  An already enabled analysis remains enabled.
+- **Engine off**: stops the search and returns to local two-player play without
+  resetting the position. Restarting an engine game keeps the chosen side.
+
+Analysis and engine moves use a one-second search. There is no strength selector.
+Analysis never plays moves automatically and is unavailable during folder training.
+Loading/search errors are displayed with a retry option.
+
+Stockfish.js 19.0.1 runs locally in a lazily created Web Worker. No chess
+positions are sent to an engine server. The lite, single-threaded WebAssembly
+build is used; cross-origin isolation headers are not required.
+Angular copies only its JavaScript, WebAssembly, and GPL license from the
+installed package to `stockfish/`. Serve `.js` as JavaScript and `.wasm` as
+`application/wasm`, including when deploying under a base path.
+After installing Stockfish or changing the Angular asset configuration, restart
+the development server. An already running server may return a HTML 404 page
+for the worker, which browsers report as a blocked `text/html` MIME type.
+
+Stockfish is GPL-3.0 software. The panel links to the distributed license and
+the [corresponding Stockfish.js source](https://github.com/nmrugg/stockfish.js/tree/v19.0.1).
+Preserve these notices and comply with the GPL distribution/source requirements
+when deploying or redistributing the engine.
+
 ## Current limitations
 
-- No online multiplayer, computer opponent, Stockfish integration, or chess clock.
+- No online multiplayer or chess clock.
 - Unsaved games and training rounds reset on reload or logout.
 - No PGN file import/export interface, folder deletion, or folder renaming.
 - No alternative-move evaluation in training; only the saved line is accepted.

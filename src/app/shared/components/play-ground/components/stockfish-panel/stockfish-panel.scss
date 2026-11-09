@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+
+.stockfish-panel {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid #ffdfbc90;
+  color: #ffdfbc;
+  overflow-wrap: anywhere;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.engine-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button[aria-pressed='true'] {
+  outline: 2px solid #ffdfbc;
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+}
+
+[role='alert'] {
+  color: #ffb4ab;
+}

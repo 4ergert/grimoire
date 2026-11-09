@@ -4,6 +4,7 @@ import { Component, input, output } from '@angular/core';
   selector:'app-game-controls',
   styleUrl: './game-controls.scss',
   template: `
+    <ng-content />
     <details #menu class="game-menu" (keydown.escape)="menu.open = false">
       <summary aria-label="Game menu" title="Game menu">
         <span aria-hidden="true">&#x2630;</span>

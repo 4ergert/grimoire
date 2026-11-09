@@ -1,0 +1,54 @@
+<section class="stockfish-panel" aria-label="Stockfish engine">
+  <h2>Stockfish</h2>
+  <div class="engine-actions">
+    <button type="button" [attr.aria-pressed]="mode() === 'off'" (click)="modeChange.emit('off')">
+      Engine off
+    </button>
+    @if (allowOpponent()) {
+      <button type="button" (click)="startGame.emit('w')">Play as White</button>
+      <button type="button" (click)="startGame.emit('b')">Play as Black</button>
+    }
+  </div>
+  @if (allowOpponent()) {
+    <p>Play as White / Black starts a new game.</p>
+  }
+  @if (mode() === 'opponent') {
+    <p>You play {{ playerColor() === 'w' ? 'White' : 'Black' }} against Stockfish.</p>
+  }
+  @if (engine.error()) {
+    <p role="alert">{{ engine.error() }}</p>
+    <button type="button" (click)="retry()">Retry engine</button>
+  } @else if (mode() !== 'off') {
+    <p role="status" aria-live="polite">
+      @if (gameOver()) {
+        Game over.
+      } @else if (engine.busy()) {
+        {{ engine.ready() ? 'Stockfish is thinking...' : 'Loading Stockfish...' }}
+      } @else if (mode() === 'opponent') {
+        Your turn.
+      } @else {
+        Analysis complete.
+      }
+    </p>
+  }
+  <small>
+    Local engine, no positions sent to a server.
+    <a
+      href="https://github.com/nmrugg/stockfish.js/tree/v19.0.1"
+      target="_blank"
+      rel="noopener noreferrer"
+      >Stockfish.js source</a
+    >
+    &middot;
+    <a href="stockfish/Copying.txt" target="_blank" rel="noopener noreferrer">GPL-3.0 license</a>
+  </small>
+</section>
+
+<ng-template #analysisView>
+  @if ((mode() === 'analysis' || analysis()) && engine.result(); as result) {
+    <p>Evaluation (White): {{ evaluation() || 'Calculating...' }}. Depth: {{ result.depth }}.</p>
+    @if (variation()) {
+      <p>Best line: {{ variation() }}</p>
+    }
+  }
+</ng-template>

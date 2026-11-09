@@ -18,11 +18,48 @@
   color: #ffdfbc;
 }
 
+.analysis-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.analyse-position {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+
+  img {
+    display: block;
+    width: 52px;
+    height: 52px;
+    transition: transform 0.1s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  &[aria-pressed='true'] {
+    outline: 2px solid #ffffffd8;
+  }
+}
+
+.analysis-summary {
+  flex: 1;
+  min-width: 0;
+  min-height: 90px;
+  color: #ffdfbc;
+  overflow-wrap: anywhere;
+}
+
 .flip-icon {
   width: 45px;
   height: 45px;
   display: inline-block;
-  color: #000000d1;
+  color: #fdfcaed1;
   font-size: 28px;
   cursor: pointer;
   transition: transform 0.2s;

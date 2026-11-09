@@ -83,10 +83,11 @@ describe('PlayGround', () => {
     expect(element.querySelector('.move-history-header button')).toBeNull();
   });
 
-  it('should display the live game status directly below the board', async () => {
+  it('should display the live game status in the controls above the board', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const board = element.querySelector('app-chess-board')!;
-    const row = board.nextElementSibling!;
+    const controls = element.querySelector('app-game-controls')!;
+    const row = controls.querySelector('.game-status-row')!;
     const status = row.querySelector('.game-status')!;
 
     expect(row.classList.contains('game-status-row')).toBe(true);
@@ -94,7 +95,8 @@ describe('PlayGround', () => {
     expect(status.getAttribute('role')).toBe('status');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.textContent).toContain('White to move.');
-    expect(element.querySelector('app-game-controls [role="status"]')).toBeNull();
+    expect(controls.querySelector('[role="status"]')).toBe(status);
+    expect(controls.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     move('e2', 'e4');
     await fixture.whenStable();

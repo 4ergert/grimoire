@@ -1,9 +1,12 @@
 :host {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
 }
 
 .game-menu {
+  margin-left: auto;
   position: relative;
   color: #ffdfbc;
   transition: all 0.2s ease-in-out;

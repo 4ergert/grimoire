@@ -10,6 +10,13 @@ export interface GameTurn {
 export class GameSession {
   private readonly game = new Chess();
   readonly position = signal(this.game.fen());
+  readonly enginePosition = computed(() => {
+    this.position();
+    const moves = this.game.history({ verbose: true });
+    const start = moves[0]?.before ?? this.game.fen();
+    const line = moves.map((move) => `${move.from}${move.to}${move.promotion ?? ''}`).join(' ');
+    return `fen ${start}${line ? ` moves ${line}` : ''}`;
+  });
   readonly history = computed(() => {
     this.position();
     const turns: GameTurn[] = [];

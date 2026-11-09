@@ -27,6 +27,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "stockfish-19-lite-single.*",
+                "input": "node_modules/stockfish/bin",
+                "output": "stockfish"
+              },
+              {
+                "glob": "Copying.txt",
+                "input": "node_modules/stockfish",
+                "output": "stockfish"
               }
             ],
             "styles": [
