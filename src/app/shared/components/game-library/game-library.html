@@ -1,102 +1,87 @@
-<section aria-label="Saved games" [attr.aria-busy]="pending()">
-  <h2>Saved games</h2>
-  <button type="button" (click)="close.emit()" [disabled]="pending()">Back</button>
+<section class="game_library" aria-label="Saved games" [attr.aria-busy]="pending()">
+  <header class="header">
+    <h2>Repertoire</h2>
+    <button custom-button type="button" (click)="close.emit()" [disabled]="pending()">Back</button>
+  </header>
+
   <form (submit)="$event.preventDefault(); createFolder(folderName.value)">
-    <label for="folder-name">New folder</label>
+    <label for="folder-name">Create new Repertoire folder</label>
     <input id="folder-name" #folderName required maxlength="100" />
-    <button [disabled]="pending()">Create folder</button>
+    <button custom-button class="create_folder" [disabled]="pending()">Create folder</button>
   </form>
   @if (pgn()) {
-    <form (submit)="$event.preventDefault(); save(gameName.value)">
-      <label for="game-name">Game name</label>
-      <input id="game-name" #gameName required maxlength="100" />
-      <label for="save-folder">Save in folder</label>
-      <select
-        id="save-folder"
-        required
-        [value]="selectedFolder()"
-        (change)="selectedFolder.set(folderSelect.value)"
-        #folderSelect
-      >
-        <option value="" disabled>Select folder</option>
-        @for (folder of folders(); track folder.id) {
-          <option [value]="folder.id">{{ folder.name }}</option>
-        }
-      </select>
-      <button [disabled]="pending()">Save PGN</button>
-    </form>
+  <form (submit)="$event.preventDefault(); save(gameName.value)">
+    <label for="game-name">Game name</label>
+    <input id="game-name" #gameName required maxlength="100" />
+    <label for="save-folder">Save in folder</label>
+    <select id="save-folder" required [value]="selectedFolder()" (change)="selectedFolder.set(folderSelect.value)"
+      #folderSelect>
+      <option value="" disabled>Select folder</option>
+      @for (folder of folders(); track folder.id) {
+      <option [value]="folder.id">{{ folder.name }}</option>
+      }
+    </select>
+    <button [disabled]="pending()">Save PGN</button>
+  </form>
   }
   @if (error()) {
-    <p role="alert">{{ error() }}</p>
+  <p role="alert">{{ error() }}</p>
   }
   @if (message()) {
-    <p role="status">{{ message() }}</p>
+  <p role="status">{{ message() }}</p>
   }
   @if (pending()) {
-    <p role="status">Please wait...</p>
+  <p role="status">Please wait...</p>
   }
-  @for (folder of folders(); track folder.id) {
+
+  <section class="repertoire_folders">
+    <p>Your repertoires:</p>
+    @for (folder of folders(); track folder.id) {
     <details>
-      <summary>{{ folder.name }} ({{ folder.games.length }})</summary>
-      <button
-        type="button"
-        [disabled]="pending() || !folder.games.length"
-        (click)="practise.emit(folder)"
-      >
-        Practise folder
-      </button>
-      <ul>
-        @for (game of folder.games; track game.id) {
+      <summary> {{ folder.name }} {{ folder.games.length }} </summary>
+      <section class="repertoire">
+
+        <ul>
+          @for (game of folder.games; track game.id) {
           <li class="saved-game">
-            <button type="button" [disabled]="pending()" (click)="openGame.emit(game.pgn)">
-              {{ game.name }} — Replay
+            <button custom-button type="button" [disabled]="pending()" (click)="openGame.emit(game.pgn)">
+              {{ game.name }}
             </button>
-            <button
-              type="button"
-              class="delete-game"
-              [disabled]="pending()"
-              [attr.aria-label]="'Delete ' + game.name"
-              title="Delete game"
-              (click)="deleteTarget.set({ folderId: folder.id, gameId: game.id })"
-            >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
+            <button custom-button type="button" class="delete-game" [disabled]="pending()"
+              [attr.aria-label]="'Delete ' + game.name" title="Delete game"
+              (click)="deleteTarget.set({ folderId: folder.id, gameId: game.id })">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
               </svg>
             </button>
             @if (deleteTarget()?.folderId === folder.id && deleteTarget()?.gameId === game.id) {
-              <div
-                class="delete-confirmation"
-                role="group"
-                [attr.aria-label]="'Confirm deletion of ' + game.name"
-              >
-                <p>Delete "{{ game.name }}" permanently?</p>
-                <button type="button" [disabled]="pending()" (click)="deleteGame()">
-                  Delete permanently
-                </button>
-                <button type="button" [disabled]="pending()" (click)="deleteTarget.set(null)">
-                  Cancel
-                </button>
-              </div>
+            <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of ' + game.name">
+              <p>Delete "{{ game.name }}" permanently?</p>
+              <button type="button" [disabled]="pending()" (click)="deleteGame()">
+                Delete permanently
+              </button>
+              <button type="button" [disabled]="pending()" (click)="deleteTarget.set(null)">
+                Cancel
+              </button>
+            </div>
             }
           </li>
-        } @empty {
+          } @empty {
           <li>No games in this folder.</li>
-        }
-      </ul>
+          }
+        </ul>
+
+        <button custom-button type="button" class="practise_button" [disabled]="pending() || !folder.games.length"
+          (click)="practise.emit(folder)">
+          Practise
+        </button>
+      </section>
     </details>
-  } @empty {
+    } @empty {
     @if (!pending() && !error()) {
-      <p>No folders yet. Create your first folder above.</p>
+    <p>No folders yet. Create your first folder above.</p>
     }
-  }
+    }
+  </section>
 </section>

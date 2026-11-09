@@ -4,6 +4,25 @@
   color: #ffdfbc;
 }
 
+h2 {
+  font-size: 42px;
+  margin: 8px 0;
+}
+
+.game_library {
+  position: relative;
+  border: 1px solid #cdcdcdc3;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.848);
+  background: #3f3f3f9a;
+  padding: 8px 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 section {
   padding: 24px 0;
 }
@@ -22,6 +41,16 @@ select {
   max-width: 100%;
   padding: 8px 12px;
   font: inherit;
+
+  &.create_folder {
+    width: fit-content;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+}
+
+input {
+  background: #e0e0e062;
 }
 
 button,
@@ -30,15 +59,35 @@ summary {
   overflow-wrap: anywhere;
 }
 
+
 button {
-  color: #ffdfbc;
-  border: 1px solid #ffdfbc;
-  border-radius: 4px;
-  background: #451710;
+  border-radius: 0;
+}
+
+summary {
+  padding: 4px 8px;
 }
 
 details {
   margin: 16px 0;
+  padding: 4px 12px;
+  border: 1px solid #cdcdcdc3;
+  background: #3f3f3f9a;
+}
+
+.repertoire {
+  padding: 0;
+}
+
+.repertoire_folders {
+  border: 1px solid #cdcdcdc3;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.848);
+  background: #2323239d;
+  padding: 4px 12px;
+}
+
+ul {
+  padding: 0;
 }
 
 li {
@@ -48,16 +97,27 @@ li {
 .saved-game {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
+  border: 1px solid #cdcdcdc3;
+  background: #46464686;
+  padding: 4px 8px;
 }
 
 .delete-game {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: flex-end;
   justify-content: center;
   flex-shrink: 0;
-  color: #ffb4ab;
+  color: #ccccccb9;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  &:hover {
+    box-shadow: none !important;
+  }
 }
 
 .delete-confirmation {
@@ -68,6 +128,46 @@ li {
   }
 }
 
+.practise_button {
+  display: block;
+  width: fit-content;
+  margin: 16px 0 8px auto;
+
+}
+
 [role='alert'] {
   color: #ffb4ab;
+}
+
+@media (max-width: 500px) {
+  .game_library {
+    padding: 16px 8px 60px;
+  }
+
+  .header button {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .repertoire_folders {
+    padding: 4px 8px;
+  }
+
+  details {
+    margin: 8px 0;
+    padding: 4px;
+  }
+
+  .saved-game {
+    padding: 8px;
+  }
+
+  .delete-game {
+    padding: 4px;
+  }
+
+  .practise_button {
+    margin: 8px 8px 8px auto;
+  }
 }

@@ -1,9 +1,11 @@
 import { Component, OnInit, PendingTasks, inject, input, output, signal } from '@angular/core';
 import { GameFolder, GameLibrary as Library } from '../../services/game-library';
+import { CustomButton } from '../button/button';
 
 @Component({
   selector: 'app-game-library',
   templateUrl: './game-library.html',
+  imports: [CustomButton],
   styleUrl: './game-library.scss',
 })
 export class GameLibrary implements OnInit {

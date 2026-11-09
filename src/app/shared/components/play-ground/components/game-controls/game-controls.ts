@@ -14,7 +14,7 @@ import { Component, input, output } from '@angular/core';
         </button>
         @if (!training()) {
           <button type="button" (click)="menu.open = false; restart.emit()">
-            New game
+            Create New
           </button>
         }
         <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
