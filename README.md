@@ -213,9 +213,11 @@ Training never changes saved PGNs. Scores are held only in memory.
 
 Choose **Create** in the main menu for manual two-player play and analysis.
 Analysis starts automatically in Create and stays enabled, including after
-moves and restarts. Its toggle is disabled and Engine off is hidden in this mode.
+moves and restarts. Its toggle is disabled in this mode.
 Computer play is available only through the separate **Play against Stockfish**
-menu button. There, choose **Play as White** or **Play as Black** to begin.
+menu button. A modal overlay asks you to choose **Play as White** or
+**Play as Black** before the board accepts moves. **Back** or Escape returns to
+the menu. Stockfish makes the opening move when you choose Black.
 Returning to the menu and choosing Create removes the computer-play controls.
 
 The separate Stockfish panel below the board offers:
@@ -224,11 +226,12 @@ The separate Stockfish panel below the board offers:
   the best line in SAN, displayed to the right of the button. Replay positions can also be analysed. During an engine
   game, this button toggles analysis without leaving opponent mode, including
   analysis on your own turn.
-- **Play as White / Play as Black**: starts a new game against Stockfish and
+- **Play as White / Play as Black** (in the initial overlay): starts a game against Stockfish and
   orients the board towards your side. The board is locked during engine turns.
   An already enabled analysis remains enabled.
-- **Engine off**: stops the search and returns to local two-player play without
-  resetting the position. Restarting an engine game keeps the chosen side.
+
+To leave a computer game, return to the menu. Restarting an engine game keeps
+the chosen side. There is no separate Engine off button.
 
 Analysis and engine moves use a one-second search. There is no strength selector.
 Analysis never plays moves automatically and is unavailable during folder training.

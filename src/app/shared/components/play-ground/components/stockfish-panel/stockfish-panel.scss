@@ -4,8 +4,8 @@
 
 .stockfish-panel {
   margin: 16px 0;
-  padding: 12px;
-  border: 1px solid #ffdfbc90;
+  // padding: 12px;
+  // border: 1px solid #ffdfbc90;
   color: #ffdfbc;
   overflow-wrap: anywhere;
 }
@@ -13,12 +13,6 @@
 h2 {
   margin: 0 0 12px;
   font-size: 20px;
-}
-
-.engine-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 a {

@@ -11,6 +11,7 @@ import { ReplayControls } from './components/replay-controls/replay-controls';
 import { Promotion, PromotionControls } from './components/promotion-controls/promotion-controls';
 import { TrainingPanel } from './components/training-panel/training-panel';
 import { MoveHistory } from './components/move-history/move-history';
+import { EngineSideDialog } from './components/engine-side-dialog/engine-side-dialog';
 import {
   EngineMode,
   EngineMove,
@@ -28,6 +29,7 @@ import {
     TrainingPanel,
     MoveHistory,
     StockfishPanel,
+    EngineSideDialog,
   ],
   templateUrl: './play-ground.html',
   styleUrl: './play-ground.scss',
@@ -35,6 +37,10 @@ import {
 export class PlayGround {
   readonly stockfishPanel = viewChild(StockfishPanel);
   readonly computerGame = input(false);
+  readonly engineSideChosen = signal(false);
+  readonly choosingEngineSide = computed(
+    () => this.computerGame() && this.mode() === 'play' && !this.engineSideChosen(),
+  );
   readonly replayPgn = input('');
   readonly trainingFolder = input<GameFolder | null>(null);
   readonly training = signal<TrainingSession | null>(null);
@@ -133,6 +139,7 @@ export class PlayGround {
     if (!this.computerGame() || this.mode() !== 'play') return;
     const analyse = this.engineAnalysis();
     this.restart();
+    this.engineSideChosen.set(true);
     this.playerColor.set(color);
     this.flipped.set(color === 'b');
     this.setEngineMode('opponent');
@@ -147,7 +154,7 @@ export class PlayGround {
       this.clearSelection();
     } catch (error) {
       console.error('Stockfish move could not be played', error);
-      this.engineError.set('Stockfish returned an invalid move. Retry or switch off the engine.');
+      this.engineError.set('Stockfish returned an invalid move. Return to the menu and start a new game.');
     }
   }
 
@@ -195,6 +202,7 @@ export class PlayGround {
   readonly status = this.game.status;
 
   select(square: Square): void {
+    if (this.choosingEngineSide()) return;
     if (this.trainingFolder()) {
       const training = this.training();
       if (!training || training.complete() || this.promotion()) return;

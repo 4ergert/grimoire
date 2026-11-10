@@ -32,11 +32,18 @@ const afterE4 = new Chess();
 afterE4.move('e4');
 
 beforeEach(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: vi.fn(function (this: HTMLDialogElement) {
+      this.open = true;
+    }),
+  });
   EngineWorker.instances = [];
   vi.stubGlobal('Worker', EngineWorker);
 });
 
 afterEach(() => {
+  Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
   vi.unstubAllGlobals();
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -180,7 +187,42 @@ describe('Stockfish playground integration', () => {
     fixture = TestBed.createComponent(PlayGround);
     fixture.componentRef.setInput('computerGame', true);
     playground = fixture.componentInstance;
+    playground.engineSideChosen.set(true);
     await fixture.whenStable();
+  });
+
+  it.each(['w', 'b'] as const)('asks for a side before starting as %s', async (color) => {
+    playground.engineSideChosen.set(false);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const dialog = element.querySelector<HTMLDialogElement>('dialog')!;
+    expect(dialog.open).toBe(true);
+    expect(EngineWorker.instances).toHaveLength(0);
+    playground.select('e2');
+    playground.select('e4');
+    expect(playground.moveHistory()).toEqual([]);
+    expect(element.querySelector<HTMLButtonElement>('.square')?.disabled).toBe(true);
+    const buttons = dialog.querySelectorAll<HTMLButtonElement>('button');
+    buttons[color === 'w' ? 0 : 1].click();
+    await fixture.whenStable();
+    expect(element.querySelector('dialog')).toBeNull();
+    expect(playground.playerColor()).toBe(color);
+    expect(playground.flipped()).toBe(color === 'b');
+    expect(playground.engineMode()).toBe('opponent');
+    expect(playground.engineTurn()).toBe(color === 'b');
+    expect(EngineWorker.instances).toHaveLength(color === 'b' ? 1 : 0);
+  });
+
+  it.each(['escape', 'back'])('returns to the menu via %s in the side dialog', async (action) => {
+    playground.engineSideChosen.set(false);
+    await fixture.whenStable();
+    const back = vi.fn();
+    playground.back.subscribe(back);
+    const dialog: HTMLDialogElement = fixture.nativeElement.querySelector('dialog');
+    if (action === 'escape') dialog.dispatchEvent(new Event('cancel'));
+    else dialog.querySelectorAll<HTMLButtonElement>('button')[2].click();
+    expect(back).toHaveBeenCalledOnce();
+    expect(EngineWorker.instances).toHaveLength(0);
   });
 
   it('keeps local two-player play and engine loading opt-in', () => {
@@ -196,6 +238,7 @@ describe('Stockfish playground integration', () => {
     fixture.componentRef.setInput('computerGame', false);
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('app-engine-side-dialog')).toBeNull();
     expect(element.textContent).not.toContain('Play as White');
     expect(element.textContent).not.toContain('Play as Black');
     expect(element.textContent).not.toContain('Engine off');
@@ -217,9 +260,7 @@ describe('Stockfish playground integration', () => {
     playground.select('e2');
     playground.select('e4');
     await fixture.whenStable();
-    expect(worker.postMessage).toHaveBeenCalledWith(
-      `position ${playground.game.enginePosition()}`,
-    );
+    expect(worker.postMessage).toHaveBeenCalledWith(`position ${playground.game.enginePosition()}`);
     worker.receive('bestmove e7e5');
     await fixture.whenStable();
     expect(playground.moveHistory()[0].black).toBe('');
@@ -312,7 +353,9 @@ describe('Stockfish playground integration', () => {
     expect(analyse.querySelector('img')?.getAttribute('src')).toBe('icon/analyse-position.png');
     expect(analyse.querySelector('img')?.getAttribute('alt')).toBe('');
     expect(analyse.nextElementSibling?.classList.contains('analysis-summary')).toBe(true);
-    expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain('Analyse position');
+    expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain(
+      'Analyse position',
+    );
     analyse.click();
     await fixture.whenStable();
     expect(analyse.getAttribute('aria-pressed')).toBe('true');
@@ -325,7 +368,9 @@ describe('Stockfish playground integration', () => {
     expect(playground.moveHistory()).toEqual([]);
     expect(analyse.nextElementSibling?.textContent).toContain('Evaluation (White): +0.24');
     expect(analyse.nextElementSibling?.textContent).toContain('Best line: e4 e5');
-    expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain('Evaluation (White):');
+    expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain(
+      'Evaluation (White):',
+    );
     analyse.click();
     await fixture.whenStable();
     expect(analyse.getAttribute('aria-pressed')).toBe('false');

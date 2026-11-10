@@ -8,47 +8,23 @@
     {{ pending() ? 'Please wait...' : 'Welcome back ' + username() }}
   </p>
 
-  <button
-    custom-button
-    class="menu_button"
-    type="button"
-    [disabled]="pending()"
-    (click)="play.emit()"
-  >
+  <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="play.emit()">
     Create
   </button>
 
-  <button
-    custom-button
-    class="menu_button"
-    type="button"
-    [disabled]="pending()"
-    (click)="computer.emit()"
-  >
-    Play against Stockfish
-  </button>
-
-  <button
-    custom-button
-    class="menu_button"
-    type="button"
-    [disabled]="pending()"
-    (click)="library.emit()"
-  >
+  <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="library.emit()">
     Repertoire
   </button>
 
-  <button
-    custom-button
-    class="menu_button"
-    type="button"
-    [disabled]="pending()"
-    (click)="logout.emit()"
-  >
+  <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="computer.emit()">
+    Play against Stockfish
+  </button>
+
+  <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="logout.emit()">
     Log Out
   </button>
 
   @if (error()) {
-    <p class="auth_error" role="alert">{{ error() }}</p>
+  <p class="auth_error" role="alert">{{ error() }}</p>
   }
 </section>

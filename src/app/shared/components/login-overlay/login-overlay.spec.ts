@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FirebaseError } from 'firebase/app';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 
 import { LoginOverlay } from './login-overlay';
@@ -19,6 +19,12 @@ describe('LoginOverlay', () => {
   };
 
   beforeEach(async () => {
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value: vi.fn(function (this: HTMLDialogElement) {
+        this.open = true;
+      }),
+    });
     vi.resetAllMocks();
     auth.user.set(null);
     await TestBed.configureTestingModule({
@@ -46,6 +52,10 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -68,6 +78,8 @@ describe('LoginOverlay', () => {
     expect(component.computerGame()).toBe(true);
     expect(element.textContent).toContain('Play as White');
     expect(element.textContent).toContain('Play as Black');
+    await click('Play as White');
+    expect(element.querySelector('dialog')).toBeNull();
     await click('New game');
     expect(component.computerGame()).toBe(true);
     await click('Menu');

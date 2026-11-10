@@ -1,47 +1,5 @@
-@let engineMode = mode();
-@let canPlayOpponent = allowOpponent();
-
 <section class="stockfish-panel" aria-label="Stockfish engine">
-  <div class="engine-actions">
-    @if (!analysisLocked()) {
-      <button
-        custom-button
-        type="button"
-        [attr.aria-pressed]="engineMode === 'off'"
-        (click)="modeChange.emit('off')"
-      >
-        Engine off
-      </button>
-    }
-    @if (canPlayOpponent) {
-      <button custom-button type="button" (click)="startGame.emit('w')">Play as White</button>
-      <button custom-button type="button" (click)="startGame.emit('b')">Play as Black</button>
-    }
-  </div>
-  @if (canPlayOpponent) {
-    <p>Play as White / Black starts a new game.</p>
-  }
-  @if (engineMode === 'opponent') {
-    <p>You play {{ playerColor() === 'w' ? 'White' : 'Black' }} against Stockfish.</p>
-  }
-  @if (engine.error(); as error) {
-    <p role="alert">{{ error }}</p>
-    <button type="button" (click)="retry()">Retry engine</button>
-  } @else if (engineMode !== 'off') {
-    <p role="status" aria-live="polite">
-      @if (gameOver()) {
-        Game over.
-      } @else if (engine.busy()) {
-        {{ engine.ready() ? 'Stockfish is thinking...' : 'Loading Stockfish...' }}
-      } @else if (engineMode === 'opponent') {
-        Your turn.
-      } @else {
-        Analysis complete.
-      }
-    </p>
-  }
   <small>
-    Local engine, no positions sent to a server.
     <a
       href="https://github.com/nmrugg/stockfish.js/tree/v19.0.1"
       target="_blank"
