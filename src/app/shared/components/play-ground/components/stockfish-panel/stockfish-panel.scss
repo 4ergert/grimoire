@@ -4,8 +4,6 @@
 
 .stockfish-panel {
   margin: 16px 0;
-  // padding: 12px;
-  // border: 1px solid #ffdfbc90;
   color: #ffdfbc;
   overflow-wrap: anywhere;
 }
@@ -17,6 +15,10 @@ h2 {
 
 a {
   color: inherit;
+}
+
+p {
+  margin: 8px 0 0 0;
 }
 
 [role='alert'] {

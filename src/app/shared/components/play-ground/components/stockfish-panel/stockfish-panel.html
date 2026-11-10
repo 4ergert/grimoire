@@ -11,7 +11,7 @@
   </small>
 </section>
 
-<ng-template #analysisView>
+<ng-template class="analysis_view" #analysisView>
   @if ((mode() === 'analysis' || analysis()) && engine.result(); as result) {
     <p>Evaluation (White): {{ evaluation() || 'Calculating...' }}. Depth: {{ result.depth }}.</p>
     @if (variation(); as bestLine) {
