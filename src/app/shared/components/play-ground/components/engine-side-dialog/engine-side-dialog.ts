@@ -14,7 +14,7 @@ export interface EngineGameOptions {
     <dialog #dialog aria-labelledby="engine-side-title" (cancel)="cancel.emit()">
       <h2 id="engine-side-title">Play against Stockfish</h2>
       <p>Choose your side.</p>
-      <label for="engine-strength">Strength (1–10)</label>
+      <label for="engine-strength">Level (1–10)</label>
       <select id="engine-strength" #strengthSelect (change)="strength.set(+strengthSelect.value)">
         @for (level of levels; track level) {
           <option [value]="level" [selected]="level === strength()">{{ level }}</option>
@@ -64,11 +64,36 @@ export interface EngineGameOptions {
       gap: 16px;
     }
 
-    select {
+    #engine-strength {
+      width: 100%;
       display: block;
       margin: 8px auto 20px;
-      padding: 8px 12px;
-      font: inherit;
+      padding: 15px 32px;
+      border: none;
+      background-image: linear-gradient(to right, #190a059a 10%, #ffffff3c 100%);
+      background-color: transparent;
+      background-size: 200% auto;
+      color: rgba(255, 255, 255, 0.781);
+      box-shadow: 0 0 5px #000000;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-align: center;
+      text-transform: uppercase;
+      transition: 0.5s;
+      cursor: pointer;
+    }
+
+    #engine-strength:hover {
+      background-position: right center;
+      color: #fefefe;
+      text-shadow: 0 0 5px #000000;
+      box-shadow: 0 0 15px #ffffff;
+    }
+
+    #engine-strength:focus-visible {
+      outline: 2px solid #ffdfbc;
+      outline-offset: 3px;
     }
 
     button {
@@ -78,7 +103,7 @@ export interface EngineGameOptions {
 })
 export class EngineSideDialog {
   readonly choose = output<EngineGameOptions>();
-  readonly strength = signal(5);
+  readonly strength = signal(1);
   readonly levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   readonly cancel = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');

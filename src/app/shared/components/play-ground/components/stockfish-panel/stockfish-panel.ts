@@ -51,8 +51,9 @@ export class StockfishPanel {
       : this.engine.result(),
   );
   readonly analysisError = this.analysisEngine.error;
-  readonly evaluation = computed(() => {
-    const score = this.analysisResult()?.score;
+  readonly evaluation = computed(() => this.formatEvaluation(this.analysisResult()?.score));
+
+  private formatEvaluation(score: EngineResult['score'] | undefined): string {
     if (!score) return '';
     if (score.type === 'mate') {
       return score.value === 0
@@ -61,16 +62,21 @@ export class StockfishPanel {
     }
     const value = score.value / 100;
     return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
-  });
-  readonly variation = computed(() => {
+  }
+  readonly variations = computed(() => {
     const result = this.analysisResult();
-    if (!result || result.fen !== this.position()) return '';
-    const chess = new Chess(result.fen);
-    const moves = result.line.length ? result.line : result.bestMove ? [result.bestMove] : [];
-    return moves
-      .slice(0, 8)
-      .map((move) => chess.move(move).san)
-      .join(' ');
+    if (!result || result.fen !== this.position()) return [];
+    return result.variations.slice(0, 3).map((variation) => {
+      const chess = new Chess(result.fen);
+      return {
+        rank: variation.rank,
+        evaluation: this.formatEvaluation(variation.score),
+        moves: variation.line
+          .slice(0, 8)
+          .map((move) => chess.move(move).san)
+          .join(' '),
+      };
+    });
   });
 
   constructor() {
@@ -91,6 +97,8 @@ export class StockfishPanel {
         new Chess(fen).isGameOver() ||
         (mode === 'opponent' &&
           (!allowOpponent || (new Chess(fen).turn() === player && !analysis)));
+      const candidateCount =
+        opponentTurn && strength >= 1 && strength <= 5 ? Math.max(2, 6 - strength) : 1;
       untracked(() => {
         if (stopped) this.engine.stop();
         else
@@ -98,8 +106,11 @@ export class StockfishPanel {
             fen,
             position,
             opponentTurn ? Math.round(((strength - 1) * 20) / 9) : 20,
+            opponentTurn ? candidateCount : 3,
+            opponentTurn,
           );
-        if (!stopped && opponentTurn && analysis) this.analysisEngine.search(fen, position);
+        if (!stopped && opponentTurn && analysis)
+          this.analysisEngine.search(fen, position, 20, 3, false);
         else this.analysisEngine.stop();
       });
     });

@@ -70,9 +70,10 @@ describe('StockfishEngine', () => {
     ]);
     worker.receive('readyok');
     expect(engine.ready()).toBe(true);
-    expect(worker.postMessage.mock.calls.slice(-4)).toEqual([
+    expect(worker.postMessage.mock.calls.slice(-5)).toEqual([
       ['setoption name UCI_LimitStrength value false'],
       ['setoption name Skill Level value 20'],
+      ['setoption name MultiPV value 1'],
       [`position fen ${start}`],
       ['go movetime 1000'],
     ]);
@@ -105,6 +106,45 @@ describe('StockfishEngine', () => {
     expect(engine.busy()).toBe(false);
   });
 
+  it('randomly selects a lower-ranked candidate when candidate search is enabled', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.6);
+    engine.search(start, `fen ${start}`, 0, 2);
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    expect(worker.postMessage).toHaveBeenCalledWith('setoption name MultiPV value 2');
+    worker.receive('info depth 5 multipv 1 score cp 20 pv e2e4');
+    worker.receive('info depth 5 multipv 2 score cp 10 pv d2d4');
+    worker.receive('bestmove e2e4');
+    expect(engine.result()?.bestMove).toBe('d2d4');
+  });
+
+  it('keeps three ranked analysis lines without randomizing the returned move', () => {
+    const random = vi.spyOn(Math, 'random');
+    engine.search(afterE4.fen(), `fen ${afterE4.fen()}`, 20, 3, false);
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    worker.receive('info depth 8 multipv 1 score cp 35 pv e7e5 g1f3');
+    worker.receive('info depth 8 multipv 3 score mate -3 pv e7e6 d2d4');
+    worker.receive('info depth 8 multipv 2 score cp 20 pv c7c5 g1f3');
+    worker.receive('bestmove e7e5');
+    expect(engine.result()).toMatchObject({
+      score: { type: 'cp', value: -35 },
+      line: ['e7e5', 'g1f3'],
+      bestMove: 'e7e5',
+      variations: [
+        { rank: 1, score: { type: 'cp', value: -35 }, line: ['e7e5', 'g1f3'] },
+        { rank: 2, score: { type: 'cp', value: -20 }, line: ['c7c5', 'g1f3'] },
+        { rank: 3, score: { type: 'mate', value: 3 }, line: ['e7e6', 'd2d4'] },
+      ],
+    });
+    expect(random).not.toHaveBeenCalled();
+    engine.search(start, `fen ${start}`, 20, 3, false);
+    expect(engine.result()).toBeNull();
+    worker.receive('info depth 1 multipv 1 score cp 10 pv d2d4');
+    expect(engine.result()?.variations).toHaveLength(1);
+    expect(engine.result()?.variations[0].line).toEqual(['d2d4']);
+  });
+
   it('drains stale bestmove replies and searches only the newest queued position', () => {
     engine.search(start, `fen ${start}`);
     const worker = EngineWorker.instances[0];
@@ -118,9 +158,10 @@ describe('StockfishEngine', () => {
     expect(engine.result()).toBeNull();
     worker.receive('bestmove e2e4');
     expect(engine.result()).toBeNull();
-    expect(worker.postMessage.mock.calls.slice(-4)).toEqual([
+    expect(worker.postMessage.mock.calls.slice(-5)).toEqual([
       ['setoption name UCI_LimitStrength value false'],
       ['setoption name Skill Level value 7'],
+      ['setoption name MultiPV value 1'],
       [`position fen ${latest.fen()}`],
       ['go movetime 1000'],
     ]);
@@ -242,6 +283,9 @@ describe('Stockfish playground integration', () => {
         `setoption name Skill Level value ${Math.round(((level - 1) * 20) / 9)}`,
       );
       expect(worker.postMessage).toHaveBeenCalledWith(
+        `setoption name MultiPV value ${level <= 5 ? Math.max(2, 6 - level) : 1}`,
+      );
+      expect(worker.postMessage).toHaveBeenCalledWith(
         'setoption name UCI_LimitStrength value false',
       );
       worker.receive('bestmove e2e4');
@@ -262,11 +306,18 @@ describe('Stockfish playground integration', () => {
     analysis.boot();
     expect(opponent.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 0');
     expect(analysis.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 20');
-    analysis.receive('info depth 12 score cp 28 pv d2d4 d7d5');
+    expect(analysis.postMessage).toHaveBeenCalledWith('setoption name MultiPV value 3');
+    expect(opponent.postMessage).toHaveBeenCalledWith('setoption name MultiPV value 5');
+    analysis.receive('info depth 12 multipv 1 score cp 28 pv d2d4 d7d5');
+    analysis.receive('info depth 12 multipv 2 score cp 20 pv e2e4 e7e5');
+    analysis.receive('info depth 12 multipv 3 score cp 10 pv g1f3 g8f6');
     analysis.receive('bestmove d2d4');
     await fixture.whenStable();
     expect(playground.moveHistory()).toEqual([]);
     expect(fixture.nativeElement.textContent).toContain('+0.28');
+    expect(fixture.nativeElement.querySelector('.analysis-summary').textContent).toContain(
+      'Line 3: Nf3 Nf6',
+    );
     opponent.receive('bestmove e2e4');
     await fixture.whenStable();
     expect(playground.moveHistory()[0].white).toBe('e4');
@@ -346,6 +397,28 @@ describe('Stockfish playground integration', () => {
     expect(
       worker.postMessage.mock.calls.filter(([command]) => command.startsWith('go ')),
     ).toHaveLength(1);
+  });
+
+  it('shows three SAN lines in the analysis summary', async () => {
+    playground.setEngineMode('analysis');
+    await fixture.whenStable();
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    expect(worker.postMessage).toHaveBeenCalledWith('setoption name MultiPV value 3');
+    worker.receive('info depth 10 multipv 1 score cp 24 pv e2e4 e7e5');
+    worker.receive('info depth 10 multipv 2 score cp -15 pv d2d4 d7d5');
+    worker.receive('info depth 10 multipv 3 score mate -3 pv g1f3 g8f6');
+    worker.receive('bestmove e2e4');
+    await fixture.whenStable();
+    const summary: HTMLElement = fixture.nativeElement.querySelector('.analysis-summary');
+    const lines = [...summary.querySelectorAll('p')].slice(1).map((line) => line.textContent?.trim());
+    expect(lines).toEqual([
+      'Best line: e4 e5 (+0.24)',
+      'Line 2: d4 d5 (-0.15)',
+      'Line 3: Nf3 Nf6 (Mate in 3 for Black)',
+    ]);
+    expect(summary.textContent).toContain('Evaluation (White): +0.24');
+    expect(playground.moveHistory()).toEqual([]);
   });
 
   it('shows engine errors and retries from the panel without changing the board', async () => {

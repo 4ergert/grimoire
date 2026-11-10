@@ -14,7 +14,8 @@ Firebase Authentication, and Firebase Realtime Database.
 - Click-to-move controls, legal destination highlights, and SAN move notation.
 - Castling, en passant, promotion, check, checkmate, and draw detection.
 - Animated piece movement and a reversible board perspective.
-- Local Stockfish analysis and games against the engine as White or Black.
+- Local Stockfish analysis with up to three candidate lines and games against
+  the engine as White or Black.
 - Personal folders containing games saved as PGN text in Firebase.
 - Step-by-step replay and randomized folder training for either color.
 - Individual game deletion with confirmation.

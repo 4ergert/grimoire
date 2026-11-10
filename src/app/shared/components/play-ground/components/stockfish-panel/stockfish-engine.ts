@@ -6,6 +6,15 @@ interface Search {
   fen: string;
   position: string;
   skill: number;
+  candidateCount: number;
+  randomize: boolean;
+}
+
+export interface EngineVariation {
+  rank: number;
+  depth: number;
+  score: { type: 'cp' | 'mate'; value: number } | null;
+  line: string[];
 }
 
 export interface EngineResult {
@@ -14,6 +23,7 @@ export interface EngineResult {
   score: { type: 'cp' | 'mate'; value: number } | null;
   line: string[];
   bestMove: string | null;
+  variations: EngineVariation[];
 }
 
 @Injectable()
@@ -22,6 +32,8 @@ export class StockfishEngine {
   private worker: Worker | null = null;
   private desired: Search | null = null;
   private active: Search | null = null;
+  private candidateDepth = 0;
+  private readonly candidates = new Map<number, string>();
   private stopping = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
   readonly ready = signal(false);
@@ -33,12 +45,16 @@ export class StockfishEngine {
     inject(DestroyRef).onDestroy(() => this.dispose());
   }
 
-  search(fen: string, position: string, skill = 20): void {
+  search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true): void {
     if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
       this.fail('Stockfish Skill Level must be an integer between 0 and 20.');
       return;
     }
-    this.desired = { fen, position, skill };
+    if (!Number.isInteger(candidateCount) || candidateCount < 1 || candidateCount > 5) {
+      this.fail('Stockfish candidate count must be an integer between 1 and 5.');
+      return;
+    }
+    this.desired = { fen, position, skill, candidateCount, randomize };
     this.result.set(null);
     if (this.error()) return;
     this.busy.set(true);
@@ -98,20 +114,44 @@ export class StockfishEngine {
       const depth = /\bdepth (\d+)/.exec(line);
       const score = /\bscore (cp|mate) (-?\d+)(?!\d)/.exec(line);
       const variation = /\bpv (.+)/.exec(line);
+      const multipv = /\bmultipv (\d+)/.exec(line);
       const previous = this.result();
       const side = this.active.fen.split(' ')[1] === 'w' ? 1 : -1;
-      const moves = variation ? variation[1].split(' ') : (previous?.line ?? []);
+      if (!variation) return;
+      const moves = variation[1].split(' ');
       if (!this.validateMoves(this.active.fen, moves)) return;
-      this.result.set({
-        fen: this.active.fen,
-        depth: depth ? Number(depth[1]) : (previous?.depth ?? 0),
+      const currentDepth = depth ? Number(depth[1]) : 0;
+      const rank = multipv ? Number(multipv[1]) : 1;
+      if (rank < 1 || rank > this.active.candidateCount) return;
+      if (variation && rank <= this.active.candidateCount && currentDepth > 0) {
+        if (currentDepth > this.candidateDepth) {
+          this.candidates.clear();
+          this.candidateDepth = currentDepth;
+        }
+        if (currentDepth === this.candidateDepth) this.candidates.set(rank, moves[0]);
+      }
+      const updated: EngineVariation = {
+        rank,
+        depth: currentDepth || (previous?.depth ?? 0),
         score: score
           ? {
               type: score[1] === 'cp' ? 'cp' : 'mate',
               value: Number(score[2]) * side,
             }
-          : (previous?.score ?? null),
+          : (previous?.variations.find((entry) => entry.rank === rank)?.score ?? null),
         line: moves,
+      };
+      const variations = [
+        ...(previous?.variations ?? []).filter((entry) => entry.rank !== rank),
+        updated,
+      ].sort((a, b) => a.rank - b.rank);
+      const primary = variations.find((entry) => entry.rank === 1);
+      this.result.set({
+        fen: this.active.fen,
+        depth: primary?.depth ?? 0,
+        score: primary?.score ?? null,
+        line: primary?.line ?? [],
+        variations,
         bestMove: null,
       });
     } else if (line.startsWith('bestmove ') && this.active) {
@@ -128,12 +168,15 @@ export class StockfishEngine {
           return;
         }
         if (!this.validateMoves(finished.fen, [bestMove])) return;
+        const selectedMove = finished.randomize ? this.selectCandidate(bestMove) : bestMove;
+        if (!this.validateMoves(finished.fen, [selectedMove])) return;
         this.result.update((previous) => ({
           fen: finished.fen,
           depth: previous?.depth ?? 0,
           score: previous?.score ?? null,
           line: previous?.line ?? [],
-          bestMove,
+          variations: previous?.variations ?? [],
+          bestMove: selectedMove,
         }));
       } else {
         this.startSearch();
@@ -144,11 +187,22 @@ export class StockfishEngine {
   private startSearch(): void {
     if (!this.ready() || !this.desired || this.active) return;
     this.active = this.desired;
+    this.candidateDepth = 0;
+    this.candidates.clear();
     if (!this.send('setoption name UCI_LimitStrength value false')) return;
     if (!this.send(`setoption name Skill Level value ${this.active.skill}`)) return;
+    if (!this.send(`setoption name MultiPV value ${this.active.candidateCount}`)) return;
     if (!this.send(`position ${this.active.position}`)) return;
     this.watchdog(10000, 'Stockfish did not finish its search. Please try again.');
     this.send('go movetime 1000');
+  }
+
+  private selectCandidate(bestMove: string): string {
+    const candidates = [...this.candidates.entries()]
+      .sort(([rankA], [rankB]) => rankA - rankB)
+      .map(([, move]) => move);
+    if (candidates.length < 2) return bestMove;
+    return candidates[Math.floor(Math.random() * candidates.length)] ?? bestMove;
   }
 
   private stopActive(): void {
@@ -211,6 +265,8 @@ export class StockfishEngine {
     this.worker = null;
     this.active = null;
     this.desired = null;
+    this.candidates.clear();
+    this.candidateDepth = 0;
     this.stopping = false;
     this.ready.set(false);
     this.busy.set(false);
