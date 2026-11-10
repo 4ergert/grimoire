@@ -5,6 +5,7 @@ import { Chess } from 'chess.js';
 interface Search {
   fen: string;
   position: string;
+  skill: number;
 }
 
 export interface EngineResult {
@@ -32,8 +33,12 @@ export class StockfishEngine {
     inject(DestroyRef).onDestroy(() => this.dispose());
   }
 
-  search(fen: string, position: string): void {
-    this.desired = { fen, position };
+  search(fen: string, position: string, skill = 20): void {
+    if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
+      this.fail('Stockfish Skill Level must be an integer between 0 and 20.');
+      return;
+    }
+    this.desired = { fen, position, skill };
     this.result.set(null);
     if (this.error()) return;
     this.busy.set(true);
@@ -139,6 +144,8 @@ export class StockfishEngine {
   private startSearch(): void {
     if (!this.ready() || !this.desired || this.active) return;
     this.active = this.desired;
+    if (!this.send('setoption name UCI_LimitStrength value false')) return;
+    if (!this.send(`setoption name Skill Level value ${this.active.skill}`)) return;
     if (!this.send(`position ${this.active.position}`)) return;
     this.watchdog(10000, 'Stockfish did not finish its search. Please try again.');
     this.send('go movetime 1000');

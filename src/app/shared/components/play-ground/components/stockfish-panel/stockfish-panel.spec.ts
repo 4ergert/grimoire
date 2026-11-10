@@ -70,10 +70,20 @@ describe('StockfishEngine', () => {
     ]);
     worker.receive('readyok');
     expect(engine.ready()).toBe(true);
-    expect(worker.postMessage.mock.calls.slice(-2)).toEqual([
+    expect(worker.postMessage.mock.calls.slice(-4)).toEqual([
+      ['setoption name UCI_LimitStrength value false'],
+      ['setoption name Skill Level value 20'],
       [`position fen ${start}`],
       ['go movetime 1000'],
     ]);
+  });
+
+  it.each([-1, 21, 1.5, NaN])('rejects invalid skill %s without starting a worker', (skill) => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    engine.search(start, `fen ${start}`, skill);
+    expect(engine.error()).toContain('Skill Level must be an integer between 0 and 20');
+    expect(EngineWorker.instances).toHaveLength(0);
+    expect(engine.busy()).toBe(false);
   });
 
   it("reports depth, SAN source moves, and evaluation from White's perspective", () => {
@@ -99,16 +109,18 @@ describe('StockfishEngine', () => {
     engine.search(start, `fen ${start}`);
     const worker = EngineWorker.instances[0];
     worker.boot();
-    engine.search(afterE4.fen(), `fen ${afterE4.fen()}`);
+    engine.search(afterE4.fen(), `fen ${afterE4.fen()}`, 2);
     const latest = new Chess();
     latest.move('d4');
-    engine.search(latest.fen(), `fen ${latest.fen()}`);
+    engine.search(latest.fen(), `fen ${latest.fen()}`, 7);
     expect(worker.postMessage.mock.calls.filter(([command]) => command === 'stop')).toHaveLength(1);
     worker.receive('info depth 5 score cp 100 pv e2e4');
     expect(engine.result()).toBeNull();
     worker.receive('bestmove e2e4');
     expect(engine.result()).toBeNull();
-    expect(worker.postMessage.mock.calls.slice(-2)).toEqual([
+    expect(worker.postMessage.mock.calls.slice(-4)).toEqual([
+      ['setoption name UCI_LimitStrength value false'],
+      ['setoption name Skill Level value 7'],
       [`position fen ${latest.fen()}`],
       ['go movetime 1000'],
     ]);
@@ -203,14 +215,64 @@ describe('Stockfish playground integration', () => {
     expect(playground.moveHistory()).toEqual([]);
     expect(element.querySelector<HTMLButtonElement>('.square')?.disabled).toBe(true);
     const buttons = dialog.querySelectorAll<HTMLButtonElement>('button');
+    const strength = dialog.querySelector<HTMLSelectElement>('select')!;
+    expect(strength.options).toHaveLength(10);
+    expect(strength.value).toBe('5');
+    strength.value = '3';
+    strength.dispatchEvent(new Event('change'));
     buttons[color === 'w' ? 0 : 1].click();
     await fixture.whenStable();
     expect(element.querySelector('dialog')).toBeNull();
     expect(playground.playerColor()).toBe(color);
+    expect(playground.engineStrength()).toBe(3);
     expect(playground.flipped()).toBe(color === 'b');
     expect(playground.engineMode()).toBe('opponent');
     expect(playground.engineTurn()).toBe(color === 'b');
     expect(EngineWorker.instances).toHaveLength(color === 'b' ? 1 : 0);
+  });
+
+  it.each([1, 5, 10])(
+    'applies strength %s to opponent searches and preserves it on restart',
+    async (level) => {
+      playground.startEngineGame('b', level);
+      await fixture.whenStable();
+      const worker = EngineWorker.instances[0];
+      worker.boot();
+      expect(worker.postMessage).toHaveBeenCalledWith(
+        `setoption name Skill Level value ${Math.round(((level - 1) * 20) / 9)}`,
+      );
+      expect(worker.postMessage).toHaveBeenCalledWith(
+        'setoption name UCI_LimitStrength value false',
+      );
+      worker.receive('bestmove e2e4');
+      await fixture.whenStable();
+      playground.restart();
+      await fixture.whenStable();
+      expect(playground.engineStrength()).toBe(level);
+    },
+  );
+
+  it('uses a separate full-strength analysis search during weakened opponent play', async () => {
+    playground.startEngineGame('b', 1);
+    playground.setEngineMode('analysis');
+    await fixture.whenStable();
+    expect(EngineWorker.instances).toHaveLength(2);
+    const [opponent, analysis] = EngineWorker.instances;
+    opponent.boot();
+    analysis.boot();
+    expect(opponent.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 0');
+    expect(analysis.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 20');
+    analysis.receive('info depth 12 score cp 28 pv d2d4 d7d5');
+    analysis.receive('bestmove d2d4');
+    await fixture.whenStable();
+    expect(playground.moveHistory()).toEqual([]);
+    expect(fixture.nativeElement.textContent).toContain('+0.28');
+    opponent.receive('bestmove e2e4');
+    await fixture.whenStable();
+    expect(playground.moveHistory()[0].white).toBe('e4');
+    expect(opponent.postMessage.mock.calls.slice(-3)).toContainEqual(['go movetime 1000']);
+    expect(opponent.postMessage).toHaveBeenLastCalledWith('go movetime 1000');
+    expect(opponent.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 20');
   });
 
   it.each(['escape', 'back'])('returns to the menu via %s in the side dialog', async (action) => {

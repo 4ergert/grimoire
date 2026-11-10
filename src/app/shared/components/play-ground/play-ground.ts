@@ -59,6 +59,7 @@ export class PlayGround {
   readonly engineMode = signal<EngineMode>('off');
   readonly engineAnalysis = signal(false);
   readonly playerColor = signal<Color>('w');
+  readonly engineStrength = signal(5);
   readonly engineError = signal('');
   readonly mode = computed<'play' | 'replay' | 'training'>(() =>
     this.trainingFolder()
@@ -135,12 +136,13 @@ export class PlayGround {
     this.clearSelection();
   }
 
-  startEngineGame(color: Color): void {
+  startEngineGame(color: Color, strength = this.engineStrength()): void {
     if (!this.computerGame() || this.mode() !== 'play') return;
     const analyse = this.engineAnalysis();
     this.restart();
     this.engineSideChosen.set(true);
     this.playerColor.set(color);
+    this.engineStrength.set(strength);
     this.flipped.set(color === 'b');
     this.setEngineMode('opponent');
     this.engineAnalysis.set(analyse);
@@ -154,7 +156,9 @@ export class PlayGround {
       this.clearSelection();
     } catch (error) {
       console.error('Stockfish move could not be played', error);
-      this.engineError.set('Stockfish returned an invalid move. Return to the menu and start a new game.');
+      this.engineError.set(
+        'Stockfish returned an invalid move. Return to the menu and start a new game.',
+      );
     }
   }
 

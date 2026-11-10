@@ -1,6 +1,11 @@
-import { Component, ElementRef, afterNextRender, output, viewChild } from '@angular/core';
+import { Component, ElementRef, afterNextRender, output, signal, viewChild } from '@angular/core';
 import { Color } from 'chess.js';
 import { CustomButton } from '../../../button/button';
+
+export interface EngineGameOptions {
+  color: Color;
+  strength: number;
+}
 
 @Component({
   selector: 'app-engine-side-dialog',
@@ -9,11 +14,28 @@ import { CustomButton } from '../../../button/button';
     <dialog #dialog aria-labelledby="engine-side-title" (cancel)="cancel.emit()">
       <h2 id="engine-side-title">Play against Stockfish</h2>
       <p>Choose your side.</p>
+      <label for="engine-strength">Strength (1–10)</label>
+      <select id="engine-strength" #strengthSelect (change)="strength.set(+strengthSelect.value)">
+        @for (level of levels; track level) {
+          <option [value]="level" [selected]="level === strength()">{{ level }}</option>
+        }
+      </select>
       <div class="side-actions">
-        <button custom-button type="button" autofocus (click)="choose.emit('w')">
+        <button
+          custom-button
+          type="button"
+          autofocus
+          (click)="choose.emit({ color: 'w', strength: strength() })"
+        >
           Play as White
         </button>
-        <button custom-button type="button" (click)="choose.emit('b')">Play as Black</button>
+        <button
+          custom-button
+          type="button"
+          (click)="choose.emit({ color: 'b', strength: strength() })"
+        >
+          Play as Black
+        </button>
         <button custom-button type="button" (click)="cancel.emit()">Back</button>
       </div>
     </dialog>
@@ -42,13 +64,22 @@ import { CustomButton } from '../../../button/button';
       gap: 16px;
     }
 
+    select {
+      display: block;
+      margin: 8px auto 20px;
+      padding: 8px 12px;
+      font: inherit;
+    }
+
     button {
       cursor: pointer;
     }
   `,
 })
 export class EngineSideDialog {
-  readonly choose = output<Color>();
+  readonly choose = output<EngineGameOptions>();
+  readonly strength = signal(5);
+  readonly levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   readonly cancel = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
