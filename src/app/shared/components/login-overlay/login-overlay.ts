@@ -18,6 +18,7 @@ export class LoginOverlay {
   readonly auth = inject(Auth);
   readonly isSignUp = signal(false);
   readonly isPlaying = signal(false);
+  readonly guest = signal(false);
   readonly computerGame = signal(false);
   readonly pending = signal(false);
   readonly error = signal('');
@@ -25,6 +26,15 @@ export class LoginOverlay {
   readonly savePgn = signal('');
   readonly replayPgn = signal('');
   readonly trainingFolder = signal<GameFolder | null>(null);
+
+  startGuest(): void {
+    this.error.set('');
+    this.guest.set(true);
+  }
+
+  leaveGuest(): void {
+    this.guest.set(false);
+  }
 
   startTraining(folder: GameFolder): void {
     this.computerGame.set(false);

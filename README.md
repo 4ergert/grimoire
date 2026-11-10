@@ -9,6 +9,8 @@ Firebase Authentication, and Firebase Realtime Database.
 ## Features
 
 - Email/password registration, login, restored sessions, and logout.
+- Guest access without an account, limited to games against Stockfish without
+  saving games or accessing the library.
 - Responsive chessboard with coordinates on all four sides and classic Unicode
   pieces rendered by the system's symbol font.
 - Click-to-move controls, legal destination highlights, and SAN move notation.

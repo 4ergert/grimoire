@@ -37,6 +37,7 @@ import {
 export class PlayGround {
   readonly stockfishPanel = viewChild(StockfishPanel);
   readonly computerGame = input(false);
+  readonly guest = input(false);
   readonly engineSideChosen = signal(false);
   readonly choosingEngineSide = computed(
     () => this.computerGame() && this.mode() === 'play' && !this.engineSideChosen(),

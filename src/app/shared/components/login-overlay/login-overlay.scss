@@ -94,6 +94,7 @@ fieldset {
 
 .auth_button {
   margin-top: 24px;
+  width: 80%;
 }
 
 .form_field {
@@ -144,6 +145,10 @@ input:focus {
     color: #ffed84;
     cursor: pointer;
   }
+}
+
+.guest_button {
+  margin-top: -24px;
 }
 
 footer {

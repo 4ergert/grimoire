@@ -8,7 +8,7 @@ import { GameTurn } from '../../sessions/game-session';
     <section class="move-history" aria-label="Move history">
       <header class="move-history-header">
         <h2>History</h2>
-        @if (!replaying()) {
+        @if (!replaying() && showSave()) {
           <button class="save_button" type="button" [disabled]="!canSave()" (click)="save.emit()">
             Save to repertoire
           </button>
@@ -50,5 +50,6 @@ export class MoveHistory {
   readonly replayMoves = input.required<string[]>();
   readonly history = input.required<GameTurn[]>();
   readonly canSave = input.required<boolean>();
+  readonly showSave = input(true);
   readonly save = output<void>();
 }

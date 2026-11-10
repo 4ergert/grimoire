@@ -16,9 +16,11 @@ import { Component, input, output } from '@angular/core';
             {{ computerGame() ? 'New game' : 'Create New' }}
           </button>
         }
-        <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
-          Log Out
-        </button>
+        @if (!guest()) {
+          <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
+            Log Out
+          </button>
+        }
       </div>
     </details>
   `,
@@ -27,6 +29,7 @@ export class GameControls {
   readonly training = input.required<boolean>();
   readonly pending = input(false);
   readonly computerGame = input(false);
+  readonly guest = input(false);
   readonly back = output<void>();
   readonly restart = output<void>();
   readonly logout = output<void>();

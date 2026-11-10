@@ -35,6 +35,17 @@
       />
     }
   </main>
+} @else if (guest()) {
+  <main class="authenticated_view">
+    <div class="game-container">
+      <app-play-ground
+        [computerGame]="true"
+        [guest]="true"
+        (back)="leaveGuest()"
+        (logout)="leaveGuest()"
+      />
+    </div>
+  </main>
 } @else {
   @let signingUp = isSignUp();
   @let authAction = signingUp ? 'Sign Up' : 'Log In';
@@ -84,6 +95,15 @@
         </button>
       </fieldset>
     </form>
+    <button
+      custom-button
+      class="auth_button guest_button"
+      type="button"
+      [disabled]="pending()"
+      (click)="authForm.reset(); startGuest()"
+    >
+      guest
+    </button>
     <p class="signup_prompt">
       {{ signingUp ? 'Already have an account?' : "Don't have an account?" }}
       <br />

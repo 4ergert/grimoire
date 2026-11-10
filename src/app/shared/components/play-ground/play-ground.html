@@ -12,6 +12,7 @@
   <app-game-controls
     [training]="isTraining"
     [computerGame]="computerGame()"
+    [guest]="guest()"
     [pending]="pending()"
     (back)="back.emit()"
     (restart)="restart()"
@@ -101,6 +102,7 @@
       [replaying]="isReplaying"
       [replayMoves]="replayMoves()"
       [history]="moveHistory()"
+      [showSave]="!guest()"
       [canSave]="!!moveHistory().length && promotion() === null"
       (save)="save()"
     />

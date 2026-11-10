@@ -60,6 +60,50 @@ describe('LoginOverlay', () => {
     expect(component).toBeTruthy();
   });
 
+  it('lets guests play only against Stockfish and return to login', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const click = async (label: string) => {
+      Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+        .find((button) => button.textContent?.trim() === label)!
+        .click();
+      await fixture.whenStable();
+    };
+    await click('Play as guest');
+    expect(auth.user()).toBeNull();
+    expect(auth.login).not.toHaveBeenCalled();
+    expect(auth.register).not.toHaveBeenCalled();
+    expect(element.querySelector('form')).toBeNull();
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
+    expect(element.querySelector('app-game-library')).toBeNull();
+    expect(element.textContent).toContain('Play as White');
+    await click('Play as White');
+    expect(element.querySelector('.save_button')).toBeNull();
+    expect(element.textContent).not.toContain('Log Out');
+    expect(element.textContent).toContain('New game');
+    await click('New game');
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
+    expect(element.querySelector('.save_button')).toBeNull();
+    await click('Menu');
+    expect(element.querySelector('app-play-ground')).toBeNull();
+    expect(element.querySelector('form')).not.toBeNull();
+    await click('Play as guest');
+    expect(element.textContent).toContain('Play as Black');
+    await click('Back');
+    expect(element.querySelector('form')).not.toBeNull();
+    expect(auth.logout).not.toHaveBeenCalled();
+  });
+
+  it('disables guest access while authentication is pending', async () => {
+    component.pending.set(true);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const guest = Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'Play as guest')!;
+    expect(guest.disabled).toBe(true);
+    guest.click();
+    expect(component.guest()).toBe(false);
+  });
+
   it('should expose computer play only through the dedicated main menu action', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
