@@ -11,6 +11,7 @@
     @if (isPlaying()) {
       <div class="game-container" [hidden]="libraryOpen()">
         <app-play-ground
+          [computerGame]="computerGame()"
           [replayPgn]="replayPgn()"
           [trainingFolder]="trainingFolder()"
           [pending]="pending()"
@@ -28,12 +29,16 @@
         [pending]="pending()"
         [error]="error()"
         (play)="startPlaying()"
+        (computer)="startPlaying(true)"
         (library)="openLibrary()"
         (logout)="logout()"
       />
     }
   </main>
 } @else {
+  @let signingUp = isSignUp();
+  @let authAction = signingUp ? 'Sign Up' : 'Log In';
+
   <section class="login_overlay">
     <header>
       <img src="icon/favicon.png" alt="Grimoire Icon" />
@@ -41,7 +46,7 @@
     </header>
     <form #authForm (submit)="submit($event, authForm)" [attr.aria-busy]="pending()">
       <fieldset [disabled]="pending()">
-        @if (isSignUp()) {
+        @if (signingUp) {
           <div class="form_field">
             <label for="name">Name</label>
             <input type="text" id="name" name="name" autocomplete="name" required />
@@ -57,12 +62,12 @@
             type="password"
             id="password"
             name="password"
-            [autocomplete]="isSignUp() ? 'new-password' : 'current-password'"
+            [autocomplete]="signingUp ? 'new-password' : 'current-password'"
             required
-            [attr.minlength]="isSignUp() ? 6 : null"
+            [attr.minlength]="signingUp ? 6 : null"
           />
         </div>
-        @if (isSignUp()) {
+        @if (signingUp) {
           <div class="form_field">
             <label for="confirm-password">Confirm Password</label>
             <input
@@ -75,12 +80,12 @@
           </div>
         }
         <button custom-button class="auth_button" type="submit">
-          {{ pending() ? 'Please wait...' : isSignUp() ? 'Sign Up' : 'Log In' }}
+          {{ pending() ? 'Please wait...' : authAction }}
         </button>
       </fieldset>
     </form>
     <p class="signup_prompt">
-      {{ isSignUp() ? 'Already have an account?' : "Don't have an account?" }}
+      {{ signingUp ? 'Already have an account?' : "Don't have an account?" }}
       <br />
       <button
         type="button"
@@ -88,7 +93,7 @@
         [disabled]="pending()"
         (click)="switchAuthMode(authForm)"
       >
-        &middot; {{ isSignUp() ? 'Log In' : 'Sign Up' }}
+        &middot; {{ signingUp ? 'Log In' : 'Sign Up' }}
       </button>
     </p>
 

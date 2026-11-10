@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 
 @Component({
-  selector:'app-game-controls',
+  selector: 'app-game-controls',
   styleUrl: './game-controls.scss',
   template: `
     <ng-content />
@@ -10,12 +10,10 @@ import { Component, input, output } from '@angular/core';
         <span aria-hidden="true">&#x2630;</span>
       </summary>
       <div class="game-menu-actions">
-        <button type="button" (click)="menu.open = false; back.emit()">
-          Menu
-        </button>
+        <button type="button" (click)="menu.open = false; back.emit()">Menu</button>
         @if (!training()) {
           <button type="button" (click)="menu.open = false; restart.emit()">
-            Create New
+            {{ computerGame() ? 'New game' : 'Create New' }}
           </button>
         }
         <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
@@ -28,6 +26,7 @@ import { Component, input, output } from '@angular/core';
 export class GameControls {
   readonly training = input.required<boolean>();
   readonly pending = input(false);
+  readonly computerGame = input(false);
   readonly back = output<void>();
   readonly restart = output<void>();
   readonly logout = output<void>();

@@ -17,19 +17,8 @@ h2 {
 
 .engine-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
-}
-
-button {
-  padding: 8px 12px;
-  font: inherit;
-  cursor: pointer;
-}
-
-button[aria-pressed='true'] {
-  outline: 2px solid #ffdfbc;
-  outline-offset: 2px;
 }
 
 a {

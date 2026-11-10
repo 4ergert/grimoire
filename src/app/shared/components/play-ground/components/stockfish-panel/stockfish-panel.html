@@ -1,30 +1,39 @@
+@let engineMode = mode();
+@let canPlayOpponent = allowOpponent();
+
 <section class="stockfish-panel" aria-label="Stockfish engine">
-  <h2>Stockfish</h2>
   <div class="engine-actions">
-    <button type="button" [attr.aria-pressed]="mode() === 'off'" (click)="modeChange.emit('off')">
-      Engine off
-    </button>
-    @if (allowOpponent()) {
-      <button type="button" (click)="startGame.emit('w')">Play as White</button>
-      <button type="button" (click)="startGame.emit('b')">Play as Black</button>
+    @if (!analysisLocked()) {
+      <button
+        custom-button
+        type="button"
+        [attr.aria-pressed]="engineMode === 'off'"
+        (click)="modeChange.emit('off')"
+      >
+        Engine off
+      </button>
+    }
+    @if (canPlayOpponent) {
+      <button custom-button type="button" (click)="startGame.emit('w')">Play as White</button>
+      <button custom-button type="button" (click)="startGame.emit('b')">Play as Black</button>
     }
   </div>
-  @if (allowOpponent()) {
+  @if (canPlayOpponent) {
     <p>Play as White / Black starts a new game.</p>
   }
-  @if (mode() === 'opponent') {
+  @if (engineMode === 'opponent') {
     <p>You play {{ playerColor() === 'w' ? 'White' : 'Black' }} against Stockfish.</p>
   }
-  @if (engine.error()) {
-    <p role="alert">{{ engine.error() }}</p>
+  @if (engine.error(); as error) {
+    <p role="alert">{{ error }}</p>
     <button type="button" (click)="retry()">Retry engine</button>
-  } @else if (mode() !== 'off') {
+  } @else if (engineMode !== 'off') {
     <p role="status" aria-live="polite">
       @if (gameOver()) {
         Game over.
       } @else if (engine.busy()) {
         {{ engine.ready() ? 'Stockfish is thinking...' : 'Loading Stockfish...' }}
-      } @else if (mode() === 'opponent') {
+      } @else if (engineMode === 'opponent') {
         Your turn.
       } @else {
         Analysis complete.
@@ -47,8 +56,8 @@
 <ng-template #analysisView>
   @if ((mode() === 'analysis' || analysis()) && engine.result(); as result) {
     <p>Evaluation (White): {{ evaluation() || 'Calculating...' }}. Depth: {{ result.depth }}.</p>
-    @if (variation()) {
-      <p>Best line: {{ variation() }}</p>
+    @if (variation(); as bestLine) {
+      <p>Best line: {{ bestLine }}</p>
     }
   }
 </ng-template>

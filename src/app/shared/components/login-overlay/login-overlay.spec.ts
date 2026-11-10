@@ -50,6 +50,31 @@ describe('LoginOverlay', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should expose computer play only through the dedicated main menu action', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const click = async (label: string) => {
+      Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+        .find((button) => button.textContent?.trim() === label)!
+        .click();
+      await fixture.whenStable();
+    };
+    await click('Create');
+    expect(component.computerGame()).toBe(false);
+    expect(element.textContent).not.toContain('Play as White');
+    await click('Menu');
+    await click('Play against Stockfish');
+    expect(component.computerGame()).toBe(true);
+    expect(element.textContent).toContain('Play as White');
+    expect(element.textContent).toContain('Play as Black');
+    await click('New game');
+    expect(component.computerGame()).toBe(true);
+    await click('Menu');
+    await click('Create');
+    expect(component.computerGame()).toBe(false);
+    expect(element.textContent).not.toContain('Play as Black');
+  });
   it('should open a saved game from the menu and return from replay', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
@@ -150,6 +175,26 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('#password')?.getAttribute('autocomplete')).toBe(
       'current-password',
     );
+  });
+
+  it('should preserve the mounted board while the library hides it', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    component.startPlaying(true);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const playground = element.querySelector('app-play-ground');
+
+    component.openLibrary('1. e4 *');
+    await fixture.whenStable();
+    expect(element.querySelector('.game-container')?.hasAttribute('hidden')).toBe(true);
+    expect(element.querySelector('app-play-ground')).toBe(playground);
+    expect(element.querySelector('#game-name')).not.toBeNull();
+
+    component.libraryOpen.set(false);
+    await fixture.whenStable();
+    expect(element.querySelector('.game-container')?.hasAttribute('hidden')).toBe(false);
+    expect(element.querySelector('app-play-ground')).toBe(playground);
+    expect(element.querySelector('app-game-library')).toBeNull();
   });
 
   it('should switch to sign up and back without keeping entered credentials', async () => {

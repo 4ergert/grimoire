@@ -34,6 +34,7 @@ import {
 })
 export class PlayGround {
   readonly stockfishPanel = viewChild(StockfishPanel);
+  readonly computerGame = input(false);
   readonly replayPgn = input('');
   readonly trainingFolder = input<GameFolder | null>(null);
   readonly training = signal<TrainingSession | null>(null);
@@ -60,6 +61,7 @@ export class PlayGround {
         ? 'replay'
         : 'play',
   );
+  readonly alwaysAnalyse = computed(() => !this.computerGame() && this.mode() === 'play');
   readonly selected = signal<Square | null>(null);
   readonly promotion = signal<{ from: Square; to: Square } | null>(null);
   readonly displayPosition = computed(() => {
@@ -74,6 +76,7 @@ export class PlayGround {
     this.game.position();
     return (
       this.mode() === 'play' &&
+      this.computerGame() &&
       this.engineMode() === 'opponent' &&
       this.game.turn() !== this.playerColor() &&
       !this.game.isGameOver()
@@ -89,6 +92,13 @@ export class PlayGround {
       : new Chess(this.displayPosition()).isGameOver();
   });
   constructor() {
+    effect(() => {
+      if (this.alwaysAnalyse()) {
+        if (this.engineMode() !== 'analysis') this.setEngineMode('analysis');
+      } else if (!this.computerGame() && this.engineMode() === 'opponent') {
+        this.setEngineMode('off');
+      }
+    });
     effect(() => {
       if (this.trainingFolder()) this.setEngineMode('off');
       this.training.set(null);
@@ -107,6 +117,8 @@ export class PlayGround {
   }
 
   setEngineMode(mode: EngineMode): void {
+    if (this.alwaysAnalyse() && mode !== 'analysis') return;
+    if (mode === 'opponent' && (!this.computerGame() || this.mode() !== 'play')) return;
     if (mode === 'analysis' && this.engineMode() === 'opponent') {
       this.engineAnalysis.update((enabled) => !enabled);
       return;
@@ -118,6 +130,7 @@ export class PlayGround {
   }
 
   startEngineGame(color: Color): void {
+    if (!this.computerGame() || this.mode() !== 'play') return;
     const analyse = this.engineAnalysis();
     this.restart();
     this.playerColor.set(color);

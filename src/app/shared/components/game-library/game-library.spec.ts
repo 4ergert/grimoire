@@ -115,4 +115,59 @@ describe('GameLibrary component', () => {
     );
     expect(fixture.componentInstance.pending()).toBe(false);
   });
+
+  it('should keep deletion confirmation scoped to the selected folder and game', async () => {
+    library.list.mockResolvedValue([
+      {
+        id: 'folder-1',
+        name: 'First',
+        games: [
+          { id: 'shared-id', name: 'First line', pgn: '1. e4 *' },
+          { id: 'other-id', name: 'Other line', pgn: '1. d4 *' },
+        ],
+      },
+      {
+        id: 'folder-2',
+        name: 'Second',
+        games: [{ id: 'shared-id', name: 'Second line', pgn: '1. c4 *' }],
+      },
+    ]);
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const deleteButtons = element.querySelectorAll<HTMLButtonElement>('.delete-game');
+
+    for (const [index, name] of ['First line', 'Other line', 'Second line'].entries()) {
+      deleteButtons[index].click();
+      await fixture.whenStable();
+      const confirmations = element.querySelectorAll('.delete-confirmation');
+      expect(confirmations).toHaveLength(1);
+      expect(confirmations[0].getAttribute('aria-label')).toBe(`Confirm deletion of ${name}`);
+    }
+
+    fixture.componentInstance.deleteTarget.set(null);
+    await fixture.whenStable();
+    expect(element.querySelector('.delete-confirmation')).toBeNull();
+    expect(library.deleteGame).not.toHaveBeenCalled();
+  });
+
+  it('should render custom button content without nesting buttons and toggle the save form', async () => {
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const button = element.querySelector<HTMLButtonElement>('button[custom-button]')!;
+    expect(button.querySelector('.custom_button')?.textContent?.trim()).toBe('Back');
+    expect(button.querySelector('button')).toBeNull();
+    expect(element.querySelector('#game-name')).toBeNull();
+
+    fixture.componentRef.setInput('pgn', '1. e4 *');
+    await fixture.whenStable();
+    expect(element.querySelector('#game-name')).not.toBeNull();
+    expect(element.querySelectorAll('#save-folder option')).toHaveLength(2);
+
+    fixture.componentRef.setInput('pgn', '');
+    await fixture.whenStable();
+    expect(element.querySelector('#game-name')).toBeNull();
+    expect(element.querySelector('#folder-name')).not.toBeNull();
+  });
 });

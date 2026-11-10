@@ -13,5 +13,6 @@ export class MenuOverlay {
   readonly error = input('');
   readonly logout = output<void>();
   readonly play = output<void>();
+  readonly computer = output<void>();
   readonly library = output<void>();
 }

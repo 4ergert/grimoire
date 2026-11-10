@@ -178,6 +178,7 @@ describe('Stockfish playground integration', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({ imports: [PlayGround] }).compileComponents();
     fixture = TestBed.createComponent(PlayGround);
+    fixture.componentRef.setInput('computerGame', true);
     playground = fixture.componentInstance;
     await fixture.whenStable();
   });
@@ -189,6 +190,43 @@ describe('Stockfish playground integration', () => {
     playground.select('e7');
     playground.select('e5');
     expect(playground.moveHistory()[0]).toEqual({ number: 1, white: 'e4', black: 'e5' });
+  });
+
+  it('keeps analysis always enabled in Create and disallows computer play', async () => {
+    fixture.componentRef.setInput('computerGame', false);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.textContent).not.toContain('Play as White');
+    expect(element.textContent).not.toContain('Play as Black');
+    expect(element.textContent).not.toContain('Engine off');
+    expect(element.querySelector<HTMLButtonElement>('.analyse-position')?.disabled).toBe(true);
+    expect(playground.engineMode()).toBe('analysis');
+    expect(playground.engineAnalysis()).toBe(true);
+    playground.startEngineGame('b');
+    expect(playground.engineMode()).toBe('analysis');
+    playground.setEngineMode('opponent');
+    expect(playground.engineMode()).toBe('analysis');
+    playground.setEngineMode('off');
+    expect(playground.engineMode()).toBe('analysis');
+    await fixture.whenStable();
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    worker.receive('bestmove e2e4');
+    await fixture.whenStable();
+    expect(playground.moveHistory()).toEqual([]);
+    playground.select('e2');
+    playground.select('e4');
+    await fixture.whenStable();
+    expect(worker.postMessage).toHaveBeenCalledWith(
+      `position ${playground.game.enginePosition()}`,
+    );
+    worker.receive('bestmove e7e5');
+    await fixture.whenStable();
+    expect(playground.moveHistory()[0].black).toBe('');
+    playground.restart();
+    await fixture.whenStable();
+    expect(element.textContent).not.toContain('Play as White');
+    expect(playground.engineMode()).toBe('analysis');
   });
 
   it('shows analysis without automatically playing the suggested move', async () => {

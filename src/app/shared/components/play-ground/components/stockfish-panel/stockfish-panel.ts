@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { Chess, Color } from 'chess.js';
 import { EngineResult, StockfishEngine } from './stockfish-engine';
+import { CustomButton } from '../../../button/button';
 
 export type EngineMode = 'off' | 'analysis' | 'opponent';
 
@@ -23,6 +24,7 @@ export interface EngineMove {
 @Component({
   selector: 'app-stockfish-panel',
   providers: [StockfishEngine],
+  imports: [CustomButton],
   templateUrl: './stockfish-panel.html',
   styleUrl: './stockfish-panel.scss',
 })
@@ -33,6 +35,7 @@ export class StockfishPanel {
   readonly enginePosition = input.required<string>();
   readonly mode = input<EngineMode>('off');
   readonly analysis = input(false);
+  readonly analysisLocked = input(false);
   readonly playerColor = input<Color>('w');
   readonly allowOpponent = input(true);
   readonly gameOver = input(false);

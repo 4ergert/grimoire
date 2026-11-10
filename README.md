@@ -211,6 +211,13 @@ Training never changes saved PGNs. Scores are held only in memory.
 
 ## Stockfish analysis and opponent
 
+Choose **Create** in the main menu for manual two-player play and analysis.
+Analysis starts automatically in Create and stays enabled, including after
+moves and restarts. Its toggle is disabled and Engine off is hidden in this mode.
+Computer play is available only through the separate **Play against Stockfish**
+menu button. There, choose **Play as White** or **Play as Black** to begin.
+Returning to the menu and choosing Create removes the computer-play controls.
+
 The separate Stockfish panel below the board offers:
 
 - **Analyse position** (magnifying-glass PNG button, below the board): evaluation from White's perspective, search depth, and
@@ -276,6 +283,12 @@ Auth account, `/users/{uid}`, and `/gameLibrary/{uid}`. Signing out deletes none
 of these. Provider logs and backup retention require separate verification.
 
 ## Project map
+
+HTML templates use the Angular parser and formatting rules in `.prettierrc`.
+Repeated view conditions use local `@let` bindings; gameplay and engine logic
+remain in their components and sessions. The library uses `[hidden]` on the
+mounted playground to preserve the current game while saving. The custom button
+uses its external template to project content into the existing native button.
 
 | Location | Responsibility |
 | --- | --- |

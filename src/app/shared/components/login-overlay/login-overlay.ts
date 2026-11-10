@@ -18,6 +18,7 @@ export class LoginOverlay {
   readonly auth = inject(Auth);
   readonly isSignUp = signal(false);
   readonly isPlaying = signal(false);
+  readonly computerGame = signal(false);
   readonly pending = signal(false);
   readonly error = signal('');
   readonly libraryOpen = signal(false);
@@ -26,6 +27,7 @@ export class LoginOverlay {
   readonly trainingFolder = signal<GameFolder | null>(null);
 
   startTraining(folder: GameFolder): void {
+    this.computerGame.set(false);
     this.trainingFolder.set(folder);
     this.replayPgn.set('');
     this.isPlaying.set(true);
@@ -33,6 +35,7 @@ export class LoginOverlay {
   }
 
   returnToMenu(): void {
+    this.computerGame.set(false);
     this.isPlaying.set(false);
     this.replayPgn.set('');
     this.trainingFolder.set(null);
@@ -44,16 +47,17 @@ export class LoginOverlay {
   }
 
   openReplay(pgn: string): void {
+    this.computerGame.set(false);
     this.trainingFolder.set(null);
     this.replayPgn.set(pgn);
     this.isPlaying.set(true);
     this.libraryOpen.set(false);
   }
 
-  startPlaying(): void {
+  startPlaying(computer = false): void {
+    this.computerGame.set(computer);
     this.trainingFolder.set(null);
     this.replayPgn.set('');
-    this.trainingFolder.set(null);
     this.isPlaying.set(true);
   }
 
@@ -104,6 +108,7 @@ export class LoginOverlay {
     this.pending.set(true);
     try {
       await this.auth.logout();
+      this.computerGame.set(false);
       this.isPlaying.set(false);
       this.libraryOpen.set(false);
       this.savePgn.set('');

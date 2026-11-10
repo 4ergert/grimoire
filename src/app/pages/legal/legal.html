@@ -1,3 +1,5 @@
+@let privacy = routeData()?.['privacy'];
+
 <main>
   <nav aria-label="Rechtliche Seiten">
     <a routerLink="/">Zurück zu Grimoire</a>
@@ -5,9 +7,9 @@
     <a routerLink="/datenschutz">Datenschutzerklärung</a>
   </nav>
 
-  <h1>{{ routeData()?.['privacy'] ? 'Datenschutzerklärung' : 'Impressum' }}</h1>
+  <h1>{{ privacy ? 'Datenschutzerklärung' : 'Impressum' }}</h1>
 
-  @if (routeData()?.['privacy']) {
+  @if (privacy) {
     <section>
       <h2>1. Verantwortlicher</h2>
       <p>
@@ -51,9 +53,9 @@
         E-Mail an
         <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
         angefragt werden. Nach Prüfung der Berechtigung wird die Löschung manuell in Firebase
-        Authentication sowie für das zugehörige Profil und die gespeicherten Ordner und Partien
-        in der Realtime Database bearbeitet. Bitte
-        keine Passwörter per E-Mail senden. Abmelden allein löscht das Konto nicht.
+        Authentication sowie für das zugehörige Profil und die gespeicherten Ordner und Partien in
+        der Realtime Database bearbeitet. Bitte keine Passwörter per E-Mail senden. Abmelden allein
+        löscht das Konto nicht.
       </p>
       <p>
         [Vertragspartner von Google, Rechtsgrundlage und Auftragsverarbeitungsvertrag prüfen und
