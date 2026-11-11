@@ -76,6 +76,17 @@ project, replace it with that project's web app configuration.
 Registration creates the Firebase Auth account, sets its display name, and saves
 the username in Realtime Database. If saving the profile fails, the app attempts
 to remove the new Auth account; rollback failures are explicitly reported.
+After successful account/profile creation, Firebase sends a German-language
+verification email using its configured template and hosted action handler.
+Authorize `grimoire.julian-hergert.de` in Firebase Authentication for the return
+URL. If sending fails, the account remains available and an explicit error is
+shown. Unverified users can resend the email from the main menu. Verification
+is required for signed-in gameplay and library access. **I have verified**
+reloads the user and forces an ID token refresh before unlocking these features.
+Unverified users can still resend mail, sign out, or delete their account in
+Settings; guest access is unchanged. Once published, the supplied database rules
+also require verified email for reading or saving library data. Existing accounts
+with unverified email must verify as well.
 Passwords are sent to Firebase Authentication, never stored in the application's
 Realtime Database. Firebase Analytics is not initialized.
 
@@ -91,12 +102,22 @@ ancestors: parent grants cannot be restricted by child rules.
 
 The supplied rules:
 
-- Allow signed-in users to access only their own profile and game library.
+- Allow signed-in users to access only their own profile.
+- Require the owner's `auth.token.email_verified === true` for reading or
+  creating/updating game-library data.
+- Allow owners to delete their library data even before email verification,
+  so account deletion remains possible. Profile creation and deletion also
+  remain possible before verification.
 - Validate folder names, game names, and PGN field sizes.
 - Reject unexpected fields in the documented records.
 
 After publishing, verify with two accounts that one cannot access the other's
-data, and that unauthenticated access is denied. A `PERMISSION_DENIED` error
+data, and that unauthenticated access is denied. Also test an unverified account:
+profile creation must succeed, library reads and writes must fail, and deleting
+its own profile and library together must succeed. After email verification and
+**I have verified** (forced token refresh), library reads and writes must succeed.
+Do not grant broader read/write access at parent paths to work around failures.
+A `PERMISSION_DENIED` error
 when opening the library or creating a folder commonly means the `gameLibrary`
 rules have not been published or do not match the signed-in user.
 
@@ -269,6 +290,9 @@ when deploying or redistributing the engine.
 - Board symbols can look different across operating systems.
 
 ## Deployment and legal notices
+
+The login and sign-up window provides links to the legal pages. There is no
+shared legal footer in the signed-in or guest views.
 
 Build with `npm run build` and serve the generated browser assets from
 `dist/grimoire/browser/`. Configure the web host to return Angular's

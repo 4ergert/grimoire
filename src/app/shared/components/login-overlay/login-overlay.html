@@ -1,6 +1,6 @@
 @if (auth.user(); as user) {
   <main class="authenticated_view">
-    @if (libraryOpen()) {
+    @if (auth.emailVerified() && libraryOpen()) {
       <app-game-library
         [pgn]="savePgn()"
         (close)="libraryOpen.set(false)"
@@ -8,7 +8,7 @@
         (practise)="startTraining($event)"
       />
     }
-    @if (isPlaying()) {
+    @if (auth.emailVerified() && isPlaying()) {
       <div class="game-container" [hidden]="libraryOpen()">
         <app-play-ground
           [computerGame]="computerGame()"
@@ -23,11 +23,15 @@
       @if (error()) {
         <p class="auth_error game_error" role="alert">{{ error() }}</p>
       }
-    } @else if (!libraryOpen()) {
+    } @else if (!auth.emailVerified() || !libraryOpen()) {
       <app-menu-overlay
         [username]="user.displayName || user.email || ''"
         [pending]="pending()"
         [error]="error()"
+        [emailVerified]="auth.emailVerified()"
+        [verificationNotice]="verificationNotice()"
+        (resendVerification)="resendVerificationEmail()"
+        (checkVerification)="checkVerification()"
         (play)="startPlaying()"
         (computer)="startPlaying(true)"
         (library)="openLibrary()"

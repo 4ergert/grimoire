@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { FirebaseError } from 'firebase/app';
 import { afterEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
@@ -12,11 +12,14 @@ describe('LoginOverlay', () => {
   let component: LoginOverlay;
   let fixture: ComponentFixture<LoginOverlay>;
   const auth = {
-    user: signal<{ displayName: string | null; email: string | null } | null>(null),
+    user: signal<{ displayName: string | null; email: string | null; emailVerified?: boolean } | null>(null),
+    emailVerified: computed((): boolean => auth.user()?.emailVerified !== false),
+    refreshVerification: vi.fn(),
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
     deleteAccount: vi.fn(),
+    sendVerificationEmail: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -59,6 +62,70 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('resends verification emails and displays delivery status', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com', emailVerified: false });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const resend = Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'Resend verification email')!;
+    resend.click();
+    await fixture.whenStable();
+    expect(auth.sendVerificationEmail).toHaveBeenCalledOnce();
+    expect(element.textContent).toContain('Verification email sent.');
+    expect(component.pending()).toBe(false);
+  });
+
+  it('blocks unverified access until checking the confirmation succeeds', async () => {
+    const user = { displayName: 'Test User', email: 'test@example.com', emailVerified: false };
+    auth.user.set(user);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.textContent).not.toContain('Play against Stockfish');
+    component.startPlaying(true);
+    component.openLibrary();
+    component.openReplay('1. e4 *');
+    component.startTraining({ id: 'folder', name: 'Training', games: [] });
+    expect(component.isPlaying()).toBe(false);
+    expect(component.libraryOpen()).toBe(false);
+    expect(component.error()).toContain('Please verify');
+    auth.refreshVerification.mockResolvedValueOnce(false);
+    await component.checkVerification();
+    expect(component.verificationNotice()).toContain('not verified yet');
+    auth.refreshVerification.mockImplementationOnce(async () => {
+      auth.user.set({ ...user, emailVerified: true });
+      return true;
+    });
+    const check = Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'I have verified')!;
+    check.click();
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Play against Stockfish');
+    expect(element.textContent).not.toContain('I have verified');
+    component.startPlaying(true);
+    expect(component.isPlaying()).toBe(true);
+  });
+
+  it('reports verification check failures without unlocking the application', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com', emailVerified: false });
+    auth.refreshVerification.mockRejectedValueOnce(new Error('Offline'));
+    await component.checkVerification();
+    expect(component.error()).toContain('Verification could not be checked');
+    expect(component.pending()).toBe(false);
+    expect(auth.emailVerified()).toBe(false);
+  });
+
+  it('reports verification delivery errors without discarding the account', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    auth.sendVerificationEmail.mockRejectedValue(new FirebaseError('auth/too-many-requests', 'Limit'));
+    await component.resendVerificationEmail();
+    expect(component.error()).toContain('Too many requests');
+    expect(component.verificationNotice()).toBe('');
+    expect(auth.user()).not.toBeNull();
+    expect(component.pending()).toBe(false);
   });
 
   it('confirms account deletion with a password and returns to login', async () => {
@@ -233,18 +300,6 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('.move-history')?.textContent).toContain('e4');
   });
 
-  it('should link to public legal pages in both login and sign up', async () => {
-    const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();
-    expect(element.querySelector('a[href="/datenschutz"]')).not.toBeNull();
-
-    component.isSignUp.set(true);
-    await fixture.whenStable();
-
-    expect(element.querySelector('a[href="/impressum"]')).not.toBeNull();
-    expect(element.querySelector('a[href="/datenschutz"]')).not.toBeNull();
-  });
-
   it('should launch folder training from the menu, play Black and return to normal play', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
@@ -271,6 +326,25 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('.training-panel')).toBeNull();
     expect(element.querySelector('.move-history')).not.toBeNull();
     expect(element.querySelector('[aria-label="e2 White Pawn"]')).not.toBeNull();
+  });
+
+  it('shows legal links only in the login and sign-up window', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const expectLinks = () => {
+      expect(element.querySelector('footer a[href="/impressum"]')).not.toBeNull();
+      expect(element.querySelector('footer a[href="/datenschutz"]')).not.toBeNull();
+    };
+    expectLinks();
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    expectLinks();
+    component.startGuest();
+    await fixture.whenStable();
+    expect(element.querySelector('.legal_links')).toBeNull();
+    component.leaveGuest();
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    expect(element.querySelector('.legal_links')).toBeNull();
   });
 
   it('should show the login form initially', () => {

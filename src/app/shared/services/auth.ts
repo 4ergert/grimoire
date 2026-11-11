@@ -8,6 +8,8 @@ import {
   getAuth,
   onAuthStateChanged,
   reauthenticateWithCredential,
+  reload,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -29,11 +31,16 @@ export class Auth {
   private readonly app = initializeApp(firebaseConfig);
   private readonly auth = getAuth(this.app);
   readonly database = getDatabase(this.app);
-  private readonly currentUser = signal<User | null>(null);
+  private readonly currentUser = signal<User | null>(null, { equal: () => false });
   readonly user = this.currentUser.asReadonly();
+  private readonly verified = signal(false);
+  readonly emailVerified = this.verified.asReadonly();
 
   constructor() {
-    const unsubscribe = onAuthStateChanged(this.auth, (user) => this.currentUser.set(user));
+    const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+      this.verified.set(user?.emailVerified === true);
+      this.currentUser.set(user);
+    });
     inject(DestroyRef).onDestroy(unsubscribe);
   }
 
@@ -60,10 +67,40 @@ export class Auth {
     }
 
     this.currentUser.set(user);
+    this.verified.set(user.emailVerified === true);
+    try {
+      await this.sendVerificationEmail();
+    } catch (error) {
+      throw new AggregateError(
+        [error],
+        'Your account was created, but the verification email could not be sent. Please try sending it again.',
+      );
+    }
+  }
+
+  async sendVerificationEmail(): Promise<void> {
+    const user = this.user();
+    if (!user) throw new Error('Please sign in to request a verification email.');
+    if (user.emailVerified) throw new Error('Your email address is already verified.');
+    this.auth.languageCode = 'de';
+    await sendEmailVerification(user, {
+      url: 'https://grimoire.julian-hergert.de/',
+    });
   }
 
   async logout(): Promise<void> {
     await signOut(this.auth);
+  }
+
+  async refreshVerification(): Promise<boolean> {
+    const user = this.user();
+    if (!user) throw new Error('Please sign in to check your email verification.');
+    await reload(user);
+    await user.getIdToken(true);
+    if (this.user() !== user) throw new Error('Your session changed. Please sign in again.');
+    this.verified.set(user.emailVerified);
+    this.currentUser.set(user);
+    return user.emailVerified;
   }
 
   async deleteAccount(password: string): Promise<void> {
@@ -88,5 +125,6 @@ export class Auth {
       );
     }
     this.currentUser.set(null);
+    this.verified.set(false);
   }
 }

@@ -11,6 +11,10 @@ export class MenuOverlay {
   readonly username = input('');
   readonly pending = input(false);
   readonly error = input('');
+  readonly emailVerified = input(true);
+  readonly verificationNotice = input('');
+  readonly resendVerification = output<void>();
+  readonly checkVerification = output<void>();
   readonly logout = output<void>();
   readonly play = output<void>();
   readonly computer = output<void>();

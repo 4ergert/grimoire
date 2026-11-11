@@ -8,6 +8,32 @@
     {{ pending() ? 'Please wait...' : 'Welcome back ' + username() }}
   </p>
 
+  @if (!emailVerified()) {
+    <p>Please verify your email address using the link in your inbox.</p>
+    @if (verificationNotice()) {
+      <p class="auth_status" role="status">{{ verificationNotice() }}</p>
+    }
+    <button
+      custom-button
+      class="menu_button"
+      type="button"
+      [disabled]="pending()"
+      (click)="resendVerification.emit()"
+    >
+      Resend verification email
+    </button>
+    <button
+      custom-button
+      class="menu_button"
+      type="button"
+      [disabled]="pending()"
+      (click)="checkVerification.emit()"
+    >
+      I have verified
+    </button>
+  }
+
+  @if (emailVerified()) {
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="play.emit()">
     Create
   </button>
@@ -19,6 +45,7 @@
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="computer.emit()">
     Play against Stockfish
   </button>
+  }
 
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="settings.showModal()">
     Settings

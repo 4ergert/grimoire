@@ -22,6 +22,7 @@ export class LoginOverlay {
   readonly computerGame = signal(false);
   readonly pending = signal(false);
   readonly error = signal('');
+  readonly verificationNotice = signal('');
   readonly libraryOpen = signal(false);
   readonly savePgn = signal('');
   readonly replayPgn = signal('');
@@ -37,6 +38,7 @@ export class LoginOverlay {
   }
 
   startTraining(folder: GameFolder): void {
+    if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(false);
     this.trainingFolder.set(folder);
     this.replayPgn.set('');
@@ -52,11 +54,13 @@ export class LoginOverlay {
   }
 
   openLibrary(pgn = ''): void {
+    if (!this.requireVerifiedEmail()) return;
     this.savePgn.set(pgn);
     this.libraryOpen.set(true);
   }
 
   openReplay(pgn: string): void {
+    if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(false);
     this.trainingFolder.set(null);
     this.replayPgn.set(pgn);
@@ -65,6 +69,7 @@ export class LoginOverlay {
   }
 
   startPlaying(computer = false): void {
+    if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(computer);
     this.trainingFolder.set(null);
     this.replayPgn.set('');
@@ -84,6 +89,7 @@ export class LoginOverlay {
     }
 
     this.error.set('');
+    this.verificationNotice.set('');
     const data = new FormData(form);
     const email = String(data.get('email') ?? '').trim();
     const password = String(data.get('password') ?? '');
@@ -102,19 +108,67 @@ export class LoginOverlay {
     try {
       if (this.isSignUp()) {
         await this.auth.register(username, email, password);
+        this.verificationNotice.set('Verification email sent. Please check your inbox and spam folder.');
       } else {
         await this.auth.login(email, password);
       }
       form.reset();
     } catch (error) {
+      if (this.isSignUp() && this.auth.user()) form.reset();
       this.error.set(this.errorMessage(error));
     } finally {
       this.pending.set(false);
     }
   }
 
+  async resendVerificationEmail(): Promise<void> {
+    if (this.pending()) return;
+    this.error.set('');
+    this.verificationNotice.set('');
+    this.pending.set(true);
+    try {
+      await this.auth.sendVerificationEmail();
+      this.verificationNotice.set('Verification email sent. Please check your inbox and spam folder.');
+    } catch (error) {
+      console.error('Verification email could not be sent', error);
+      this.error.set(
+        error instanceof FirebaseError && error.code === 'auth/too-many-requests'
+          ? 'Too many requests. Please wait before requesting another verification email.'
+          : 'The verification email could not be sent. Please try again later.',
+      );
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  async checkVerification(): Promise<void> {
+    if (this.pending()) return;
+    this.error.set('');
+    this.verificationNotice.set('');
+    this.pending.set(true);
+    try {
+      if (!(await this.auth.refreshVerification())) {
+        this.verificationNotice.set(
+          'Your email is not verified yet. Open the link in your email, then check again.',
+        );
+      }
+    } catch (error) {
+      console.error('Email verification check failed', error);
+      this.error.set('Verification could not be checked. Please try again or sign in again.');
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  private requireVerifiedEmail(): boolean {
+    if (this.auth.user() && this.auth.emailVerified()) return true;
+    this.error.set('Please verify your email address before using this feature.');
+    return false;
+  }
+
   async logout(): Promise<void> {
     this.error.set('');
+    this.verificationNotice.set('');
     this.pending.set(true);
     try {
       await this.auth.logout();

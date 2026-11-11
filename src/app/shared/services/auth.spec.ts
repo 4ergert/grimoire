@@ -12,6 +12,8 @@ const firebase = vi.hoisted(() => ({
   signOut: vi.fn(),
   updateProfile: vi.fn(),
   deleteUser: vi.fn(),
+  sendEmailVerification: vi.fn(),
+  reload: vi.fn(),
   credential: vi.fn((email: string, password: string) => ({ email, password })),
   reauthenticateWithCredential: vi.fn(),
   update: vi.fn(),
@@ -28,6 +30,8 @@ vi.mock('firebase/auth', () => ({
   signOut: firebase.signOut,
   updateProfile: firebase.updateProfile,
   deleteUser: firebase.deleteUser,
+  sendEmailVerification: firebase.sendEmailVerification,
+  reload: firebase.reload,
   EmailAuthProvider: { credential: firebase.credential },
   reauthenticateWithCredential: firebase.reauthenticateWithCredential,
 }));
@@ -50,6 +54,8 @@ describe('Auth', () => {
     firebase.deleteUser.mockResolvedValue(undefined);
     firebase.reauthenticateWithCredential.mockResolvedValue(undefined);
     firebase.update.mockResolvedValue(undefined);
+    firebase.sendEmailVerification.mockResolvedValue(undefined);
+    firebase.reload.mockReset().mockResolvedValue(undefined);
     TestBed.configureTestingModule({});
     auth = TestBed.inject(Auth);
   });
@@ -66,8 +72,73 @@ describe('Auth', () => {
     expect(firebase.ref).toHaveBeenCalledWith(expect.anything(), 'users/user-123');
     expect(firebase.set).toHaveBeenCalledWith('users/user-123', { username: 'Test User' });
     expect(auth.user()).toBe(user);
+    expect(firebase.sendEmailVerification).toHaveBeenCalledWith(user, {
+      url: 'https://grimoire.julian-hergert.de/',
+    });
+    expect(firebase.set.mock.invocationCallOrder[0])
+      .toBeLessThan(firebase.sendEmailVerification.mock.invocationCallOrder[0]);
   });
 
+  it('keeps the account and permits resending if verification email delivery fails', async () => {
+    firebase.sendEmailVerification.mockRejectedValueOnce(new Error('Mail service unavailable'));
+    await expect(auth.register('Test User', 'test@example.com', 'test-password'))
+      .rejects.toThrow('Your account was created, but the verification email could not be sent');
+    expect(auth.user()).toBe(user);
+    expect(firebase.deleteUser).not.toHaveBeenCalled();
+    await auth.sendVerificationEmail();
+    expect(firebase.sendEmailVerification).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not send verification mail without a session or for a verified user', async () => {
+    await expect(auth.sendVerificationEmail()).rejects.toThrow('Please sign in');
+    firebase.onAuthStateChanged.mock.calls[0][1]({ ...user, emailVerified: true });
+    await expect(auth.sendVerificationEmail()).rejects.toThrow('already verified');
+    expect(firebase.sendEmailVerification).not.toHaveBeenCalled();
+  });
+
+  it('reloads verification and refreshes the token before publishing the updated user', async () => {
+    const current = { ...user, emailVerified: false, getIdToken: vi.fn().mockResolvedValue('token') };
+    firebase.onAuthStateChanged.mock.calls[0][1](current);
+    firebase.reload.mockImplementationOnce(async () => { current.emailVerified = true; });
+    expect(await auth.refreshVerification()).toBe(true);
+    expect(firebase.reload).toHaveBeenCalledWith(current);
+    expect(current.getIdToken).toHaveBeenCalledWith(true);
+    expect(firebase.reload.mock.invocationCallOrder[0])
+      .toBeLessThan(current.getIdToken.mock.invocationCallOrder[0]);
+    expect(auth.user()?.emailVerified).toBe(true);
+  });
+
+  it('returns an unverified status and reports refresh failures', async () => {
+    const current = { ...user, emailVerified: false, getIdToken: vi.fn().mockResolvedValue('token') };
+    firebase.onAuthStateChanged.mock.calls[0][1](current);
+    expect(await auth.refreshVerification()).toBe(false);
+    firebase.reload.mockRejectedValueOnce(new Error('Offline'));
+    await expect(auth.refreshVerification()).rejects.toThrow('Offline');
+    current.getIdToken.mockRejectedValueOnce(new Error('Token refresh failed'));
+    await expect(auth.refreshVerification()).rejects.toThrow('Token refresh failed');
+  });
+
+  it('does not restore a user when the session changes during verification', async () => {
+    const current = { ...user, emailVerified: true, getIdToken: vi.fn().mockResolvedValue('token') };
+    firebase.onAuthStateChanged.mock.calls[0][1](current);
+    firebase.reload.mockImplementationOnce(async () => {
+      firebase.onAuthStateChanged.mock.calls[0][1](null);
+    });
+    await expect(auth.refreshVerification()).rejects.toThrow('Your session changed');
+    expect(auth.user()).toBeNull();
+  });
+
+  it('does not unlock access when verification reloads but token refresh fails', async () => {
+    const current = {
+      ...user,
+      emailVerified: false,
+      getIdToken: vi.fn().mockRejectedValue(new Error('Offline')),
+    };
+    firebase.onAuthStateChanged.mock.calls[0][1](current);
+    firebase.reload.mockImplementationOnce(async () => { current.emailVerified = true; });
+    await expect(auth.refreshVerification()).rejects.toThrow('Offline');
+    expect(auth.emailVerified()).toBe(false);
+  });
   it('should remove a new account if saving its profile fails', async () => {
     const error = new Error('Permission denied');
     firebase.set.mockRejectedValue(error);
@@ -76,6 +147,7 @@ describe('Auth', () => {
       error,
     );
     expect(firebase.deleteUser).toHaveBeenCalledWith(user);
+    expect(firebase.sendEmailVerification).not.toHaveBeenCalled();
   });
 
   it('should explicitly report rollback failures', async () => {
