@@ -287,11 +287,16 @@ Before public operation:
 - Obtain appropriate legal review.
 - Complete and verify the Firebase security configuration and deployed rules.
 
-The documented retention policy keeps account data until a deletion request,
-without automatic inactivity deletion. Requests are handled manually after
-verifying the requester's authority. Account deletion must remove the Firebase
-Auth account, `/users/{uid}`, and `/gameLibrary/{uid}`. Signing out deletes none
-of these. Provider logs and backup retention require separate verification.
+Account data is retained until account deletion, without automatic inactivity
+deletion. In the signed-in main menu, **Settings > Delete account** requires confirmation
+using the current password. After Firebase reauthentication, a single database
+update removes `/users/{uid}` and `/gameLibrary/{uid}`, then the Firebase Auth
+account is deleted. These operations are not atomic across services: if Auth
+deletion fails, the already deleted games cannot be restored; an explicit error
+asks the user to retry or contact support. Database deletion failures leave the
+Auth account intact. Signing out deletes none of these records. Provider logs
+and backup retention require separate verification. Test the flow against
+deployed Firebase rules with a disposable account before launch.
 
 ## Project map
 

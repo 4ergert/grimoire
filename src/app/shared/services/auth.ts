@@ -2,15 +2,17 @@ import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import {
   User,
+  EmailAuthProvider,
   createUserWithEmailAndPassword,
   deleteUser,
   getAuth,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
 } from 'firebase/auth';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, set, update } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDJTN1L2sANKl2yMkLLbrf6OixiFzZncHM',
@@ -62,5 +64,29 @@ export class Auth {
 
   async logout(): Promise<void> {
     await signOut(this.auth);
+  }
+
+  async deleteAccount(password: string): Promise<void> {
+    const user = this.user();
+    if (!user?.email || !password) {
+      throw new Error('Please sign in and enter your current password to delete your account.');
+    }
+    await reauthenticateWithCredential(
+      user,
+      EmailAuthProvider.credential(user.email, password),
+    );
+    await update(ref(this.database), {
+      [`users/${user.uid}`]: null,
+      [`gameLibrary/${user.uid}`]: null,
+    });
+    try {
+      await deleteUser(user);
+    } catch (error) {
+      throw new AggregateError(
+        [error],
+        'Your profile and saved games were deleted, but your sign-in account could not be deleted. Please retry account deletion or contact support.',
+      );
+    }
+    this.currentUser.set(null);
   }
 }

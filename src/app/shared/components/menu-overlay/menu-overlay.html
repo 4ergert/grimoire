@@ -20,11 +20,59 @@
     Play against Stockfish
   </button>
 
+  <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="settings.showModal()">
+    Settings
+  </button>
+
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="logout.emit()">
     Log Out
   </button>
 
-  @if (error()) {
+  <dialog
+    #settings
+    aria-labelledby="settings-title"
+    (cancel)="pending() ? $event.preventDefault() : closeSettings(settings, deleteForm, deletion)"
+  >
+    <h2 id="settings-title">Settings</h2>
+    <details #deletion class="account-deletion">
+    <summary>Delete account</summary>
+    <p>
+      Permanently delete your account, profile, and all saved folders and games.
+      This cannot be undone. Enter your current password to confirm.
+    </p>
+    <form #deleteForm (submit)="confirmDeletion($event, deleteForm, deletePassword)">
+      <fieldset [disabled]="pending()">
+        <label for="delete-password">Current password</label>
+        <input
+          #deletePassword
+          id="delete-password"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+        <button custom-button type="submit">
+          {{ pending() ? 'Please wait...' : 'Permanently delete my account' }}
+        </button>
+        <button type="button" (click)="deleteForm.reset(); deletion.open = false">Cancel</button>
+      </fieldset>
+    </form>
+    </details>
+
+    @if (error()) {
+      <p class="auth_error" role="alert">{{ error() }}</p>
+    }
+    <button
+      custom-button
+      type="button"
+      autofocus
+      [disabled]="pending()"
+      (click)="closeSettings(settings, deleteForm, deletion)"
+    >
+      Back
+    </button>
+  </dialog>
+
+  @if (error() && !settings.open) {
   <p class="auth_error" role="alert">{{ error() }}</p>
   }
 </section>

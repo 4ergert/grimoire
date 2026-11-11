@@ -130,6 +130,32 @@ export class LoginOverlay {
     }
   }
 
+  async deleteAccount(password: string): Promise<void> {
+    if (this.pending()) return;
+    this.error.set('');
+    this.pending.set(true);
+    try {
+      await this.auth.deleteAccount(password);
+      this.returnToMenu();
+      this.libraryOpen.set(false);
+      this.savePgn.set('');
+      this.guest.set(false);
+      this.isSignUp.set(false);
+    } catch (error) {
+      console.error('Account deletion failed', error);
+      this.error.set(
+        error instanceof AggregateError
+          ? error.message
+          : error instanceof FirebaseError &&
+              ['auth/invalid-credential', 'auth/wrong-password', 'auth/invalid-login-credentials'].includes(error.code)
+            ? 'The password is incorrect. Your account was not deleted.'
+            : 'Account deletion could not be completed. Please retry or contact support.',
+      );
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
   private errorMessage(error: unknown): string {
     if (error instanceof AggregateError) {
       return error.message;

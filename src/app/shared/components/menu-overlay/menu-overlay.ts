@@ -15,4 +15,20 @@ export class MenuOverlay {
   readonly play = output<void>();
   readonly computer = output<void>();
   readonly library = output<void>();
+  readonly deleteAccount = output<string>();
+
+  closeSettings(dialog: HTMLDialogElement, form: HTMLFormElement, deletion: HTMLDetailsElement): void {
+    if (this.pending()) return;
+    form.reset();
+    deletion.open = false;
+    dialog.close();
+  }
+
+  confirmDeletion(event: Event, form: HTMLFormElement, password: HTMLInputElement): void {
+    event.preventDefault();
+    if (this.pending() || !form.reportValidity()) return;
+    const value = password.value;
+    form.reset();
+    this.deleteAccount.emit(value);
+  }
 }

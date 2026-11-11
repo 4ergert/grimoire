@@ -26,14 +26,21 @@
     <section>
       <h2>2. Hosting und Serverprotokolle</h2>
       <p>
-        Grimoire wird bei ALL-INKL gehostet. Beim Aufruf werden technisch erforderliche
+        Grimoire wird im Tarif ALL-INKL PrivatPlus bei ALL-INKL.COM – Neue Medien Münnich
+        gehostet. Mit dem Hosting-Anbieter ist ein Auftragsverarbeitungsvertrag abgeschlossen.
+        Beim Aufruf werden technisch erforderliche
         Verbindungsdaten verarbeitet, insbesondere die IP-Adresse, Zeitpunkt und Ziel der Anfrage
         sowie Browser- und Geräteinformationen.
       </p>
       <p>
-        [Genaue Anbieterbezeichnung, tatsächlich protokollierte Daten, Zweck, Rechtsgrundlage und
-        Löschfrist anhand der Hosting-Einstellungen ergänzen. Vertrag zur Auftragsverarbeitung
-        prüfen und abschließen.]
+        Die Erstellung von Zugriffsprotokollen ist in der technischen Hosting-Verwaltung
+        (KAS) deaktiviert. Die für die Auslieferung der Website erforderliche Verarbeitung
+        von Verbindungsdaten findet dennoch statt.
+      </p>
+      <p>
+        [Zusätzliche Fehler- und Sicherheitsprotokolle des Hosting-Anbieters sowie deren
+        Datenumfang und Löschfristen prüfen. Zwecke und Rechtsgrundlagen der
+        Hosting-Verarbeitung ergänzen.]
       </p>
     </section>
     <section>
@@ -48,22 +55,24 @@
         gespeichert und dem jeweiligen Konto zugeordnet.
       </p>
       <p>
-        Nutzerkonto und Nutzerprofil bleiben grundsätzlich bis zu einer Löschanfrage gespeichert.
-        Eine automatische Löschung wegen Inaktivität findet nicht statt. Eine Kontolöschung kann per
-        E-Mail an
-        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
-        angefragt werden. Nach Prüfung der Berechtigung wird die Löschung manuell in Firebase
-        Authentication sowie für das zugehörige Profil und die gespeicherten Ordner und Partien in
-        der Realtime Database bearbeitet. Bitte keine Passwörter per E-Mail senden. Abmelden allein
-        löscht das Konto nicht.
+        Nutzerkonto und Nutzerprofil bleiben grundsätzlich bis zur Kontolöschung gespeichert.
+        Eine automatische Löschung wegen Inaktivität findet nicht statt. Im angemeldeten
+        Hauptmenü kann unter „Settings“ → „Delete account“ nach erneuter Bestätigung des aktuellen Passworts
+        die unwiderrufliche Löschung ausgelöst werden. Dabei werden das Profil und alle
+        gespeicherten Ordner und Partien aus der Realtime Database und anschließend das Konto aus
+        Firebase Authentication gelöscht. Schlägt die anschließende Kontolöschung fehl, sind die
+        zuvor gelöschten Partien nicht wiederherstellbar; die Anwendung zeigt den Fehler und
+        ermöglicht einen erneuten Versuch. Datenschutzanfragen sind weiterhin per E-Mail möglich.
+        Bitte keine Passwörter per E-Mail senden. Abmelden allein löscht das Konto nicht.
       </p>
       <p>
-        [Vertragspartner von Google, Rechtsgrundlage und Auftragsverarbeitungsvertrag prüfen und
-        ergänzen. Technische Löschfristen, etwa für Protokolle und Sicherungskopien, sowie
+        Für die eingesetzten Firebase-Dienste gelten die vereinbarten Datenverarbeitungsbedingungen
+        von Google. [Konkreten Vertragspartner und Rechtsgrundlage ergänzen.
+        Technische Löschfristen, etwa für Protokolle und Sicherungskopien, sowie
         gegebenenfalls erforderliche Aufbewahrungspflichten klären.]
       </p>
       <p>
-        Die Realtime Database verwendet eine europäische Region. Das bedeutet nicht, dass sämtliche
+        Die Realtime Database verwendet die Region europe-west1 (Belgien). Das bedeutet nicht, dass sämtliche
         Firebase-Dienste ausschließlich in der EU Daten verarbeiten. [Mögliche
         Drittlandübermittlungen und die konkret geltenden Garantien prüfen und beschreiben.] Weitere
         Informationen:
@@ -110,7 +119,11 @@
   } @else {
     <section>
       <h2>Betreiber von Grimoire</h2>
-      <p>Privates, öffentlich zugängliches Projekt mit Sitz in Deutschland.</p>
+      <p>
+        Grimoire ist eine kostenlose Schach-Lern- und Spielanwendung unter
+        grimoire.julian-hergert.de. Das öffentlich zugängliche Hobbyprojekt wird privat und
+        nicht geschäftlich betrieben, ohne Werbung, Spenden oder kostenpflichtige Funktionen.
+      </p>
       <p>
         Julian Hergert<br />
         Sandhövelstraße 32<br />

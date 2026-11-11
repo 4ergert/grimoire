@@ -16,6 +16,7 @@ describe('LoginOverlay', () => {
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    deleteAccount: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -58,6 +59,57 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('confirms account deletion with a password and returns to login', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    auth.deleteAccount.mockImplementation(async () => auth.user.set(null));
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const details = element.querySelector<HTMLDetailsElement>('.account-deletion')!;
+    details.open = true;
+    const form = details.querySelector<HTMLFormElement>('form')!;
+    const password = form.querySelector<HTMLInputElement>('#delete-password')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(auth.deleteAccount).not.toHaveBeenCalled();
+    password.value = 'current-password';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(password.value).toBe('');
+    await fixture.whenStable();
+    expect(auth.deleteAccount).toHaveBeenCalledWith('current-password');
+    expect(element.querySelector('app-menu-overlay')).toBeNull();
+    expect(element.querySelector('#email')).not.toBeNull();
+    expect(component.pending()).toBe(false);
+  });
+
+  it('allows cancelling account deletion without changing data', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const details: HTMLDetailsElement = fixture.nativeElement.querySelector('.account-deletion');
+    details.open = true;
+    const password = details.querySelector<HTMLInputElement>('#delete-password')!;
+    password.value = 'current-password';
+    details.querySelector<HTMLButtonElement>('button[type="button"]')!.click();
+    expect(password.value).toBe('');
+    expect(details.open).toBe(false);
+    expect(auth.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  it('reports an incorrect deletion password and prevents duplicate submissions', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    auth.deleteAccount.mockRejectedValue(new FirebaseError('auth/invalid-credential', 'Invalid'));
+    component.pending.set(true);
+    await component.deleteAccount('wrong');
+    expect(auth.deleteAccount).not.toHaveBeenCalled();
+    component.pending.set(false);
+    await component.deleteAccount('wrong');
+    await fixture.whenStable();
+    expect(component.error()).toContain('The password is incorrect');
+    expect(component.pending()).toBe(false);
+    expect(fixture.nativeElement.querySelector('.auth_error')?.textContent)
+      .toContain('Your account was not deleted');
+    expect(auth.user()).not.toBeNull();
   });
 
   it('lets guests play only against Stockfish and return to login', async () => {
@@ -372,7 +424,7 @@ describe('LoginOverlay', () => {
 
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Test User');
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
-    expect(element.querySelector('form')).toBeNull();
+    expect(element.querySelector('#email')).toBeNull();
     element.querySelector<HTMLButtonElement>('.logout_button')!.click();
     await fixture.whenStable();
 
@@ -391,7 +443,7 @@ describe('LoginOverlay', () => {
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
-    expect(element.querySelector('form')).toBeNull();
+    expect(element.querySelector('#email')).toBeNull();
 
     auth.logout.mockRejectedValue(new FirebaseError('auth/network-request-failed', 'Offline'));
     element.querySelector<HTMLButtonElement>('.logout_button')!.click();
