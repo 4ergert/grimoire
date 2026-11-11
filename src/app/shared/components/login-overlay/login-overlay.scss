@@ -117,14 +117,20 @@ input:focus {
   font-size: 16px;
   color: #dfd17f;
   text-align: center;
+  margin-top: -24px;
 
   .auth_switch {
     padding: 0;
     border: none;
     background: none;
     font: inherit;
+    font-size: 20px;
+    font-weight: 600;
     color: #ffed84;
+    text-shadow: 0 0 4px #dfdfdd;
     cursor: pointer;
+    margin-top: 8px;
+    margin-bottom: 16px;
   }
 }
 

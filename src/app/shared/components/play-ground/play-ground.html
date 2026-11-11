@@ -69,6 +69,8 @@
     (squareSelected)="select($event)"
   />
 
+  <app-opening-name [positions]="openingPositions()" />
+
   @if (isTraining) {
     <app-training-panel
       [session]="training()"

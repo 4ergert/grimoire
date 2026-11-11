@@ -12,6 +12,7 @@ import { Promotion, PromotionControls } from './components/promotion-controls/pr
 import { TrainingPanel } from './components/training-panel/training-panel';
 import { MoveHistory } from './components/move-history/move-history';
 import { EngineSideDialog } from './components/engine-side-dialog/engine-side-dialog';
+import { OpeningName } from './components/opening-name/opening-name';
 import {
   EngineMode,
   EngineMove,
@@ -30,6 +31,7 @@ import {
     MoveHistory,
     StockfishPanel,
     EngineSideDialog,
+    OpeningName,
   ],
   templateUrl: './play-ground.html',
   styleUrl: './play-ground.scss',
@@ -78,6 +80,13 @@ export class PlayGround {
     if (this.trainingFolder()) return new Chess().fen();
     const positions = this.replayPositions();
     return positions.length ? positions[this.replayIndex()] : this.game.position();
+  });
+  readonly openingPositions = computed(() => {
+    const training = this.training();
+    if (training) return training.positions();
+    if (this.trainingFolder()) return [this.displayPosition()];
+    const positions = this.replayPositions();
+    return positions.length ? positions.slice(0, this.replayIndex() + 1) : this.game.positions();
   });
   readonly board = computed(() => new Chess(this.displayPosition()).board());
   readonly engineTurn = computed(() => {

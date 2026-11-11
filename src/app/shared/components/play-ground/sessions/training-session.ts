@@ -11,6 +11,13 @@ export class TrainingSession {
   private readonly game = new Chess();
   private lines: TrainingLine[] = [];
   readonly position = signal(this.game.fen());
+  readonly positions = computed(() => {
+    this.position();
+    this.ply();
+    this.gameIndex();
+    const moves = this.game.history({ verbose: true });
+    return [moves[0]?.before ?? this.game.fen(), ...moves.map((move) => move.after)];
+  });
   readonly color = signal<Color>('w');
   readonly gameIndex = signal(0);
   readonly gameCount = signal(0);

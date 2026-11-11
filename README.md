@@ -16,6 +16,11 @@ Firebase Authentication, and Firebase Realtime Database.
 - Click-to-move controls, legal destination highlights, and SAN move notation.
 - Castling, en passant, promotion, check, checkmate, and draw detection.
 - Animated piece movement and a reversible board perspective.
+- Opening names and ECO codes beneath the board, using a local snapshot of
+  [Lichess chess-openings](https://github.com/lichess-org/chess-openings).
+  Names are in English. The latest known opening is retained as play continues;
+  replay and training only use positions already reached. No positions are sent
+  to Lichess. The data is dedicated to the public domain under CC0.
 - Local Stockfish analysis with up to three candidate lines and games against
   the engine as White or Black.
 - Personal folders containing games saved as PGN text in Firebase.
@@ -54,6 +59,9 @@ npx ng test --watch=false --include "src/app/shared/components/play-ground/*.spe
 
 No end-to-end test runner is configured. Mocked Firebase tests do not verify
 deployed database permissions or live connectivity.
+
+To regenerate the opening data, update the pinned revision in
+`scripts/update-openings.mjs` and run `node scripts/update-openings.mjs`.
 
 ## Firebase setup
 
