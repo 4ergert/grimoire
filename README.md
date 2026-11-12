@@ -84,8 +84,9 @@ project, replace it with that project's web app configuration.
 Registration creates the Firebase Auth account, sets its display name, and saves
 the username in Realtime Database. If saving the profile fails, the app attempts
 to remove the new Auth account; rollback failures are explicitly reported.
-After successful account/profile creation, Firebase sends a German-language
-verification email using its configured template and hosted action handler.
+After successful account/profile creation, the app requests an English-language
+verification email using Firebase's configured template and hosted action handler.
+Check the English template in Firebase Authentication before deployment.
 Authorize `grimoire.julian-hergert.de` in Firebase Authentication for the return
 URL. If sending fails, the account remains available and an explicit error is
 shown. Unverified users can resend the email from the main menu. Verification
@@ -299,8 +300,8 @@ when deploying or redistributing the engine.
 
 ## Deployment and legal notices
 
-The login and sign-up window provides links to the legal pages. There is no
-shared legal footer in the signed-in or guest views.
+The login, sign-up and signed-in menu provide links to the legal pages. There
+is no shared legal footer in the game or guest views.
 
 Build with `npm run build` and serve the generated browser assets from
 `dist/grimoire/browser/`. Configure the web host to return Angular's
@@ -308,7 +309,7 @@ Build with `npm run build` and serve the generated browser assets from
 `/datenschutz`.
 
 The public legal pages in [legal.html](./src/app/pages/legal/legal.html) are
-**unfinished German-language drafts**, not a guarantee of legal compliance.
+**unfinished, legally unreviewed English translations**, not a guarantee of legal compliance.
 Do not publish them as final notices.
 
 Before public operation:

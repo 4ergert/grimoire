@@ -1,9 +1,10 @@
 import { Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CustomButton } from '../button/button';
 
 @Component({
   selector: 'app-menu-overlay',
-  imports: [CustomButton],
+  imports: [CustomButton, RouterLink],
   templateUrl: './menu-overlay.html',
   styleUrl: './menu-overlay.scss',
 })

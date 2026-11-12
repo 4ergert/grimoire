@@ -62,6 +62,11 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    const links: NodeListOf<HTMLAnchorElement> = fixture.nativeElement.querySelectorAll('.legal_links a');
+    expect(Array.from(links, (link) => link.textContent?.trim())).toEqual([
+      'Legal notice',
+      'Privacy policy',
+    ]);
   });
 
   it('resends verification emails and displays delivery status', async () => {

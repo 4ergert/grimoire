@@ -1,171 +1,182 @@
 @let privacy = routeData()?.['privacy'];
 
 <main>
-  <nav aria-label="Rechtliche Seiten">
-    <a routerLink="/">Zurück zu Grimoire</a>
-    <a routerLink="/impressum">Impressum</a>
-    <a routerLink="/datenschutz">Datenschutzerklärung</a>
+  <nav aria-label="Legal information">
+    <a routerLink="/">Back to Grimoire</a>
+    <a routerLink="/impressum">Legal notice</a>
+    <a routerLink="/datenschutz">Privacy policy</a>
   </nav>
 
-  <h1>{{ privacy ? 'Datenschutzerklärung' : 'Impressum' }}</h1>
+  <h1>{{ privacy ? 'Privacy policy' : 'Legal notice' }}</h1>
+  <p role="note">This English translation is an unreviewed draft and has not been legally reviewed.</p>
 
   @if (privacy) {
     <section>
-      <h2>1. Verantwortlicher</h2>
+      <h2>1. Controller</h2>
       <p>
         Julian Hergert<br />
         Sandhövelstraße 32<br />
         48429 Rheine<br />
-        Deutschland
+        Germany
       </p>
       <p>
-        E-Mail für Datenschutzanfragen:
+        Email for privacy enquiries:
         <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
       </p>
     </section>
     <section>
-      <h2>2. Hosting und Serverprotokolle</h2>
+      <h2>2. Hosting and server logs</h2>
       <p>
-        Grimoire wird im Tarif ALL-INKL PrivatPlus bei ALL-INKL.COM – Neue Medien Münnich
-        gehostet. Mit dem Hosting-Anbieter ist ein Auftragsverarbeitungsvertrag abgeschlossen.
-        Beim Aufruf werden technisch erforderliche
-        Verbindungsdaten verarbeitet, insbesondere die IP-Adresse, Zeitpunkt und Ziel der Anfrage
-        sowie Browser- und Geräteinformationen.
+        Grimoire is hosted under the ALL-INKL PrivatPlus plan by ALL-INKL.COM – Neue Medien Münnich.
+        A data processing agreement has been concluded with the hosting provider. When the website
+        is accessed, technically necessary connection data is processed, including the IP address,
+        time and target of the request, and browser and device information. This serves to provide
+        and securely deliver the website. The legal basis is Article 6(1)(f) GDPR; our legitimate
+        interest is the reliable and secure operation of the website.
       </p>
       <p>
-        Die Erstellung von Zugriffsprotokollen ist in der technischen Hosting-Verwaltung
-        (KAS) deaktiviert. Die für die Auslieferung der Website erforderliche Verarbeitung
-        von Verbindungsdaten findet dennoch statt.
+        Access logging is disabled in the technical hosting administration (KAS). Connection data
+        still needs to be processed to deliver the website.
       </p>
       <p>
-        Der Hosting-Anbieter erstellt in der Regel zwei Sicherungen der Webspace-Dateien:
-        eine mit einem Alter von bis zu etwa zwei Wochen und eine weitere mit einem Alter
-        von bis zu etwa vier Wochen. Diese Webspace-Sicherungen sind keine Sicherungen
-        der bei Firebase gespeicherten Nutzerkonten und Partien. Eigene zusätzliche
-        Sicherungen personenbezogener Nutzerdaten werden vom Betreiber nicht erstellt.
+        According to the hosting provider, independently of this setting, it logs access for
+        administrative purposes with full IP addresses, including to detect and defend against
+        cyberattacks. The operator does not have access to these logs. According to the hosting
+        provider, the data is deleted no later than seven days after collection. The processing
+        serves the security of the hosting operation and is based on Article 6(1)(f) GDPR; the
+        legitimate interest is protecting the website and hosting infrastructure against attacks.
       </p>
       <p>
-        [Zusätzliche Fehler- und Sicherheitsprotokolle des Hosting-Anbieters sowie deren
-        Datenumfang und Löschfristen prüfen. Zwecke und Rechtsgrundlagen der
-        Hosting-Verarbeitung ergänzen.]
-      </p>
-    </section>
-    <section>
-      <h2>3. Registrierung und Anmeldung mit Firebase</h2>
-      <p>
-        Für Nutzerkonten verwenden wir Firebase Authentication und für den Nutzernamen Firebase
-        Realtime Database. Verarbeitet werden E-Mail-Adresse, Nutzername, eine Nutzer-ID und
-        technische Anmeldedaten. Das Passwort wird an Firebase Authentication übermittelt; es wird
-        nicht in unserer Realtime Database gespeichert. Die Angaben werden zur Einrichtung und
-        Nutzung des Kontos benötigt. Freiwillig gespeicherte Schachpartien werden als PGN zusammen
-        mit selbst vergebenen Ordner- und Partienamen unter der Nutzer-ID in der Realtime Database
-        gespeichert und dem jeweiligen Konto zugeordnet.
+        The hosting provider generally creates two backups of webspace files: one up to approximately
+        two weeks old and another up to approximately four weeks old. These webspace backups are not
+        backups of user accounts and games stored in Firebase. The operator does not create
+        additional backups of personal user data.
       </p>
       <p>
-        Nutzerkonto und Nutzerprofil bleiben grundsätzlich bis zur Kontolöschung gespeichert.
-        Eine automatische Löschung wegen Inaktivität findet nicht statt. Im angemeldeten
-        Hauptmenü kann unter „Settings“ → „Delete account“ nach erneuter Bestätigung des aktuellen Passworts
-        die unwiderrufliche Löschung ausgelöst werden. Dabei werden das Profil und alle
-        gespeicherten Ordner und Partien aus der Realtime Database und anschließend das Konto aus
-        Firebase Authentication gelöscht. Schlägt die anschließende Kontolöschung fehl, sind die
-        zuvor gelöschten Partien nicht wiederherstellbar; die Anwendung zeigt den Fehler und
-        ermöglicht einen erneuten Versuch. Datenschutzanfragen sind weiterhin per E-Mail möglich.
-        Bitte keine Passwörter per E-Mail senden. Abmelden allein löscht das Konto nicht.
-      </p>
-      <p>
-        Nach den veröffentlichten Angaben von Google verarbeitet Firebase Authentication
-        Daten ausschließlich in Rechenzentren in den USA. Protokollierte IP-Adressen
-        werden dort für einige Wochen aufbewahrt. Nach Veranlassung einer Kontolöschung
-        werden die übrigen Authentifizierungsdaten laut Google innerhalb von 180 Tagen
-        aus den Live- und Sicherungssystemen entfernt.
-        Firebase Realtime Database bewahrt IP-Adressen und User-Agent-Informationen
-        laut Google für einige Tage auf, sofern keine längere Speicherung gewählt wird.
-      </p>
-      <p>
-        Die optionale tägliche automatische Sicherung der Realtime Database ist für
-        dieses Projekt nicht aktiviert. Davon zu unterscheiden sind interne
-        Sicherungs- und Löschverfahren des Dienstanbieters.
-      </p>
-      <p>
-        Für die eingesetzten Firebase-Dienste gelten die vereinbarten Datenverarbeitungsbedingungen
-        von Google. [Konkreten Vertragspartner und Rechtsgrundlage ergänzen.
-        Technische Löschfristen, etwa für Protokolle und Sicherungskopien, sowie
-        gegebenenfalls erforderliche Aufbewahrungspflichten klären.]
-      </p>
-      <p>
-        Die Realtime Database verwendet die Region europe-west1 (Belgien). Das bedeutet nicht, dass sämtliche
-        Firebase-Dienste ausschließlich in der EU Daten verarbeiten.
-        Google LLC erklärt eine Zertifizierung unter dem EU-US Data Privacy Framework.
-        [Die für dieses Projekt und die eingesetzten Dienste konkret geltenden
-        Übermittlungsgrundlagen, den aktuellen Zertifizierungsumfang und gegebenenfalls
-        vereinbarte Standardvertragsklauseln vor Veröffentlichung prüfen und ergänzen.]
-        Weitere
-        Informationen:
-        <a href="https://firebase.google.com/support/privacy">Datenschutz bei Firebase</a>.
+        [Check whether additional error or security logs exist, what data they contain, and when they
+        are deleted.]
       </p>
     </section>
     <section>
-      <h2>4. Lokale Speicherung und weitere Dienste</h2>
+      <h2>3. Registration and sign-in with Firebase</h2>
       <p>
-        Firebase speichert den Anmeldestatus lokal im Browser, damit die Sitzung beim erneuten
-        Öffnen wiederhergestellt werden kann. Beim Abmelden wird die aktive Sitzung auf diesem Gerät
-        beendet.
+        We use Firebase Authentication for user accounts and Firebase Realtime Database for usernames.
+        Email addresses, usernames, user IDs and technical sign-in data are processed. Passwords are
+        transmitted to Firebase Authentication; they are not stored in our Realtime Database. This
+        information is needed to set up and use an account. Chess games saved voluntarily are stored
+        as PGN together with user-chosen folder and game names under the user ID in the Realtime
+        Database and associated with the respective account.
       </p>
       <p>
-        Im Anwendungscode wird Firebase Analytics nicht initialisiert. Werbung und zusätzliche
-        Trackingdienste sind nicht vorgesehen. [Tatsächliche Browser-Speicher, ihre Dauer und die
-        Rechtsgrundlagen einschließlich eines gegebenenfalls erforderlichen Einwilligungsverfahrens
-        vor Veröffentlichung prüfen.]
+        User accounts and profiles are generally stored until the account is deleted. There is no
+        automatic deletion due to inactivity. In the signed-in main menu, irreversible deletion can
+        be initiated under “Settings” → “Delete account” after reconfirming the current password.
+        This deletes the profile and all saved folders and games from the Realtime Database, followed
+        by the account in Firebase Authentication. If the subsequent account deletion fails, games
+        already deleted cannot be recovered; the application displays the error and allows another
+        attempt. Privacy enquiries can still be made by email. Please do not send passwords by email.
+        Signing out alone does not delete the account.
+      </p>
+      <p>
+        According to Google's published information, Firebase Authentication processes data
+        exclusively in data centres in the USA. Logged IP addresses are retained there for several
+        weeks. After account deletion is initiated, Google states that the remaining authentication
+        data is removed from live and backup systems within 180 days. Google states that Firebase
+        Realtime Database retains IP addresses and user-agent information for a few days unless
+        longer storage has been selected.
+      </p>
+      <p>
+        Optional daily automatic backups of the Realtime Database are not enabled for this project.
+        These are distinct from the service provider's internal backup and deletion procedures.
+      </p>
+      <p>
+        The agreed Google data processing terms apply to the Firebase services used.
+        [Add the specific contracting party and legal basis. Clarify technical deletion periods,
+        such as for logs and backups, and any applicable retention obligations.]
+      </p>
+      <p>
+        The Realtime Database uses the europe-west1 region (Belgium). This does not mean that all
+        Firebase services process data exclusively in the EU. Google LLC states that it is certified
+        under the EU-US Data Privacy Framework. [Before publication, check and add the transfer
+        mechanisms applicable to this project and its services, the current scope of certification,
+        and any agreed standard contractual clauses.]
+        Further information:
+        <a href="https://firebase.google.com/support/privacy">Firebase privacy information</a>.
       </p>
     </section>
     <section>
-      <h2>5. Deine Rechte</h2>
+      <h2>4. Local storage and other services</h2>
       <p>
-        Im Rahmen der gesetzlichen Voraussetzungen bestehen Rechte auf Auskunft, Berichtigung,
-        Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Bei einer Verarbeitung
-        aufgrund berechtigter Interessen kann ein Widerspruchsrecht bestehen. Eine erteilte
-        Einwilligung kann mit Wirkung für die Zukunft widerrufen werden. Außerdem besteht ein
-        Beschwerderecht bei einer Datenschutzaufsichtsbehörde.
+        Firebase Authentication stores the sign-in state in the browser, including in IndexedDB,
+        so the session can be restored after the browser is closed and reopened. Signing out ends
+        the active session on this device and removes the stored sign-in state.
       </p>
       <p>
-        Datenschutzanfragen und die Ausübung deiner Rechte kannst du an
-        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>
-        richten.
+        Firebase Realtime Database stores technical connection information in local browser storage,
+        including a database server address and, where applicable, an indication of a failed
+        WebSocket connection attempt. Firebase also stores technical heartbeat information, such as
+        a date and details of the Firebase SDK version used, in IndexedDB. These entries support
+        the operation of Firebase services and may remain after signing out.
       </p>
       <p>
-        Für den Betreiber in Nordrhein-Westfalen ist die
+        Firebase updates or partially removes the technical entries as needed. We are not aware of a
+        fixed general deletion period. You can delete locally stored website data in your browser
+        settings; this may also end an existing session. The entries may be created again when you
+        use the website again.
+      </p>
+      <p>
+        Firebase Analytics is not initialized in the application code. Advertising and additional
+        tracking services are not planned. [Before publication, check the legal bases for processing
+        and accessing browser storage, as well as any required consent procedure.]
+      </p>
+    </section>
+    <section>
+      <h2>5. Your rights</h2>
+      <p>
+        Subject to the statutory requirements, you have rights of access, rectification, erasure,
+        restriction of processing and data portability. Where processing is based on legitimate
+        interests, you may have a right to object. Consent given may be withdrawn with effect for
+        the future. You also have the right to lodge a complaint with a data protection supervisory
+        authority.
+      </p>
+      <p>
+        You can send privacy enquiries and requests to exercise your rights to
+        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>.
+      </p>
+      <p>
+        For the operator in North Rhine-Westphalia, the
         <a href="https://www.ldi.nrw.de/kontakt">
-          Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen
+          North Rhine-Westphalia Commissioner for Data Protection and Freedom of Information
         </a>
-        eine zuständige Anlaufstelle. Das Beschwerderecht bei einer anderen zuständigen
-        Datenschutzaufsichtsbehörde bleibt unberührt.
+        is a competent contact. Your right to complain to another competent data protection
+        supervisory authority remains unaffected.
       </p>
     </section>
   } @else {
     <section>
-      <h2>Betreiber von Grimoire</h2>
+      <h2>Grimoire operator</h2>
       <p>
-        Grimoire ist eine kostenlose Schach-Lern- und Spielanwendung unter
-        grimoire.julian-hergert.de. Das öffentlich zugängliche Hobbyprojekt wird privat und
-        nicht geschäftlich betrieben, ohne Werbung, Spenden oder kostenpflichtige Funktionen.
+        Grimoire is a free chess learning and playing application at grimoire.julian-hergert.de.
+        The publicly accessible hobby project is operated privately and non-commercially, without
+        advertising, donations or paid features.
       </p>
       <p>
         Julian Hergert<br />
         Sandhövelstraße 32<br />
         48429 Rheine<br />
-        Deutschland
+        Germany
       </p>
     </section>
     <section>
-      <h2>Kontakt</h2>
-      <p>E-Mail: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a></p>
+      <h2>Contact</h2>
+      <p>Email: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a></p>
     </section>
     <section>
-      <h2>Vor Veröffentlichung prüfen</h2>
+      <h2>Review before publication</h2>
       <p>
-        Das Projekt wird privat, ohne Werbung und ohne kostenpflichtige Angebote betrieben.
-        Journalistischer oder redaktioneller Inhalt ist nicht vorgesehen. Die für das konkrete
-        Angebot erforderlichen Angaben sind vor Veröffentlichung rechtlich zu prüfen.
+        The project is operated privately, without advertising or paid offerings. No journalistic
+        or editorial content is planned. The information required for this specific service must
+        be reviewed legally before publication.
       </p>
     </section>
   }

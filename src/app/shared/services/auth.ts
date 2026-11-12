@@ -82,7 +82,7 @@ export class Auth {
     const user = this.user();
     if (!user) throw new Error('Please sign in to request a verification email.');
     if (user.emailVerified) throw new Error('Your email address is already verified.');
-    this.auth.languageCode = 'de';
+    this.auth.languageCode = 'en';
     await sendEmailVerification(user, {
       url: 'https://grimoire.julian-hergert.de/',
     });

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 
 import { MenuOverlay } from './menu-overlay';
 import { afterEach, vi } from 'vitest';
@@ -18,6 +19,7 @@ describe('MenuOverlay', () => {
     });
     await TestBed.configureTestingModule({
       imports: [MenuOverlay],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MenuOverlay);
@@ -33,6 +35,26 @@ describe('MenuOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('offers working legal links for verified and unverified users', async () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    for (const verified of [true, false]) {
+      fixture.componentRef.setInput('emailVerified', verified);
+      await fixture.whenStable();
+      const links: NodeListOf<HTMLAnchorElement> =
+        fixture.nativeElement.querySelectorAll('nav[aria-label="Legal information"] a');
+      expect(Array.from(links, (link) => [link.textContent?.trim(), link.getAttribute('href')]))
+        .toEqual([['Legal notice', '/impressum'], ['Privacy policy', '/datenschutz']]);
+      for (const [index, path] of ['/impressum', '/datenschutz'].entries()) {
+        links[index].click();
+        const target = navigate.mock.calls.at(-1)?.[0];
+        expect(target).toBeDefined();
+        expect(typeof target === 'string' ? target : router.serializeUrl(target!)).toBe(path);
+      }
+    }
+    expect(navigate).toHaveBeenCalledTimes(4);
   });
 
   it('should offer separate create and computer game actions and disable them while pending', async () => {

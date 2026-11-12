@@ -1,3 +1,5 @@
+@use '../legal-links';
+
 :host {
   display: flex;
   justify-content: center;
@@ -143,25 +145,6 @@ footer {
   bottom: 24px;
   width: 100%;
   text-align: center;
-}
-
-.legal_links {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px 24px;
-  font-size: 14px;
-  font-weight: 300;
-
-  a {
-    color: #ffed84;
-    text-decoration: none;
-  }
-
-  a:focus-visible {
-    outline: 2px solid #ffed84;
-    outline-offset: 4px;
-  }
 }
 
 @media (max-width: 500px) {

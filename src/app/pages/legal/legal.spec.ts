@@ -10,20 +10,30 @@ describe('Legal pages', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/impressum', Legal);
 
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Impressum');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Legal notice');
+    expect(harness.routeNativeElement?.textContent).toContain('unreviewed draft');
+    expect(document.title).toBe('Legal notice | Grimoire');
     expect(harness.routeNativeElement?.querySelector('.draft')).toBeNull();
     expect(harness.routeNativeElement?.querySelector('a[href="/"]')).not.toBeNull();
 
     await harness.navigateByUrl('/datenschutz', Legal);
 
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe(
-      'Datenschutzerklärung',
+      'Privacy policy',
     );
     expect(harness.routeNativeElement?.textContent).toContain('ALL-INKL');
+    expect(harness.routeNativeElement?.textContent).toContain('full IP addresses');
+    expect(harness.routeNativeElement?.textContent).toContain('no later than seven days');
+    expect(harness.routeNativeElement?.textContent).toContain('Article 6(1)(f) GDPR');
     expect(harness.routeNativeElement?.textContent).toContain('Firebase');
-    expect(harness.routeNativeElement?.textContent).toContain('Eine automatische Löschung');
+    expect(harness.routeNativeElement?.textContent).toContain('heartbeat information');
+    expect(harness.routeNativeElement?.textContent).toContain('fixed general deletion period');
+    expect(harness.routeNativeElement?.textContent).toContain('website data');
+    expect(harness.routeNativeElement?.textContent).toContain('any required consent procedure');
+    expect(document.title).toBe('Privacy policy | Grimoire');
+    expect(harness.routeNativeElement?.textContent).toContain('automatic deletion due to inactivity');
     expect(harness.routeNativeElement?.textContent).toContain(
-      'Abmelden allein löscht das Konto nicht.',
+      'Signing out alone does not delete the account.',
     );
     expect(harness.routeNativeElement?.querySelector('a[href^="mailto:"]')).not.toBeNull();
     expect(

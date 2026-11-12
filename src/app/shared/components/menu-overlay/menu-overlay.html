@@ -102,4 +102,10 @@
   @if (error() && !settings.open) {
   <p class="auth_error" role="alert">{{ error() }}</p>
   }
+  <footer>
+    <nav class="legal_links" aria-label="Legal information">
+      <a routerLink="/impressum">Legal notice</a>
+      <a routerLink="/datenschutz">Privacy policy</a>
+    </nav>
+  </footer>
 </section>

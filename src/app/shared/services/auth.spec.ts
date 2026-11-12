@@ -75,6 +75,7 @@ describe('Auth', () => {
     expect(firebase.sendEmailVerification).toHaveBeenCalledWith(user, {
       url: 'https://grimoire.julian-hergert.de/',
     });
+    expect(firebase.getAuth.mock.results[0].value).toEqual(expect.objectContaining({ languageCode: 'en' }));
     expect(firebase.set.mock.invocationCallOrder[0])
       .toBeLessThan(firebase.sendEmailVerification.mock.invocationCallOrder[0]);
   });

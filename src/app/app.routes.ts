@@ -12,13 +12,13 @@ export const routes: Routes = [
     path: 'impressum',
     component: Legal,
     data: { privacy: false },
-    title: 'Impressum | Grimoire',
+    title: 'Legal notice | Grimoire',
   },
   {
     path: 'datenschutz',
     component: Legal,
     data: { privacy: true },
-    title: 'Datenschutzerklärung | Grimoire',
+    title: 'Privacy policy | Grimoire',
   },
   {
     path: '**',

@@ -1,3 +1,5 @@
+@use '../legal-links';
+
 :host {
   display: flex;
   justify-content: center;
@@ -62,6 +64,12 @@ header {
 
 .menu_button {
   width: 60%;
+}
+
+footer {
+  width: 100%;
+  margin-top: 8px;
+  text-align: center;
 }
 
 dialog {
