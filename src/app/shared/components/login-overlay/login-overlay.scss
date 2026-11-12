@@ -97,6 +97,7 @@ input {
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid rgb(253, 253, 253);
+  caret-color: #fff;
   background-color: transparent;
   backdrop-filter: blur(2px);
 }
@@ -113,6 +114,28 @@ input:focus {
     0 0 20px #ffed8494,
     inset 0 0 12px #ffed8494,
     0 0 8px #ffed8494;
+}
+
+input[aria-invalid='true'] {
+  border-color: #000;
+  box-shadow:
+    0 0 20px #000,
+    inset 0 0 12px #000;
+}
+
+input[aria-invalid='true']:focus-visible {
+  outline: 2px solid #ffed84;
+  outline-offset: 2px;
+}
+
+.field_error {
+  color: #ff6b6b;
+  font-size: 12px;
+}
+
+.field_hint {
+  color: #dfd17f;
+  font-size: 12px;
 }
 
 .signup_prompt {

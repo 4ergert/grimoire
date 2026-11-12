@@ -3,12 +3,18 @@
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && ((!data.exists() && newData.exists() && newData.child('username').isString() && newData.parent().parent().child('usernames').child(newData.child('username').val().toLowerCase()).val() === $uid) || (data.exists() && !newData.exists() && data.child('username').isString() && !newData.parent().parent().child('usernames').child(data.child('username').val().toLowerCase()).exists()))",
         ".validate": "newData.hasChildren(['username'])",
         "username": {
-          ".validate": "newData.isString() && newData.val().length > 0"
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_]{4,42}$/)"
         },
         "$other": { ".validate": false }
+      }
+    },
+    "usernames": {
+      "$name": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && $name.matches(/^[a-z0-9_]{4,42}$/) && newData.parent().parent().child('users').child(auth.uid).child('username').isString() && newData.parent().parent().child('users').child(auth.uid).child('username').val().toLowerCase() === $name) || (data.val() === auth.uid && !newData.exists() && !newData.parent().parent().child('users').child(auth.uid).exists()))"
       }
     },
     "gameLibrary": {

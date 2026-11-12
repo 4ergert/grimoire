@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { Auth } from './auth';
+import { Auth, UsernameTakenError } from './auth';
 
 const firebase = vi.hoisted(() => ({
   initializeApp: vi.fn(() => ({})),
@@ -18,7 +18,8 @@ const firebase = vi.hoisted(() => ({
   reauthenticateWithCredential: vi.fn(),
   update: vi.fn(),
   ref: vi.fn((_database: unknown, path = '') => path),
-  set: vi.fn(),
+  get: vi.fn(),
+  onValue: vi.fn((_ref: unknown, _next: (snapshot: { val: () => unknown }) => void, _error: (error: Error) => void) => vi.fn()),
 }));
 
 vi.mock('firebase/app', () => ({ initializeApp: firebase.initializeApp }));
@@ -38,19 +39,33 @@ vi.mock('firebase/auth', () => ({
 vi.mock('firebase/database', () => ({
   getDatabase: firebase.getDatabase,
   ref: firebase.ref,
-  set: firebase.set,
+  get: firebase.get,
+  onValue: firebase.onValue,
   update: firebase.update,
 }));
 
 describe('Auth', () => {
   let auth: Auth;
-  const user = { uid: 'user-123', displayName: 'Test User', email: 'test@example.com' };
+  const user = { uid: 'user-123', displayName: 'TestUser', email: 'test@example.com' };
+  const snapshot = (value: unknown) => ({
+    exists: () => value != null,
+    val: () => value,
+    child: () => ({ val: () => (value as { username?: string } | null)?.username }),
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    firebase.initializeApp.mockReturnValue({});
+    firebase.getAuth.mockReturnValue({});
+    firebase.getDatabase.mockReturnValue({});
+    firebase.onAuthStateChanged.mockImplementation(() => vi.fn());
+    firebase.onValue.mockImplementation(() => vi.fn());
+    firebase.ref.mockImplementation((_database: unknown, path = '') => path);
+    firebase.credential.mockImplementation((email: string, password: string) => ({ email, password }));
     firebase.createUserWithEmailAndPassword.mockResolvedValue({ user });
     firebase.updateProfile.mockResolvedValue(undefined);
-    firebase.set.mockResolvedValue(undefined);
+    firebase.get.mockImplementation(async (path: string) =>
+      snapshot(path === 'users/user-123' ? { username: 'TestUser' } : null));
     firebase.deleteUser.mockResolvedValue(undefined);
     firebase.reauthenticateWithCredential.mockResolvedValue(undefined);
     firebase.update.mockResolvedValue(undefined);
@@ -61,28 +76,30 @@ describe('Auth', () => {
   });
 
   it('should register credentials only in Auth and save only the username in the database', async () => {
-    await auth.register('Test User', 'test@example.com', 'test-password');
+    await auth.register('TestUser', 'test@example.com', 'test-password');
 
     expect(firebase.createUserWithEmailAndPassword).toHaveBeenCalledWith(
       expect.anything(),
       'test@example.com',
       'test-password',
     );
-    expect(firebase.updateProfile).toHaveBeenCalledWith(user, { displayName: 'Test User' });
-    expect(firebase.ref).toHaveBeenCalledWith(expect.anything(), 'users/user-123');
-    expect(firebase.set).toHaveBeenCalledWith('users/user-123', { username: 'Test User' });
+    expect(firebase.updateProfile).toHaveBeenCalledWith(user, { displayName: 'TestUser' });
+    expect(firebase.update).toHaveBeenCalledWith('', {
+      'users/user-123': { username: 'TestUser' },
+      'usernames/testuser': 'user-123',
+    });
     expect(auth.user()).toBe(user);
     expect(firebase.sendEmailVerification).toHaveBeenCalledWith(user, {
       url: 'https://grimoire.julian-hergert.de/',
     });
     expect(firebase.getAuth.mock.results[0].value).toEqual(expect.objectContaining({ languageCode: 'en' }));
-    expect(firebase.set.mock.invocationCallOrder[0])
+    expect(firebase.update.mock.invocationCallOrder[0])
       .toBeLessThan(firebase.sendEmailVerification.mock.invocationCallOrder[0]);
   });
 
   it('keeps the account and permits resending if verification email delivery fails', async () => {
     firebase.sendEmailVerification.mockRejectedValueOnce(new Error('Mail service unavailable'));
-    await expect(auth.register('Test User', 'test@example.com', 'test-password'))
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password'))
       .rejects.toThrow('Your account was created, but the verification email could not be sent');
     expect(auth.user()).toBe(user);
     expect(firebase.deleteUser).not.toHaveBeenCalled();
@@ -142,9 +159,10 @@ describe('Auth', () => {
   });
   it('should remove a new account if saving its profile fails', async () => {
     const error = new Error('Permission denied');
-    firebase.set.mockRejectedValue(error);
+    firebase.update.mockRejectedValueOnce(error);
+    firebase.get.mockResolvedValue(snapshot(null));
 
-    await expect(auth.register('Test User', 'test@example.com', 'test-password')).rejects.toBe(
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password')).rejects.toBe(
       error,
     );
     expect(firebase.deleteUser).toHaveBeenCalledWith(user);
@@ -152,21 +170,69 @@ describe('Auth', () => {
   });
 
   it('should explicitly report rollback failures', async () => {
-    firebase.set.mockRejectedValue(new Error('Permission denied'));
+    firebase.update.mockRejectedValueOnce(new Error('Permission denied'));
+    firebase.get.mockResolvedValue(snapshot(null));
     firebase.deleteUser.mockRejectedValue(new Error('Offline'));
 
-    await expect(auth.register('Test User', 'test@example.com', 'test-password')).rejects.toThrow(
-      'The account was created, but the profile could not be saved',
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password')).rejects.toThrow(
+      'Registration failed and the new account could not be fully removed',
     );
+  });
+
+  it('reports an occupied case-insensitive name and removes the newly created Auth account', async () => {
+    firebase.update.mockRejectedValueOnce(new Error('Permission denied'));
+    firebase.get.mockImplementation(async (path: string) =>
+      snapshot(path === 'usernames/testuser' ? 'another-user' : null));
+
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password'))
+      .rejects.toBeInstanceOf(UsernameTakenError);
+    expect(firebase.deleteUser).toHaveBeenCalledWith(user);
+  });
+
+  it('cleans up a committed profile and reservation before rolling back an uncertain write', async () => {
+    firebase.update.mockRejectedValueOnce(new Error('Connection interrupted'));
+    firebase.get.mockImplementation(async (path: string) =>
+      snapshot(path === 'users/user-123' ? { username: 'TestUser' } : 'user-123'));
+
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password'))
+      .rejects.toThrow('Connection interrupted');
+    expect(firebase.update).toHaveBeenLastCalledWith('', {
+      'users/user-123': null,
+      'usernames/testuser': null,
+    });
+    expect(firebase.deleteUser).toHaveBeenCalledWith(user);
+  });
+
+  it('retains the Auth account if the saved state cannot be checked during rollback', async () => {
+    firebase.update.mockRejectedValueOnce(new Error('Connection interrupted'));
+    firebase.get.mockRejectedValue(new Error('Offline'));
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password'))
+      .rejects.toThrow('could not be fully removed');
+    expect(firebase.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid usernames before creating an account', async () => {
+    await expect(auth.register('Test User', 'test@example.com', 'test-password'))
+      .rejects.toThrow('letters, numbers, or underscores');
+    expect(firebase.createUserWithEmailAndPassword).not.toHaveBeenCalled();
+  });
+
+  it('uses the database profile name instead of the independently editable Auth display name', () => {
+    firebase.onAuthStateChanged.mock.calls[0][1](user);
+    const callback = firebase.onValue.mock.calls[0][1];
+    callback(snapshot('ReservedName'));
+    expect(auth.username()).toBe('ReservedName');
+    firebase.onAuthStateChanged.mock.calls[0][1](null);
+    expect(auth.username()).toBeNull();
   });
 
   it('should not write a profile if account creation fails', async () => {
     firebase.createUserWithEmailAndPassword.mockRejectedValue(new Error('Already registered'));
 
-    await expect(auth.register('Test User', 'test@example.com', 'test-password')).rejects.toThrow(
+    await expect(auth.register('TestUser', 'test@example.com', 'test-password')).rejects.toThrow(
       'Already registered',
     );
-    expect(firebase.set).not.toHaveBeenCalled();
+    expect(firebase.update).not.toHaveBeenCalled();
   });
 
   it('should log in and out using Firebase Auth', async () => {
@@ -198,6 +264,7 @@ describe('Auth', () => {
     );
     expect(firebase.update).toHaveBeenCalledWith('', {
       'users/user-123': null,
+      'usernames/testuser': null,
       'gameLibrary/user-123': null,
     });
     expect(firebase.deleteUser).toHaveBeenCalledWith(user);
@@ -232,6 +299,7 @@ describe('Auth', () => {
       'Your profile and saved games were deleted, but your sign-in account could not be deleted.',
     );
     expect(auth.user()).toBe(user);
+    firebase.get.mockResolvedValue(snapshot(null));
     await auth.deleteAccount('current-password');
     expect(auth.user()).toBeNull();
   });

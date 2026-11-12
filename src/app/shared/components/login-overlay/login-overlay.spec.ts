@@ -5,7 +5,7 @@ import { afterEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 
 import { LoginOverlay } from './login-overlay';
-import { Auth } from '../../services/auth';
+import { Auth, UsernameTakenError } from '../../services/auth';
 import { GameLibrary } from '../../services/game-library';
 
 describe('LoginOverlay', () => {
@@ -13,6 +13,8 @@ describe('LoginOverlay', () => {
   let fixture: ComponentFixture<LoginOverlay>;
   const auth = {
     user: signal<{ displayName: string | null; email: string | null; emailVerified?: boolean } | null>(null),
+    username: signal<string | null>('Test User'),
+    usernameUnavailable: signal(false),
     emailVerified: computed((): boolean => auth.user()?.emailVerified !== false),
     refreshVerification: vi.fn(),
     login: vi.fn(),
@@ -31,6 +33,8 @@ describe('LoginOverlay', () => {
     });
     vi.resetAllMocks();
     auth.user.set(null);
+    auth.username.set('Test User');
+    auth.usernameUnavailable.set(false);
     await TestBed.configureTestingModule({
       imports: [LoginOverlay],
       providers: [
@@ -416,11 +420,131 @@ describe('LoginOverlay', () => {
     element.querySelector<HTMLInputElement>('#email')!.value = 'test@example.com';
     element.querySelector<HTMLInputElement>('#password')!.value = 'test-password';
     if (signUp) {
-      element.querySelector<HTMLInputElement>('#name')!.value = ' Test User ';
+      element.querySelector<HTMLInputElement>('#name')!.value = ' TestUser ';
       element.querySelector<HTMLInputElement>('#confirm-password')!.value = 'test-password';
     }
     return element.querySelector('form')!;
   }
+
+  it('shows inline login errors and removes them as fields are corrected', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const form = element.querySelector<HTMLFormElement>('form')!;
+    const email = element.querySelector<HTMLInputElement>('#email')!;
+    const password = element.querySelector<HTMLInputElement>('#password')!;
+    expect(form.noValidate).toBe(true);
+
+    form.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    await fixture.whenStable();
+    expect(auth.login).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(email);
+    expect(email.getAttribute('aria-describedby')).toBe('email-error');
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    expect(password.getAttribute('aria-invalid')).toBe('true');
+    expect(element.querySelector('#email-error')?.textContent).toContain('enter your email');
+    expect(element.querySelector('#password-error')?.textContent).toContain('enter your password');
+
+    email.value = 'invalid';
+    email.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(element.querySelector('#email-error')?.textContent).toContain('valid email');
+    email.value = 'test@example.com';
+    email.dispatchEvent(new Event('input', { bubbles: true }));
+    password.value = '123';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('.field_error')).toHaveLength(0);
+    expect(email.hasAttribute('aria-invalid')).toBe(false);
+    expect(password.hasAttribute('aria-describedby')).toBe(false);
+    form.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    await fixture.whenStable();
+    expect(auth.login).toHaveBeenCalledWith('test@example.com', '123');
+  });
+
+  it('validates sign-up fields, updates matching passwords and clears errors on mode switch', async () => {
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const form = element.querySelector<HTMLFormElement>('form')!;
+    const name = element.querySelector<HTMLInputElement>('#name')!;
+    const email = element.querySelector<HTMLInputElement>('#email')!;
+    const password = element.querySelector<HTMLInputElement>('#password')!;
+    const confirm = element.querySelector<HTMLInputElement>('#confirm-password')!;
+    name.value = '   ';
+    email.value = 'test@example.com';
+    password.value = '12345';
+    confirm.value = 'different';
+    form.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    await fixture.whenStable();
+    expect(auth.register).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(name);
+    expect(element.querySelector('#name-error')?.textContent).toContain('enter a name');
+    expect(element.querySelector('#password-error')?.textContent).toContain('6 characters');
+    expect(element.querySelector('#confirm-password-error')?.textContent).toContain('do not match');
+
+    name.value = ' Test ';
+    name.dispatchEvent(new Event('input', { bubbles: true }));
+    password.value = '123456';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    confirm.value = '123456';
+    confirm.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('.field_error')).toHaveLength(0);
+    confirm.value = '';
+    confirm.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(element.querySelector('#confirm-password-error')?.textContent).toContain('confirm');
+    element.querySelector<HTMLButtonElement>('.auth_switch')!.click();
+    await fixture.whenStable();
+    expect(element.querySelectorAll('.field_error')).toHaveLength(0);
+    expect(element.querySelector('#confirm-password')).toBeNull();
+  });
+
+  it('enforces four trimmed name characters and a 42-character maximum on registration', async () => {
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    const form = fillForm(true);
+    const name = form.querySelector<HTMLInputElement>('#name')!;
+    const email = form.querySelector<HTMLInputElement>('#email')!;
+    const password = form.querySelector<HTMLInputElement>('#password')!;
+    const confirmation = form.querySelector<HTMLInputElement>('#confirm-password')!;
+    expect(Array.from(form.querySelectorAll('input'), (input) => input.maxLength)).toEqual([42, 42, 42, 42]);
+
+    name.value = ' abc ';
+    await component.submit(new Event('submit'), form);
+    expect(component.fieldErrors().name).toContain('at least 4');
+    expect(auth.register).not.toHaveBeenCalled();
+
+    name.value = ' abcd ';
+    const maxLengthEmail = `${'a'.repeat(30)}@example.com`;
+    email.value = maxLengthEmail;
+    password.value = 'a'.repeat(42);
+    confirmation.value = password.value;
+    await component.submit(new Event('submit'), form);
+    expect(auth.register).toHaveBeenCalledWith('abcd', maxLengthEmail, 'a'.repeat(42));
+
+    name.value = 'a'.repeat(43);
+    email.value = `${'a'.repeat(31)}@example.com`;
+    password.value = 'a'.repeat(43);
+    confirmation.value = password.value;
+    auth.register.mockClear();
+    await component.submit(new Event('submit'), form);
+    expect(auth.register).not.toHaveBeenCalled();
+    expect(Object.keys(component.fieldErrors()).sort()).toEqual(['confirm-password', 'email', 'name', 'password']);
+    expect(Object.values(component.fieldErrors()).every((message) => message.includes('42'))).toBe(true);
+  });
+
+  it('enforces the 42-character limit on login too', async () => {
+    const form = fillForm();
+    const email = form.querySelector<HTMLInputElement>('#email')!;
+    const password = form.querySelector<HTMLInputElement>('#password')!;
+    expect([email.maxLength, password.maxLength]).toEqual([42, 42]);
+    email.value = `${'a'.repeat(31)}@example.com`;
+    password.value = 'a'.repeat(43);
+    await component.submit(new Event('submit'), form);
+    expect(auth.login).not.toHaveBeenCalled();
+    expect(component.fieldErrors().email).toContain('42');
+    expect(component.fieldErrors().password).toContain('42');
+  });
 
   it('should submit credentials to Firebase Auth and clear the form', async () => {
     const form = fillForm();
@@ -442,13 +566,48 @@ describe('LoginOverlay', () => {
     await component.submit(new Event('submit'), form);
 
     expect(auth.register).not.toHaveBeenCalled();
-    expect(component.error()).toBe('The passwords do not match.');
+    expect(component.fieldErrors()['confirm-password']).toBe('The passwords do not match.');
 
     form.querySelector<HTMLInputElement>('#confirm-password')!.value = 'test-password';
     await component.submit(new Event('submit'), form);
 
-    expect(auth.register).toHaveBeenCalledWith('Test User', 'test@example.com', 'test-password');
+    expect(auth.register).toHaveBeenCalledWith('TestUser', 'test@example.com', 'test-password');
     expect(component.error()).toBe('');
+  });
+
+  it('validates allowed username characters and shows an occupied name under its field', async () => {
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    const form = fillForm(true);
+    const name = form.querySelector<HTMLInputElement>('#name')!;
+    name.value = 'Test User';
+    await component.submit(new Event('submit'), form);
+    expect(component.fieldErrors().name).toContain('letters A-Z');
+    expect(auth.register).not.toHaveBeenCalled();
+
+    name.value = 'Test_User';
+    auth.register.mockRejectedValueOnce(new UsernameTakenError());
+    await component.submit(new Event('submit'), form);
+    await fixture.whenStable();
+    expect(component.fieldErrors().name).toContain('already in use');
+    expect(document.activeElement).toBe(name);
+  });
+
+  it('shows the reserved profile name rather than the Auth display name', async () => {
+    auth.user.set({ displayName: 'UntrustedName', email: 'test@example.com' });
+    auth.username.set('ReservedName');
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('ReservedName');
+    expect(element.textContent).not.toContain('UntrustedName');
+  });
+
+  it('reports a profile read failure', async () => {
+    auth.user.set({ displayName: 'UntrustedName', email: 'test@example.com' });
+    auth.usernameUnavailable.set(true);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent)
+      .toContain('username could not be loaded');
   });
 
   it('should report invalid credentials and allow another attempt', async () => {

@@ -67,6 +67,12 @@ To regenerate the opening data, update the pinned revision in
 
 ### Authentication and project configuration
 
+The login and registration fields accept at most 42 characters. After trimming
+leading and trailing whitespace, a registration name must be 4–42 ASCII letters,
+digits, or underscores. Names preserve their spelling but are unique without
+regard to ASCII letter case. Existing accounts with longer email addresses or
+passwords cannot sign in through this form.
+
 The Firebase web configuration is in
 [auth.ts](./src/app/shared/services/auth.ts). When using your own Firebase
 project, replace it with that project's web app configuration.
@@ -81,9 +87,13 @@ project, replace it with that project's web app configuration.
 5. Before public launch, configure password policy, email enumeration
    protection, appropriate quotas, and any applicable App Check protection.
 
-Registration creates the Firebase Auth account, sets its display name, and saves
-the username in Realtime Database. If saving the profile fails, the app attempts
-to remove the new Auth account; rollback failures are explicitly reported.
+Registration creates the Firebase Auth account, sets its display name, and
+atomically creates both the profile and a lowercase username reservation in
+Realtime Database. Firebase rules enforce the reservation and its ownership.
+The database profile, not Firebase Auth's separately editable display name, is
+the authoritative name displayed by the app. If profile creation fails, the
+app attempts to remove the new Auth account and any committed profile; rollback
+failures are explicitly reported.
 After successful account/profile creation, the app requests an English-language
 verification email using Firebase's configured template and hosted action handler.
 Check the English template in Firebase Authentication before deployment.
@@ -112,6 +122,10 @@ ancestors: parent grants cannot be restricted by child rules.
 The supplied rules:
 
 - Allow signed-in users to access only their own profile.
+- Enforce immutable profiles and case-insensitive username reservations created
+  and removed together. Authenticated users can read an individual reservation
+  to distinguish an occupied name from another registration failure; they
+  cannot list all reservations. This permits guessing individual names.
 - Require the owner's `auth.token.email_verified === true` for reading or
   creating/updating game-library data.
 - Allow owners to delete their library data even before email verification,
@@ -130,12 +144,67 @@ A `PERMISSION_DENIED` error
 when opening the library or creating a folder commonly means the `gameLibrary`
 rules have not been published or do not match the signed-in user.
 
+### Migrating existing usernames
+
+**Do not publish the new app or rules against existing accounts before this
+migration.** Existing profiles are not automatically reserved. The new rules
+require each profile to have a matching reservation, including for account
+deletion. Old clients cannot create or delete profiles under the new rules.
+
+1. Schedule maintenance and prevent registration and profile/account changes
+   for the entire migration. Back up the database and existing rules securely.
+   Ensure no old clients can write while the export and import are in progress.
+2. With the Firebase CLI authenticated to the correct project, export the
+   `/users` node to a private local file:
+
+   ```powershell
+   firebase database:get /users --project grimoire-base --output C:\private\users-export.json
+   ```
+
+3. Generate an index in a new file:
+
+   ```powershell
+   node scripts\prepare-username-index.mjs C:\private\users-export.json C:\private\username-index.json
+   ```
+
+   The script refuses invalid names and duplicates, including names differing
+   only in case. Resolve each reported conflict with the affected users, update
+   their profiles, export again, and rerun. Names with spaces, non-ASCII
+   characters, or other unsupported characters must also be changed. Do not
+   discard or merge accounts. The output contains user IDs; keep both files
+   private and remove them securely when no longer needed. Replace `C:\private`
+   with an existing private directory outside the repository.
+4. Confirm `/usernames` is empty and that the export still matches the live
+   `/users` data. Import the generated object **only at `/usernames`**, never at
+   the database root. `database:set` replaces the selected node:
+
+   ```powershell
+   firebase database:set /usernames C:\private\username-index.json --project grimoire-base
+   ```
+
+5. Publish the new database rules and deploy the new app while maintenance is
+   still active. Verify the reservations against the current profiles, then
+   test registration, duplicate rejection, sign-in and deletion with disposable
+   accounts before reopening. Do not allow old clients to continue registering.
+   The migration and deployment are administrative steps; the app does not
+   perform them automatically.
+
+To test the checked-in rules locally, install Firebase CLI and a Java version
+supported by that CLI, then run:
+
+```powershell
+firebase emulators:exec --only database --project demo-grimoire "node scripts\test-username-rules.mjs"
+```
+
 ### Data layout
 
 ```text
 users/
   {uid}/
     username
+
+usernames/
+  {lowercase-username}: {uid}
 
 gameLibrary/
   {uid}/
@@ -323,7 +392,8 @@ Before public operation:
 Account data is retained until account deletion, without automatic inactivity
 deletion. In the signed-in main menu, **Settings > Delete account** requires confirmation
 using the current password. After Firebase reauthentication, a single database
-update removes `/users/{uid}` and `/gameLibrary/{uid}`, then the Firebase Auth
+update removes `/users/{uid}`, its `/usernames/{lowercase-username}` reservation,
+and `/gameLibrary/{uid}`, then the Firebase Auth
 account is deleted. These operations are not atomic across services: if Auth
 deletion fails, the already deleted games cannot be restored; an explicit error
 asks the user to retry or contact support. Database deletion failures leave the

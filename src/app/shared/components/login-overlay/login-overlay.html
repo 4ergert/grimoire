@@ -1,5 +1,8 @@
 @if (auth.user(); as user) {
   <main class="authenticated_view">
+    @if (auth.usernameUnavailable()) {
+      <p class="auth_error" role="alert">Your username could not be loaded. Please try signing in again.</p>
+    }
     @if (auth.emailVerified() && libraryOpen()) {
       <app-game-library
         [pgn]="savePgn()"
@@ -25,7 +28,7 @@
       }
     } @else if (!auth.emailVerified() || !libraryOpen()) {
       <app-menu-overlay
-        [username]="user.displayName || user.email || ''"
+        [username]="auth.username() || user.email || ''"
         [pending]="pending()"
         [error]="error()"
         [emailVerified]="auth.emailVerified()"
@@ -60,17 +63,28 @@
       <img src="icon/favicon.png" alt="Grimoire Icon" />
       <h1>Grimoire</h1>
     </header>
-    <form #authForm (submit)="submit($event, authForm)" [attr.aria-busy]="pending()">
+    <form #authForm novalidate (submit)="submit($event, authForm)" (input)="validateOnInput(authForm)" [attr.aria-busy]="pending()">
       <fieldset [disabled]="pending()">
         @if (signingUp) {
           <div class="form_field">
             <label for="name">Name</label>
-            <input type="text" id="name" name="name" autocomplete="name" required />
+            <input type="text" id="name" name="name" autocomplete="name" maxlength="42" required
+              [attr.aria-invalid]="fieldErrors().name ? 'true' : null"
+              [attr.aria-describedby]="fieldErrors().name ? 'name-hint name-error' : 'name-hint'" />
+            <span class="field_hint" id="name-hint">4–42 letters A–Z, numbers, or underscores.</span>
+            @if (fieldErrors().name; as message) {
+              <span class="field_error" id="name-error">{{ message }}</span>
+            }
           </div>
         }
         <div class="form_field">
           <label for="email">eMail</label>
-          <input type="email" id="email" name="email" autocomplete="email" required />
+          <input type="email" id="email" name="email" autocomplete="email" maxlength="42" required
+            [attr.aria-invalid]="fieldErrors().email ? 'true' : null"
+            [attr.aria-describedby]="fieldErrors().email ? 'email-error' : null" />
+          @if (fieldErrors().email; as message) {
+            <span class="field_error" id="email-error">{{ message }}</span>
+          }
         </div>
         <div class="form_field">
           <label for="password">Password</label>
@@ -78,10 +92,16 @@
             type="password"
             id="password"
             name="password"
+            maxlength="42"
             [autocomplete]="signingUp ? 'new-password' : 'current-password'"
             required
             [attr.minlength]="signingUp ? 6 : null"
+            [attr.aria-invalid]="fieldErrors().password ? 'true' : null"
+            [attr.aria-describedby]="fieldErrors().password ? 'password-error' : null"
           />
+          @if (fieldErrors().password; as message) {
+            <span class="field_error" id="password-error">{{ message }}</span>
+          }
         </div>
         @if (signingUp) {
           <div class="form_field">
@@ -90,9 +110,15 @@
               type="password"
               id="confirm-password"
               name="confirm-password"
+              maxlength="42"
               autocomplete="new-password"
               required
+              [attr.aria-invalid]="fieldErrors()['confirm-password'] ? 'true' : null"
+              [attr.aria-describedby]="fieldErrors()['confirm-password'] ? 'confirm-password-error' : null"
             />
+            @if (fieldErrors()['confirm-password']; as message) {
+              <span class="field_error" id="confirm-password-error">{{ message }}</span>
+            }
           </div>
         }
         <button custom-button class="auth_button" type="submit">
