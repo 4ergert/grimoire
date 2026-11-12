@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CustomButton } from '../button/button';
 
@@ -9,6 +9,7 @@ import { CustomButton } from '../button/button';
   styleUrl: './menu-overlay.scss',
 })
 export class MenuOverlay {
+  readonly deletionPasswordVisible = signal(false);
   readonly username = input('');
   readonly pending = input(false);
   readonly error = input('');
@@ -26,6 +27,7 @@ export class MenuOverlay {
     if (this.pending()) return;
     form.reset();
     deletion.open = false;
+    this.deletionPasswordVisible.set(false);
     dialog.close();
   }
 
@@ -34,6 +36,7 @@ export class MenuOverlay {
     if (this.pending() || !form.reportValidity()) return;
     const value = password.value;
     form.reset();
+    this.deletionPasswordVisible.set(false);
     this.deleteAccount.emit(value);
   }
 }

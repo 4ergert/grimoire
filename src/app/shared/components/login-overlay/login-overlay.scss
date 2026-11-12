@@ -93,10 +93,51 @@ label {
   color: #ffed84;
 }
 
+.password_input {
+  position: relative;
+  width: 100%;
+
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    padding-right: 44px;
+  }
+}
+
+.password_visibility {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #ffed84;
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffed84;
+    outline-offset: 2px;
+  }
+}
+
 input {
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid rgb(253, 253, 253);
+  color: #ffed84;
   caret-color: #fff;
   background-color: transparent;
   backdrop-filter: blur(2px);
@@ -114,6 +155,19 @@ input:focus {
     0 0 20px #ffed8494,
     inset 0 0 12px #ffed8494,
     0 0 8px #ffed8494;
+}
+
+input:autofill,
+input:-webkit-autofill {
+  background-color: transparent !important;
+  -webkit-text-fill-color: #fff1a1;
+  font-size: 16px;
+  caret-color: #fff;
+  box-shadow:
+    0 0 20px #ffed8494,
+    inset 0 0 12px #ffed8494,
+    inset 0 0 0 1000px rgba(126, 125, 125, 0.262);
+  transition: background-color 99999s ease-out;
 }
 
 input[aria-invalid='true'] {

@@ -26,6 +26,10 @@ const firebaseConfig = {
   appId: '1:293037921304:web:1c799f2fb6433350fe5f6d',
 };
 
+const MIN_USERNAME_LENGTH = 4;
+const MAX_USERNAME_LENGTH = 42;
+const USERNAME_PATTERN = /^[A-Za-z0-9_]+(?: [A-Za-z0-9_]+)*$/;
+
 export class UsernameTakenError extends Error {
   constructor() {
     super('This name is already in use.');
@@ -77,16 +81,23 @@ export class Auth {
   }
 
   async register(username: string, email: string, password: string): Promise<void> {
-    if (!/^[A-Za-z0-9_]{4,42}$/.test(username)) {
-      throw new Error('Names must contain 4 to 42 letters, numbers, or underscores.');
+    const normalizedUsername = username.trim().replace(/\s+/g, ' ');
+    if (
+      normalizedUsername.length < MIN_USERNAME_LENGTH
+      || normalizedUsername.length > MAX_USERNAME_LENGTH
+      || !USERNAME_PATTERN.test(normalizedUsername)
+    ) {
+      throw new Error(
+        'Names must contain 4 to 42 letters, numbers, underscores, and single spaces between words.',
+      );
     }
-    const key = username.toLowerCase();
+    const key = normalizedUsername.toLowerCase();
     const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
 
     try {
-      await updateProfile(user, { displayName: username });
+      await updateProfile(user, { displayName: normalizedUsername });
       await update(ref(this.database), {
-        [`users/${user.uid}`]: { username },
+        [`users/${user.uid}`]: { username: normalizedUsername },
         [`usernames/${key}`]: user.uid,
       });
     } catch (error) {
@@ -96,7 +107,7 @@ export class Auth {
           get(ref(this.database, `usernames/${key}`)),
         ]);
         if (profile.exists()) {
-          if (profile.child('username').val() !== username || reservation.val() !== user.uid) {
+          if (profile.child('username').val() !== normalizedUsername || reservation.val() !== user.uid) {
             throw new Error('The saved profile and username reservation do not match.');
           }
           await update(ref(this.database), {
@@ -170,7 +181,12 @@ export class Auth {
     };
     if (profile.exists()) {
       const username: unknown = profile.child('username').val();
-      if (typeof username !== 'string' || !/^[A-Za-z0-9_]{4,42}$/.test(username)) {
+      if (
+        typeof username !== 'string'
+        || username.length < MIN_USERNAME_LENGTH
+        || username.length > MAX_USERNAME_LENGTH
+        || !USERNAME_PATTERN.test(username)
+      ) {
         throw new Error('The username must be migrated before this account can be deleted. Please contact support.');
       }
       changes[`users/${user.uid}`] = null;

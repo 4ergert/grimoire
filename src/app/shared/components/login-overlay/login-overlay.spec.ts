@@ -73,6 +73,30 @@ describe('LoginOverlay', () => {
     ]);
   });
 
+  it('toggles login and confirmation password visibility independently', async () => {
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const password = element.querySelector<HTMLInputElement>('#password')!;
+    const confirmation = element.querySelector<HTMLInputElement>('#confirm-password')!;
+    const toggles = element.querySelectorAll<HTMLButtonElement>('.password_visibility');
+
+    expect(password.type).toBe('password');
+    expect(confirmation.type).toBe('password');
+    toggles[0].click();
+    await fixture.whenStable();
+    expect(password.type).toBe('text');
+    expect(confirmation.type).toBe('password');
+    expect(toggles[0].getAttribute('aria-label')).toBe('Hide password');
+    toggles[1].click();
+    await fixture.whenStable();
+    expect(confirmation.type).toBe('text');
+    toggles[0].click();
+    await fixture.whenStable();
+    expect(password.type).toBe('password');
+    expect(confirmation.type).toBe('text');
+  });
+
   it('resends verification emails and displays delivery status', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com', emailVerified: false });
     await fixture.whenStable();
@@ -575,20 +599,21 @@ describe('LoginOverlay', () => {
     expect(component.error()).toBe('');
   });
 
-  it('validates allowed username characters and shows an occupied name under its field', async () => {
+  it('allows single spaces in usernames and shows an occupied name under its field', async () => {
     component.isSignUp.set(true);
     await fixture.whenStable();
     const form = fillForm(true);
     const name = form.querySelector<HTMLInputElement>('#name')!;
-    name.value = 'Test User';
+    name.value = 'Test-User';
     await component.submit(new Event('submit'), form);
-    expect(component.fieldErrors().name).toContain('letters A-Z');
+    expect(component.fieldErrors().name).toContain('single spaces');
     expect(auth.register).not.toHaveBeenCalled();
 
-    name.value = 'Test_User';
+    name.value = '  Test   User  ';
     auth.register.mockRejectedValueOnce(new UsernameTakenError());
     await component.submit(new Event('submit'), form);
     await fixture.whenStable();
+    expect(auth.register).toHaveBeenCalledWith('Test User', 'test@example.com', 'test-password');
     expect(component.fieldErrors().name).toContain('already in use');
     expect(document.activeElement).toBe(name);
   });

@@ -110,6 +110,26 @@ describe('MenuOverlay', () => {
     expect(deletion.open).toBe(false);
   });
 
+  it('toggles the account deletion password visibility', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const dialog = element.querySelector<HTMLDialogElement>('dialog')!;
+    dialog.showModal();
+    const deletion = dialog.querySelector<HTMLDetailsElement>('details')!;
+    deletion.open = true;
+    await fixture.whenStable();
+    const password = dialog.querySelector<HTMLInputElement>('#delete-password')!;
+    const toggle = dialog.querySelector<HTMLButtonElement>('.password_visibility')!;
+
+    expect(password.type).toBe('password');
+    toggle.click();
+    await fixture.whenStable();
+    expect(password.type).toBe('text');
+    expect(toggle.getAttribute('aria-label')).toBe('Hide password');
+    toggle.click();
+    await fixture.whenStable();
+    expect(password.type).toBe('password');
+  });
+
   it('prevents closing settings while deletion is pending', async () => {
     const dialog: HTMLDialogElement = fixture.nativeElement.querySelector('dialog');
     dialog.showModal();

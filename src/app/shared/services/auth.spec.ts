@@ -97,6 +97,16 @@ describe('Auth', () => {
       .toBeLessThan(firebase.sendEmailVerification.mock.invocationCallOrder[0]);
   });
 
+  it('normalizes whitespace in usernames and reserves the canonical spaced name', async () => {
+    await auth.register('  Kai   Sloot  ', 'test@example.com', 'test-password');
+
+    expect(firebase.updateProfile).toHaveBeenCalledWith(user, { displayName: 'Kai Sloot' });
+    expect(firebase.update).toHaveBeenCalledWith('', {
+      'users/user-123': { username: 'Kai Sloot' },
+      'usernames/kai sloot': 'user-123',
+    });
+  });
+
   it('keeps the account and permits resending if verification email delivery fails', async () => {
     firebase.sendEmailVerification.mockRejectedValueOnce(new Error('Mail service unavailable'));
     await expect(auth.register('TestUser', 'test@example.com', 'test-password'))
@@ -212,8 +222,12 @@ describe('Auth', () => {
   });
 
   it('rejects invalid usernames before creating an account', async () => {
-    await expect(auth.register('Test User', 'test@example.com', 'test-password'))
-      .rejects.toThrow('letters, numbers, or underscores');
+    await expect(auth.register('Test-User', 'test@example.com', 'test-password'))
+      .rejects.toThrow('letters, numbers, underscores, and single spaces');
+    await expect(auth.register('K', 'test@example.com', 'test-password'))
+      .rejects.toThrow('4 to 42');
+    await expect(auth.register('a'.repeat(43), 'test@example.com', 'test-password'))
+      .rejects.toThrow('4 to 42');
     expect(firebase.createUserWithEmailAndPassword).not.toHaveBeenCalled();
   });
 
@@ -273,6 +287,19 @@ describe('Auth', () => {
     expect(firebase.update.mock.invocationCallOrder[0])
       .toBeLessThan(firebase.deleteUser.mock.invocationCallOrder[0]);
     expect(auth.user()).toBeNull();
+  });
+
+  it('removes a spaced username reservation when deleting the account', async () => {
+    firebase.onAuthStateChanged.mock.calls[0][1](user);
+    firebase.get.mockResolvedValue(snapshot({ username: 'Kai Sloot' }));
+
+    await auth.deleteAccount('current-password');
+
+    expect(firebase.update).toHaveBeenCalledWith('', {
+      'users/user-123': null,
+      'usernames/kai sloot': null,
+      'gameLibrary/user-123': null,
+    });
   });
 
   it('does not delete any data if password verification fails', async () => {

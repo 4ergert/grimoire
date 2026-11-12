@@ -51,7 +51,7 @@ try {
     [`users/${loserUid}`]: { username: 'Julian' },
     'usernames/other': loserUid,
   }));
-  await denied(register(loser, loserUid, 'Bad Name'));
+  await denied(register(loser, loserUid, 'Bad-Name'));
   await denied(register(loser, loserUid, 'abc'));
   await denied(register(loser, loserUid, 'a'.repeat(43)));
   await denied(update(ref(loser), {
@@ -63,6 +63,12 @@ try {
   await update(ref(loser), { [`users/${loserUid}`]: null, 'usernames/julian': null });
   await register(winner, uid, 'Abc1');
   await update(ref(winner), { [`users/${uid}`]: null, 'usernames/abc1': null });
+  await register(winner, uid, 'Kai Sloot');
+  await denied(register(loser, loserUid, 'kAI sLOOT'));
+  await denied(register(loser, loserUid, 'Bad  Name'));
+  await denied(register(loser, loserUid, ' Bad Name'));
+  await denied(register(loser, loserUid, 'Bad Name '));
+  await update(ref(winner), { [`users/${uid}`]: null, 'usernames/kai sloot': null });
   await register(winner, uid, 'A'.repeat(42));
   console.log('Username rules: concurrency, ownership, normalization, validation, and reuse passed.');
 } finally {

@@ -16,7 +16,12 @@ if (!filename || !output || process.argv.length !== 4) {
     const problems = [];
     for (const [uid, profile] of Object.entries(users ?? {})) {
       const username = profile?.username;
-      if (typeof username !== 'string' || !/^[A-Za-z0-9_]{4,42}$/.test(username)) {
+      if (
+        typeof username !== 'string'
+        || username.length < 4
+        || username.length > 42
+        || !/^[A-Za-z0-9_]+( [A-Za-z0-9_]+)*$/.test(username)
+      ) {
         problems.push(`Invalid username for ${uid}: ${JSON.stringify(username)}`);
         continue;
       }

@@ -22,6 +22,8 @@ const MIN_NAME_LENGTH = 4;
 export class LoginOverlay {
   readonly auth = inject(Auth);
   readonly isSignUp = signal(false);
+  readonly passwordVisible = signal(false);
+  readonly confirmationPasswordVisible = signal(false);
   readonly isPlaying = signal(false);
   readonly guest = signal(false);
   readonly computerGame = signal(false);
@@ -88,6 +90,8 @@ export class LoginOverlay {
     form.reset();
     this.error.set('');
     this.resetValidation();
+    this.passwordVisible.set(false);
+    this.confirmationPasswordVisible.set(false);
     this.isSignUp.update((value) => !value);
   }
 
@@ -105,7 +109,7 @@ export class LoginOverlay {
     const data = new FormData(form);
     const rawName = String(data.get('name') ?? '');
     const rawEmail = String(data.get('email') ?? '');
-    const name = rawName.trim();
+    const name = rawName.trim().replace(/\s+/g, ' ');
     const email = rawEmail.trim();
     const password = String(data.get('password') ?? '');
     const errors: FieldErrors = {};
@@ -118,7 +122,9 @@ export class LoginOverlay {
       if (!name) errors.name = 'Please enter a name.';
       else if (rawName.length > MAX_AUTH_FIELD_LENGTH) errors.name = 'Please enter no more than 42 characters.';
       else if (name.length < MIN_NAME_LENGTH) errors.name = 'Please enter at least 4 characters.';
-      else if (!/^[A-Za-z0-9_]+$/.test(name)) errors.name = 'Use only letters A-Z, numbers, and underscores.';
+      else if (!/^[A-Za-z0-9_]+(?: [A-Za-z0-9_]+)*$/.test(name)) {
+        errors.name = 'Use letters A-Z, numbers, underscores, and single spaces between words.';
+      }
     }
     if (!email) errors.email = 'Please enter your email address.';
     else if (rawEmail.length > MAX_AUTH_FIELD_LENGTH) errors.email = 'Please enter no more than 42 characters.';

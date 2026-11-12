@@ -67,11 +67,13 @@ To regenerate the opening data, update the pinned revision in
 
 ### Authentication and project configuration
 
-The login and registration fields accept at most 42 characters. After trimming
-leading and trailing whitespace, a registration name must be 4–42 ASCII letters,
-digits, or underscores. Names preserve their spelling but are unique without
-regard to ASCII letter case. Existing accounts with longer email addresses or
-passwords cannot sign in through this form.
+The login and registration fields accept at most 42 characters. Registration
+trims leading and trailing whitespace and collapses runs of whitespace to one
+space. The resulting name must be 4–42 ASCII letters, digits, or underscores,
+with single spaces allowed between groups. Names preserve letter case but are
+unique without regard to ASCII letter case or repeated whitespace in the input.
+Existing accounts with longer email addresses or passwords cannot sign in
+through this form.
 
 The Firebase web configuration is in
 [auth.ts](./src/app/shared/services/auth.ts). When using your own Firebase
@@ -169,9 +171,10 @@ deletion. Old clients cannot create or delete profiles under the new rules.
 
    The script refuses invalid names and duplicates, including names differing
    only in case. Resolve each reported conflict with the affected users, update
-   their profiles, export again, and rerun. Names with spaces, non-ASCII
-   characters, or other unsupported characters must also be changed. Do not
-   discard or merge accounts. The output contains user IDs; keep both files
+   their profiles, export again, and rerun. Names with leading/trailing or
+   repeated spaces, non-ASCII characters, or other unsupported characters must
+   also be changed to the canonical format (single spaces between words). Do
+   not discard or merge accounts. The output contains user IDs; keep both files
    private and remove them securely when no longer needed. Replace `C:\private`
    with an existing private directory outside the repository.
 4. Confirm `/usernames` is empty and that the export still matches the live
@@ -204,7 +207,7 @@ users/
     username
 
 usernames/
-  {lowercase-username}: {uid}
+  {lowercase-username-with-single-spaces}: {uid}
 
 gameLibrary/
   {uid}/
