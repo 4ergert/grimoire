@@ -15,10 +15,12 @@
     [guest]="guest()"
     [pending]="pending()"
     [flipped]="flipped()"
+    [analysis]="engineAnalysis()"
     (back)="back.emit()"
     (restart)="restart()"
     (logout)="logout.emit()"
     (flip)="flipped.set(!flipped())"
+    (analyse)="setEngineMode('analysis')"
   >
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
@@ -72,8 +74,9 @@
       (playSolution)="playTrainingSolution()"
     />
   } @else {
+    @if (!computerGame() || engineAnalysis()) {
     <div class="analysis-row">
-      @if (!alwaysAnalyse()) {
+      @if (!computerGame() && !alwaysAnalyse()) {
         <button
           class="analyse-position"
           type="button"
@@ -89,6 +92,7 @@
         <ng-container [ngTemplateOutlet]="stockfishPanel()?.analysisView() ?? null" />
       </div>
     </div>
+    }
 
     @if (engineError(); as error) {
       <p role="alert">{{ error }}</p>

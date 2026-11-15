@@ -532,23 +532,22 @@ describe('Stockfish playground integration', () => {
     playground.startEngineGame('w');
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
-    const analyse = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.getAttribute('aria-label') === 'Analyse position',
+    const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
+    const analyse = Array.from(menu.querySelectorAll<HTMLButtonElement>('.game-menu-actions button')).find(
+      (button) => button.textContent?.trim() === 'Analyse position',
     )!;
-    expect(analyse.parentElement?.classList.contains('analysis-row')).toBe(true);
-    expect(element.querySelector('app-game-controls .analyse-position')).toBeNull();
-    expect(
-      element.querySelector('app-chess-board')!.compareDocumentPosition(analyse) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(analyse.querySelector('img')?.getAttribute('src')).toBe('icon/analyse-position.png');
-    expect(analyse.querySelector('img')?.getAttribute('alt')).toBe('');
-    expect(analyse.nextElementSibling?.classList.contains('analysis-summary')).toBe(true);
+    expect(element.querySelector('.analysis-summary')).toBeNull();
+    expect(analyse).toBeDefined();
+    expect(element.querySelector('.analysis-row .analyse-position')).toBeNull();
     expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain(
       'Analyse position',
     );
+    menu.querySelector('summary')!.click();
     analyse.click();
     await fixture.whenStable();
+    expect(menu.open).toBe(false);
+    const summary = element.querySelector<HTMLElement>('.analysis-summary')!;
+    expect(summary).not.toBeNull();
     expect(analyse.getAttribute('aria-pressed')).toBe('true');
     expect(playground.engineMode()).toBe('opponent');
     const worker = EngineWorker.instances[0];
@@ -557,14 +556,16 @@ describe('Stockfish playground integration', () => {
     worker.receive('bestmove e2e4');
     await fixture.whenStable();
     expect(playground.moveHistory()).toEqual([]);
-    expect(analyse.nextElementSibling?.textContent).toContain('Evaluation (White): +0.24');
-    expect(analyse.nextElementSibling?.textContent).toContain('Best line: e4 e5');
+    expect(summary.textContent).toContain('+0.24');
+    expect(summary.querySelector('.variation')?.textContent).toContain('1.e4 e5');
     expect(element.querySelector('app-stockfish-panel')?.textContent).not.toContain(
       'Evaluation (White):',
     );
+    menu.querySelector('summary')!.click();
     analyse.click();
     await fixture.whenStable();
     expect(analyse.getAttribute('aria-pressed')).toBe('false');
+    expect(element.querySelector('.analysis-row')).toBeNull();
     expect(element.textContent).not.toContain('Evaluation (White):');
     expect(playground.engineMode()).toBe('opponent');
     playground.select('e2');

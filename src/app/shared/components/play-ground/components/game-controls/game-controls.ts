@@ -19,6 +19,15 @@ import { Component, ElementRef, HostListener, input, output, ViewChild } from '@
         >
           Flip board
         </button>
+        @if (computerGame() && !training()) {
+          <button
+            type="button"
+            [attr.aria-pressed]="analysis()"
+            (click)="menu.open = false; analyse.emit()"
+          >
+            Analyse position
+          </button>
+        }
         @if (!training()) {
           <button type="button" (click)="menu.open = false; restart.emit()">
             {{ computerGame() ? 'New game' : 'Create New' }}
@@ -41,10 +50,12 @@ export class GameControls {
   readonly computerGame = input(false);
   readonly guest = input(false);
   readonly flipped = input(false);
+  readonly analysis = input(false);
   readonly back = output<void>();
   readonly restart = output<void>();
   readonly logout = output<void>();
   readonly flip = output<void>();
+  readonly analyse = output<void>();
 
   @HostListener('document:click', ['$event'])
   closeOnOutsideClick(event: MouseEvent): void {

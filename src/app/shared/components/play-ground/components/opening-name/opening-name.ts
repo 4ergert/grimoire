@@ -13,6 +13,10 @@ interface Opening {
       <p class="opening" role="status">
         {{ opening.name }}
       </p>
+    } @else {
+      <p class="opening" role="status">
+        Good luck
+      </p>
     }
     @if (error()) {
       <p class="opening-error" role="alert">
@@ -23,10 +27,13 @@ interface Opening {
   `,
   styles: `
     .opening, .opening-error {
-      margin: 12px 0;
+      margin: 0;
+      height: 45px;
       color: #ffdfbc;
-      text-align: center;
       overflow-wrap: anywhere;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     a { color: inherit; }
     .opening-error { color: #ffb4ab; }

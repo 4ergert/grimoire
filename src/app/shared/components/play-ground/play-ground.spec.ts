@@ -68,6 +68,30 @@ describe('PlayGround', () => {
     expect(menu.open).toBe(false);
   });
 
+  it('keeps analysis in the replay controls and out of the Create and training menus', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const menuAnalysis = () => Array.from(
+      element.querySelectorAll<HTMLButtonElement>('.game-menu-actions button'),
+    ).find((button) => button.textContent?.trim() === 'Analyse position');
+
+    expect(menuAnalysis()).toBeUndefined();
+    expect(element.querySelector('.analysis-row .analyse-position')).toBeNull();
+
+    fixture.componentRef.setInput('replayPgn', '1. e4 e5 *');
+    await fixture.whenStable();
+    expect(menuAnalysis()).toBeUndefined();
+    expect(element.querySelector('.analysis-row .analyse-position')).not.toBeNull();
+
+    fixture.componentRef.setInput('trainingFolder', {
+      id: 'folder',
+      name: 'Training',
+      games: [{ id: 'game', name: 'Game', pgn: '1. e4 e5 *' }],
+    });
+    await fixture.whenStable();
+    expect(menuAnalysis()).toBeUndefined();
+    expect(element.querySelector('.analysis-row .analyse-position')).toBeNull();
+  });
+
   it('should save from a native button in the move history header only outside replay', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const button = element.querySelector<HTMLButtonElement>('.move-history-header button')!;
