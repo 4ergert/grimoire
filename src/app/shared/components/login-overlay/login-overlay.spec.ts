@@ -66,10 +66,13 @@ describe('LoginOverlay', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    const links: NodeListOf<HTMLAnchorElement> = fixture.nativeElement.querySelectorAll('.legal_links a');
+    const links: NodeListOf<HTMLAnchorElement> = fixture.nativeElement.querySelectorAll(
+      'app-legal-footer .legal_links a',
+    );
     expect(Array.from(links, (link) => link.textContent?.trim())).toEqual([
       'Legal notice',
       'Privacy policy',
+      'Terms of Use',
     ]);
   });
 
@@ -364,20 +367,22 @@ describe('LoginOverlay', () => {
   it('shows legal links only in the login and sign-up window', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const expectLinks = () => {
-      expect(element.querySelector('footer a[href="/impressum"]')).not.toBeNull();
-      expect(element.querySelector('footer a[href="/datenschutz"]')).not.toBeNull();
+      expect(element.querySelector('app-legal-footer a[href="/impressum"]')).not.toBeNull();
+      expect(element.querySelector('app-legal-footer a[href="/datenschutz"]')).not.toBeNull();
+      expect(element.querySelector('app-legal-footer a[href="/nutzungsbedingungen"]')).not.toBeNull();
     };
     expectLinks();
     component.isSignUp.set(true);
     await fixture.whenStable();
     expectLinks();
+    expect(element.querySelector('form a[href="/nutzungsbedingungen"]')).not.toBeNull();
     component.startGuest();
     await fixture.whenStable();
-    expect(element.querySelector('.legal_links')).toBeNull();
+    expect(element.querySelector('app-legal-footer')).toBeNull();
     component.leaveGuest();
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
-    expect(element.querySelector('.legal_links')).toBeNull();
+    expect(element.querySelector('app-legal-footer')).toBeNull();
   });
 
   it('should show the login form initially', () => {
@@ -446,6 +451,7 @@ describe('LoginOverlay', () => {
     if (signUp) {
       element.querySelector<HTMLInputElement>('#name')!.value = ' TestUser ';
       element.querySelector<HTMLInputElement>('#confirm-password')!.value = 'test-password';
+      element.querySelector<HTMLInputElement>('#accept-terms')!.checked = true;
     }
     return element.querySelector('form')!;
   }
@@ -493,6 +499,7 @@ describe('LoginOverlay', () => {
     const email = element.querySelector<HTMLInputElement>('#email')!;
     const password = element.querySelector<HTMLInputElement>('#password')!;
     const confirm = element.querySelector<HTMLInputElement>('#confirm-password')!;
+    element.querySelector<HTMLInputElement>('#accept-terms')!.checked = true;
     name.value = '   ';
     email.value = 'test@example.com';
     password.value = '12345';
@@ -531,7 +538,12 @@ describe('LoginOverlay', () => {
     const email = form.querySelector<HTMLInputElement>('#email')!;
     const password = form.querySelector<HTMLInputElement>('#password')!;
     const confirmation = form.querySelector<HTMLInputElement>('#confirm-password')!;
-    expect(Array.from(form.querySelectorAll('input'), (input) => input.maxLength)).toEqual([42, 42, 42, 42]);
+    expect(
+      Array.from(
+        form.querySelectorAll<HTMLInputElement>('input:not([type="checkbox"])'),
+        (input) => input.maxLength,
+      ),
+    ).toEqual([42, 42, 42, 42]);
 
     name.value = ' abc ';
     await component.submit(new Event('submit'), form);
@@ -585,6 +597,7 @@ describe('LoginOverlay', () => {
     component.isSignUp.set(true);
     await fixture.whenStable();
     const form = fillForm(true);
+    form.querySelector<HTMLInputElement>('#accept-terms')!.checked = true;
     form.querySelector<HTMLInputElement>('#confirm-password')!.value = 'different-password';
 
     await component.submit(new Event('submit'), form);
@@ -597,6 +610,23 @@ describe('LoginOverlay', () => {
 
     expect(auth.register).toHaveBeenCalledWith('TestUser', 'test@example.com', 'test-password');
     expect(component.error()).toBe('');
+  });
+
+  it('requires explicit acceptance of the Terms of Use before registration', async () => {
+    component.isSignUp.set(true);
+    await fixture.whenStable();
+    const form = fillForm(true);
+
+    await component.submit(new Event('submit'), form);
+
+    expect(auth.register).not.toHaveBeenCalled();
+    expect(component.fieldErrors().terms).toContain('must accept the Terms of Use');
+    expect(document.activeElement).toBe(form.querySelector('#accept-terms'));
+
+    form.querySelector<HTMLInputElement>('#accept-terms')!.checked = true;
+    await component.submit(new Event('submit'), form);
+
+    expect(auth.register).toHaveBeenCalledWith('TestUser', 'test@example.com', 'test-password');
   });
 
   it('allows single spaces in usernames and shows an occupied name under its field', async () => {

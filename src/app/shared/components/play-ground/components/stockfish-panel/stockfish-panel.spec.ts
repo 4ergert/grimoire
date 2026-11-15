@@ -355,7 +355,7 @@ describe('Stockfish playground integration', () => {
     expect(element.textContent).not.toContain('Play as White');
     expect(element.textContent).not.toContain('Play as Black');
     expect(element.textContent).not.toContain('Engine off');
-    expect(element.querySelector<HTMLButtonElement>('.analyse-position')?.disabled).toBe(true);
+    expect(element.querySelector('.analyse-position')).toBeNull();
     expect(playground.engineMode()).toBe('analysis');
     expect(playground.engineAnalysis()).toBe(true);
     playground.startEngineGame('b');

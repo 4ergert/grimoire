@@ -63,29 +63,6 @@
   overflow-wrap: anywhere;
 }
 
-.flip-icon {
-  width: 45px;
-  height: 45px;
-  display: inline-block;
-  color: #fdfcaed1;
-  font-size: 28px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.flip-board:hover .flip-icon {
-  transform: scale(1.1) rotate(180deg);
-}
-
-.flip-board {
-  padding: 4px 8px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font-size: 28px;
-  cursor: pointer;
-}
-
 .copyright {
   margin-top: 12px;
   color: #ffdfbc;

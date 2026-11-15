@@ -15,6 +15,9 @@ describe('Legal pages', () => {
     expect(document.title).toBe('Legal notice | Grimoire');
     expect(harness.routeNativeElement?.querySelector('.draft')).toBeNull();
     expect(harness.routeNativeElement?.querySelector('a[href="/"]')).not.toBeNull();
+    expect(
+      harness.routeNativeElement?.querySelectorAll('app-legal-footer a'),
+    ).toHaveLength(3);
 
     await harness.navigateByUrl('/datenschutz', Legal);
 
@@ -26,6 +29,14 @@ describe('Legal pages', () => {
     expect(harness.routeNativeElement?.textContent).toContain('no later than seven days');
     expect(harness.routeNativeElement?.textContent).toContain('Article 6(1)(f) GDPR');
     expect(harness.routeNativeElement?.textContent).toContain('Firebase');
+    expect(harness.routeNativeElement?.textContent).toContain('Cloud Data Processing Addendum');
+    expect(harness.routeNativeElement?.textContent).toContain('contracting entity');
+    expect(harness.routeNativeElement?.textContent).toContain('Standard Contractual Clauses');
+    expect(
+      harness.routeNativeElement?.querySelector(
+        'a[href="https://firebase.google.com/terms/subprocessors"]',
+      ),
+    ).not.toBeNull();
     expect(harness.routeNativeElement?.textContent).toContain('heartbeat information');
     expect(harness.routeNativeElement?.textContent).toContain('fixed general deletion period');
     expect(harness.routeNativeElement?.textContent).toContain('website data');
@@ -40,5 +51,11 @@ describe('Legal pages', () => {
       harness.routeNativeElement?.querySelector('a[href="https://www.ldi.nrw.de/kontakt"]'),
     ).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('.draft')).toBeNull();
+
+    await harness.navigateByUrl('/nutzungsbedingungen', Legal);
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Terms of Use');
+    expect(harness.routeNativeElement?.textContent).toContain('currently offered free of charge');
+    expect(harness.routeNativeElement?.textContent).toContain('guest mode without an account');
+    expect(harness.routeNativeElement?.textContent).toContain('Mandatory consumer protection rights');
   });
 });

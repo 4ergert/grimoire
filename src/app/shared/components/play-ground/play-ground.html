@@ -14,9 +14,11 @@
     [computerGame]="computerGame()"
     [guest]="guest()"
     [pending]="pending()"
+    [flipped]="flipped()"
     (back)="back.emit()"
     (restart)="restart()"
     (logout)="logout.emit()"
+    (flip)="flipped.set(!flipped())"
   >
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
@@ -28,16 +30,6 @@
           {{ status() }}
         }
       </p>
-      <button
-        class="flip-board"
-        type="button"
-        aria-label="Flip board"
-        title="Flip board"
-        [attr.aria-pressed]="flipped()"
-        (click)="flipped.set(!flipped())"
-      >
-        <span aria-hidden="true" class="flip-icon">&#x21BB;</span>
-      </button>
     </div>
   </app-game-controls>
 
@@ -81,17 +73,18 @@
     />
   } @else {
     <div class="analysis-row">
-      <button
-        class="analyse-position"
-        type="button"
-        aria-label="Analyse position"
-        title="Analyse position"
-        [attr.aria-pressed]="engineAnalysis()"
-        [disabled]="alwaysAnalyse()"
-        (click)="setEngineMode('analysis')"
-      >
-        <img src="icon/analyse-position.png" alt="" width="52" height="52" />
-      </button>
+      @if (!alwaysAnalyse()) {
+        <button
+          class="analyse-position"
+          type="button"
+          aria-label="Analyse position"
+          title="Analyse position"
+          [attr.aria-pressed]="engineAnalysis()"
+          (click)="setEngineMode('analysis')"
+        >
+          <img src="icon/analyse-position.png" alt="" width="52" height="52" />
+        </button>
+      }
       <div class="analysis-summary">
         <ng-container [ngTemplateOutlet]="stockfishPanel()?.analysisView() ?? null" />
       </div>

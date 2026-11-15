@@ -1,10 +1,10 @@
 import { Component, input, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { CustomButton } from '../button/button';
+import { LegalFooter } from '../legal-footer/legal-footer';
 
 @Component({
   selector: 'app-menu-overlay',
-  imports: [CustomButton, RouterLink],
+  imports: [CustomButton, LegalFooter],
   templateUrl: './menu-overlay.html',
   styleUrl: './menu-overlay.scss',
 })

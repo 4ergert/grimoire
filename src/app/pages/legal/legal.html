@@ -1,13 +1,12 @@
 @let privacy = routeData()?.['privacy'];
+@let terms = routeData()?.['terms'];
 
 <main>
-  <nav aria-label="Legal information">
+  <nav aria-label="Page navigation">
     <a routerLink="/">Back to Grimoire</a>
-    <a routerLink="/impressum">Legal notice</a>
-    <a routerLink="/datenschutz">Privacy policy</a>
   </nav>
 
-  <h1>{{ privacy ? 'Privacy policy' : 'Legal notice' }}</h1>
+  <h1>{{ privacy ? 'Privacy policy' : terms ? 'Terms of Use' : 'Legal notice' }}</h1>
   <p role="note">This English translation is an unreviewed draft and has not been legally reviewed.</p>
 
   @if (privacy) {
@@ -35,8 +34,11 @@
         interest is the reliable and secure operation of the website.
       </p>
       <p>
-        Access logging is disabled in the technical hosting administration (KAS). Connection data
-        still needs to be processed to deliver the website.
+        In the hosting provider's KAS administration, “Es werden keine Logs erzeugt” (“No logs are
+        created”) is selected. Accordingly, no operator-configured access logfiles are created in
+        the /logs/ directory. The interface shows a seven-day logfile retention period; this setting
+        applies if logfile creation is enabled and does not mean that logfiles are currently being
+        stored. Connection data still needs to be processed to deliver the website.
       </p>
       <p>
         According to the hosting provider, independently of this setting, it logs access for
@@ -52,20 +54,19 @@
         backups of user accounts and games stored in Firebase. The operator does not create
         additional backups of personal user data.
       </p>
-      <p>
-        [Check whether additional error or security logs exist, what data they contain, and when they
-        are deleted.]
-      </p>
     </section>
     <section>
       <h2>3. Registration and sign-in with Firebase</h2>
       <p>
         We use Firebase Authentication for user accounts and Firebase Realtime Database for usernames.
-        Email addresses, usernames, user IDs and technical sign-in data are processed. Passwords are
-        transmitted to Firebase Authentication; they are not stored in our Realtime Database. This
-        information is needed to set up and use an account. Chess games saved voluntarily are stored
-        as PGN together with user-chosen folder and game names under the user ID in the Realtime
-        Database and associated with the respective account.
+        Email addresses, usernames, user IDs and technical sign-in data are processed to create and
+        manage an account and enable sign-in. Passwords are handled by Firebase Authentication and
+        are not stored in our Realtime Database. If you choose to save chess games, the folder and
+        game names and PGN files you provide are processed so you can save, view and delete them
+        through your account. The legal basis for providing the account and these requested features
+        is Article 6(1)(b) GDPR, as this processing is necessary to perform the user agreement set
+        out in the <a routerLink="/nutzungsbedingungen">Terms of Use</a>. Data needed for a feature
+        is required to provide that feature; saving games is optional.
       </p>
       <p>
         User accounts and profiles are generally stored until the account is deleted. There is no
@@ -90,18 +91,31 @@
         These are distinct from the service provider's internal backup and deletion procedures.
       </p>
       <p>
-        The agreed Google data processing terms apply to the Firebase services used.
-        [Add the specific contracting party and legal basis. Clarify technical deletion periods,
-        such as for logs and backups, and any applicable retention obligations.]
+        We use Firebase Authentication and Firebase Realtime Database as Google Cloud Platform
+        services. According to Firebase Support, these services are governed by the
+        <a href="https://cloud.google.com/terms/">Google Cloud Platform Terms of Service</a>, and
+        Google's <a href="https://cloud.google.com/terms/data-processing-addendum">Cloud Data
+        Processing Addendum</a> applies. Google says the applicable Terms of Service are accepted
+        digitally when a project is created. The contracting Google entity depends on the billing
+        address and whether the customer contracts as a business or an individual; it must be
+        determined for this project using Google's
+        <a href="https://cloud.google.com/terms/google-entity">contracting entity information</a>.
+        The project's recorded acceptance and CDPA status have not been independently verified for
+        this draft. Google says these records and CDPA settings can be reviewed in Cloud Console
+        under IAM &amp; Admin → Privacy &amp; Security (or Legal &amp; Compliance).
       </p>
       <p>
         The Realtime Database uses the europe-west1 region (Belgium). This does not mean that all
-        Firebase services process data exclusively in the EU. Google LLC states that it is certified
-        under the EU-US Data Privacy Framework. [Before publication, check and add the transfer
-        mechanisms applicable to this project and its services, the current scope of certification,
-        and any agreed standard contractual clauses.]
-        Further information:
-        <a href="https://firebase.google.com/support/privacy">Firebase privacy information</a>.
+        Firebase services process data exclusively in the EU: according to Firebase Support,
+        Firebase Authentication is a US-only service. Google's
+        <a href="https://firebase.google.com/support/privacy">Firebase privacy information</a>
+        describes data locations, subprocessors and international transfer mechanisms, including
+        the EU-US Data Privacy Framework and Standard Contractual Clauses. The current transfer
+        mechanism applicable to each service, Google's contracting entity and certification scope,
+        and any agreed contractual safeguards for this project still need to be verified before
+        publication. The current
+        <a href="https://firebase.google.com/terms/subprocessors">Firebase subprocessor list</a>
+        is also available from Google.
       </p>
     </section>
     <section>
@@ -152,6 +166,56 @@
         supervisory authority remains unaffected.
       </p>
     </section>
+  } @else if (terms) {
+    <section>
+      <h2>1. About Grimoire</h2>
+      <p>
+        Grimoire is a privately operated, non-commercial chess learning and playing application.
+        The service is currently offered free of charge and without advertising, donations or paid
+        features. These Terms of Use govern the account and features provided by Grimoire.
+      </p>
+    </section>
+    <section>
+      <h2>2. Account and available features</h2>
+      <p>
+        You may use the guest mode without an account. An account allows you to sign in, choose a
+        username, play chess and, if you choose, save and manage chess games and folders associated
+        with your account. You must provide an email address and the information requested during
+        registration, keep your sign-in details secure, and use an email address you are authorized
+        to use. Email verification is required to use account-based game features.
+      </p>
+    </section>
+    <section>
+      <h2>3. Your saved content</h2>
+      <p>
+        You remain responsible for the games, names and other content you choose to save. You must
+        have the right to provide that content and must not use the service unlawfully or interfere
+        with its operation. Saved games are associated with your account and are available through
+        the account features. You can delete saved folders and games or delete your account using
+        the controls provided in the application. Account deletion also deletes the account's saved
+        game data from the Realtime Database; provider-side processing and deletion periods are
+        described in the Privacy Policy.
+      </p>
+    </section>
+    <section>
+      <h2>4. Availability and changes</h2>
+      <p>
+        Grimoire is provided as a hobby project. No particular level of availability, uninterrupted
+        operation, data backup or permanent availability of a feature is promised by these draft
+        terms. Features may be changed or discontinued where reasonably necessary, for example for
+        maintenance, security or further development. Do not rely on Grimoire as the only copy of
+        important game data.
+      </p>
+    </section>
+    <section>
+      <h2>5. Contact and applicable law</h2>
+      <p>
+        Questions about these Terms of Use can be sent to
+        <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a>. Mandatory consumer
+        protection rights remain unaffected. These draft terms and the service require legal review
+        before publication.
+      </p>
+    </section>
   } @else {
     <section>
       <h2>Grimoire operator</h2>
@@ -180,4 +244,5 @@
       </p>
     </section>
   }
+  <app-legal-footer />
 </main>

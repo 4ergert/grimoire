@@ -7,15 +7,16 @@ import { PlayGround } from '../play-ground/play-ground';
 import { GameLibrary } from '../game-library/game-library';
 import { GameFolder } from '../../services/game-library';
 import { CustomButton } from '../button/button';
+import { LegalFooter } from '../legal-footer/legal-footer';
 
-type AuthField = 'name' | 'email' | 'password' | 'confirm-password';
+type AuthField = 'name' | 'email' | 'password' | 'confirm-password' | 'terms';
 type FieldErrors = Partial<Record<AuthField, string>>;
 const MAX_AUTH_FIELD_LENGTH = 42;
 const MIN_NAME_LENGTH = 4;
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton],
+  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton, LegalFooter],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
@@ -139,6 +140,9 @@ export class LoginOverlay {
       if (!confirmation) errors['confirm-password'] = 'Please confirm your password.';
       else if (confirmation.length > MAX_AUTH_FIELD_LENGTH) errors['confirm-password'] = 'Please enter no more than 42 characters.';
       else if (password !== confirmation) errors['confirm-password'] = 'The passwords do not match.';
+      if (data.get('accept-terms') !== 'on') {
+        errors.terms = 'You must accept the Terms of Use to create an account.';
+      }
     }
     return errors;
   }
@@ -151,11 +155,11 @@ export class LoginOverlay {
     this.validationAttempted = true;
     const errors = this.validate(form);
     this.fieldErrors.set(errors);
-    const firstInvalid = (['name', 'email', 'password', 'confirm-password'] as const)
+    const firstInvalid = (['name', 'email', 'password', 'confirm-password', 'terms'] as const)
       .find((field) => errors[field]);
     if (firstInvalid) {
       const input = form.elements.namedItem(firstInvalid);
-      if (input instanceof HTMLInputElement) input.focus();
+      if (input instanceof HTMLElement) input.focus();
       return;
     }
 

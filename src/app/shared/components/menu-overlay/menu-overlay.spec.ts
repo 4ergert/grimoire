@@ -44,17 +44,21 @@ describe('MenuOverlay', () => {
       fixture.componentRef.setInput('emailVerified', verified);
       await fixture.whenStable();
       const links: NodeListOf<HTMLAnchorElement> =
-        fixture.nativeElement.querySelectorAll('nav[aria-label="Legal information"] a');
+        fixture.nativeElement.querySelectorAll('app-legal-footer nav[aria-label="Legal information"] a');
       expect(Array.from(links, (link) => [link.textContent?.trim(), link.getAttribute('href')]))
-        .toEqual([['Legal notice', '/impressum'], ['Privacy policy', '/datenschutz']]);
-      for (const [index, path] of ['/impressum', '/datenschutz'].entries()) {
+        .toEqual([
+          ['Legal notice', '/impressum'],
+          ['Privacy policy', '/datenschutz'],
+          ['Terms of Use', '/nutzungsbedingungen'],
+        ]);
+      for (const [index, path] of ['/impressum', '/datenschutz', '/nutzungsbedingungen'].entries()) {
         links[index].click();
         const target = navigate.mock.calls.at(-1)?.[0];
         expect(target).toBeDefined();
         expect(typeof target === 'string' ? target : router.serializeUrl(target!)).toBe(path);
       }
     }
-    expect(navigate).toHaveBeenCalledTimes(4);
+    expect(navigate).toHaveBeenCalledTimes(6);
   });
 
   it('should offer separate create and computer game actions and disable them while pending', async () => {

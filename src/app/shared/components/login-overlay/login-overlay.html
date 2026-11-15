@@ -67,7 +67,7 @@
       <fieldset [disabled]="pending()">
         @if (signingUp) {
           <div class="form_field">
-            <label for="name">Name</label>
+            <label for="name">Username</label>
             <input type="text" id="name" name="name" autocomplete="name" maxlength="42" required
               [attr.aria-invalid]="fieldErrors().name ? 'true' : null"
               [attr.aria-describedby]="fieldErrors().name ? 'name-hint name-error' : 'name-hint'" />
@@ -158,6 +158,26 @@
               <span class="field_error" id="confirm-password-error">{{ message }}</span>
             }
           </div>
+          <div class="form_field">
+            <div class="terms_acceptance">
+              <input
+                type="checkbox"
+                id="accept-terms"
+                name="accept-terms"
+                required
+                [attr.aria-invalid]="fieldErrors().terms ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors().terms ? 'terms-error' : null"
+              />
+              <label for="accept-terms">I agree to the Terms of Use.</label>
+            </div>
+            <p class="field_hint">
+              Please read the <a routerLink="/nutzungsbedingungen">Terms of Use</a> before creating
+              your account.
+            </p>
+            @if (fieldErrors().terms; as message) {
+              <span class="field_error" id="terms-error">{{ message }}</span>
+            }
+          </div>
         }
         <button custom-button class="auth_button" type="submit">
           {{ pending() ? 'Please wait...' : authAction }}
@@ -189,11 +209,6 @@
     @if (error()) {
       <p class="auth_error" role="alert">{{ error() }}</p>
     }
-    <footer>
-      <nav class="legal_links" aria-label="Legal information">
-        <a routerLink="/impressum">Legal notice</a>
-        <a routerLink="/datenschutz">Privacy policy</a>
-      </nav>
-    </footer>
+    <app-legal-footer />
   </section>
 }

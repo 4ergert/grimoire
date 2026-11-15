@@ -28,7 +28,7 @@ describe('PlayGround', () => {
     const trigger = menu.querySelector('summary')!;
     const buttons = Array.from(menu.querySelectorAll('button'));
     expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Menu', 'New game', 'Log Out',
+      'Menu', 'Flip board', 'New game', 'Log Out',
     ]);
     expect(menu.open).toBe(false);
     trigger.click();
@@ -39,7 +39,7 @@ describe('PlayGround', () => {
     move('e2', 'e4');
     await fixture.whenStable();
     trigger.click();
-    buttons[1].click();
+    buttons[2].click();
     await fixture.whenStable();
     expect(component.moveHistory()).toHaveLength(0);
     expect(menu.open).toBe(false);
@@ -48,12 +48,23 @@ describe('PlayGround', () => {
     component.logout.subscribe(logout);
     fixture.componentRef.setInput('pending', true);
     await fixture.whenStable();
-    expect(buttons[2].disabled).toBe(true);
+    expect(buttons[3].disabled).toBe(true);
     fixture.componentRef.setInput('pending', false);
     await fixture.whenStable();
     trigger.click();
-    buttons[2].click();
+    buttons[3].click();
     expect(logout).toHaveBeenCalledOnce();
+    expect(menu.open).toBe(false);
+  });
+
+  it('should close the game menu when clicking outside it', () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
+    menu.querySelector('summary')!.click();
+    expect(menu.open).toBe(true);
+
+    element.querySelector<HTMLElement>('.game-status')!.click();
+
     expect(menu.open).toBe(false);
   });
 
@@ -127,12 +138,15 @@ describe('PlayGround', () => {
 
   it('should flip coordinates and pieces while preserving correct move input', async () => {
     const element: HTMLElement = fixture.nativeElement;
-    const flip = element.querySelector<HTMLButtonElement>('button[aria-label="Flip board"]')!;
-    expect(flip.textContent?.trim()).toBe('\u21bb');
-    expect(flip.previousElementSibling?.classList.contains('game-status')).toBe(true);
+    const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
+    const flip = menu.querySelector<HTMLButtonElement>('.game-menu-actions button[aria-label="Flip board"]')!;
+    expect(flip.textContent?.trim()).toBe('Flip board');
     expect(flip.getAttribute('aria-pressed')).toBe('false');
+    menu.querySelector('summary')!.click();
+    expect(menu.open).toBe(true);
     flip.click();
     await fixture.whenStable();
+    expect(menu.open).toBe(false);
     expect(flip.getAttribute('aria-pressed')).toBe('true');
     expect(element.querySelector('.square')?.getAttribute('data-square')).toBe('h1');
     expect(

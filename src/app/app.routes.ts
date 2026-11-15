@@ -21,6 +21,12 @@ export const routes: Routes = [
     title: 'Privacy policy | Grimoire',
   },
   {
+    path: 'nutzungsbedingungen',
+    component: Legal,
+    data: { terms: true },
+    title: 'Terms of Use | Grimoire',
+  },
+  {
     path: '**',
     redirectTo: '',
   },
