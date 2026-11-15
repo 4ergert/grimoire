@@ -80,6 +80,7 @@ fieldset {
 }
 
 .form_field {
+  position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -133,6 +134,9 @@ label {
 }
 
 input {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.5;
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid rgb(253, 253, 253);
@@ -160,7 +164,6 @@ input:autofill,
 input:-webkit-autofill {
   background-color: transparent !important;
   -webkit-text-fill-color: #fff1a1;
-  font-size: 16px;
   caret-color: #fff;
   box-shadow:
     0 0 20px #ffed8494,
@@ -205,8 +208,16 @@ input[aria-invalid='true']:focus-visible {
 }
 
 .field_error {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: #ff6b6b;
   font-size: 12px;
+  line-height: 14px;
 }
 
 .field_hint {

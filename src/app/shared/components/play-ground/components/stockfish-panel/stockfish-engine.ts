@@ -8,6 +8,7 @@ interface Search {
   skill: number;
   candidateCount: number;
   randomize: boolean;
+  depth?: number;
 }
 
 export interface EngineVariation {
@@ -45,7 +46,7 @@ export class StockfishEngine {
     inject(DestroyRef).onDestroy(() => this.dispose());
   }
 
-  search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true): void {
+  search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true, depth?: number): void {
     if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
       this.fail('Stockfish Skill Level must be an integer between 0 and 20.');
       return;
@@ -54,7 +55,11 @@ export class StockfishEngine {
       this.fail('Stockfish candidate count must be an integer between 1 and 5.');
       return;
     }
-    this.desired = { fen, position, skill, candidateCount, randomize };
+    if (depth !== undefined && (!Number.isInteger(depth) || depth < 1)) {
+      this.fail('Stockfish search depth must be a positive integer.');
+      return;
+    }
+    this.desired = { fen, position, skill, candidateCount, randomize, depth };
     this.result.set(null);
     if (this.error()) return;
     this.busy.set(true);
@@ -194,7 +199,7 @@ export class StockfishEngine {
     if (!this.send(`setoption name MultiPV value ${this.active.candidateCount}`)) return;
     if (!this.send(`position ${this.active.position}`)) return;
     this.watchdog(222222, 'Stockfish did not finish its search. Please try again.');
-    this.send('go movetime 111000');
+    this.send(this.active.depth === undefined ? 'go movetime 111000' : `go depth ${this.active.depth}`);
   }
 
   private selectCandidate(bestMove: string): string {

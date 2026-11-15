@@ -338,10 +338,11 @@ The separate Stockfish panel below the board offers:
 To leave a computer game, return to the menu. Restarting an engine game keeps
 the chosen side. There is no separate Engine off button.
 
-The side-selection dialog offers strength levels 1–10 (default 5), mapped to
+The side-selection dialog uses a dedicated strength selector offering levels 1–10 (default 1), mapped to
 Stockfish Skill Level 0–20 using `round((level - 1) * 20 / 9)`.
 Restarting keeps the selected strength. These levels are not calibrated Elo ratings.
-Analysis and engine moves use a one-second search. Analysis always uses Skill Level 20;
+Level 1 opponent searches are limited to depth 5. Levels 2–10 and analysis retain
+the existing time-based search limit. Analysis always uses Skill Level 20;
 when analysing during an opponent turn, a separate local worker keeps the analysis
 independent of the opponent's selected strength.
 Analysis never plays moves automatically and is unavailable during folder training.

@@ -115,6 +115,7 @@ export class StockfishPanel {
             opponentTurn ? Math.round(((strength - 1) * 20) / 9) : 20,
             opponentTurn ? candidateCount : 3,
             opponentTurn,
+            opponentTurn && strength === 1 ? 5 : undefined,
           );
         if (!stopped && opponentTurn && analysis)
           this.analysisEngine.search(fen, position, 20, 3, false);

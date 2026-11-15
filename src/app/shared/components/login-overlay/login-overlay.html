@@ -73,7 +73,7 @@
               [attr.aria-describedby]="fieldErrors().name ? 'name-hint name-error' : 'name-hint'" />
             <span class="field_hint" id="name-hint">4–42 letters A–Z, numbers, underscores, or single spaces between words.</span>
             @if (fieldErrors().name; as message) {
-              <span class="field_error" id="name-error">{{ message }}</span>
+              <span class="field_error" id="name-error" [title]="message">{{ message }}</span>
             }
           </div>
         }
@@ -83,7 +83,7 @@
             [attr.aria-invalid]="fieldErrors().email ? 'true' : null"
             [attr.aria-describedby]="fieldErrors().email ? 'email-error' : null" />
           @if (fieldErrors().email; as message) {
-            <span class="field_error" id="email-error">{{ message }}</span>
+            <span class="field_error" id="email-error" [title]="message">{{ message }}</span>
           }
         </div>
         <div class="form_field">
@@ -119,7 +119,7 @@
             </button>
           </div>
           @if (fieldErrors().password; as message) {
-            <span class="field_error" id="password-error">{{ message }}</span>
+            <span class="field_error" id="password-error" [title]="message">{{ message }}</span>
           }
         </div>
         @if (signingUp) {
@@ -155,7 +155,7 @@
               </button>
             </div>
             @if (fieldErrors()['confirm-password']; as message) {
-              <span class="field_error" id="confirm-password-error">{{ message }}</span>
+              <span class="field_error" id="confirm-password-error" [title]="message">{{ message }}</span>
             }
           </div>
           <div class="form_field">
@@ -175,7 +175,7 @@
               your account.
             </p>
             @if (fieldErrors().terms; as message) {
-              <span class="field_error" id="terms-error">{{ message }}</span>
+              <span class="field_error" id="terms-error" [title]="message">{{ message }}</span>
             }
           </div>
         }

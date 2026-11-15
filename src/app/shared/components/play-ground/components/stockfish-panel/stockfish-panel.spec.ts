@@ -258,7 +258,8 @@ describe('Stockfish playground integration', () => {
     const buttons = dialog.querySelectorAll<HTMLButtonElement>('button');
     const strength = dialog.querySelector<HTMLSelectElement>('select')!;
     expect(strength.options).toHaveLength(10);
-    expect(strength.value).toBe('5');
+    expect(dialog.querySelector('app-engine-strength')).not.toBeNull();
+    expect(strength.value).toBe('1');
     strength.value = '3';
     strength.dispatchEvent(new Event('change'));
     buttons[color === 'w' ? 0 : 1].click();
@@ -288,13 +289,33 @@ describe('Stockfish playground integration', () => {
       expect(worker.postMessage).toHaveBeenCalledWith(
         'setoption name UCI_LimitStrength value false',
       );
+      expect(worker.postMessage).toHaveBeenLastCalledWith(
+        level === 1 ? 'go depth 5' : 'go movetime 111000',
+      );
       worker.receive('bestmove e2e4');
       await fixture.whenStable();
       playground.restart();
       await fixture.whenStable();
       expect(playground.engineStrength()).toBe(level);
+      worker.receive('bestmove e2e4');
+      expect(worker.postMessage).toHaveBeenLastCalledWith(
+        level === 1 ? 'go depth 5' : 'go movetime 111000',
+      );
     },
   );
+
+  it('limits only the level-one opponent to depth five, not its analysis', async () => {
+    playground.startEngineGame('b', 1);
+    playground.setEngineMode('analysis');
+    await fixture.whenStable();
+    const [opponent, analysis] = EngineWorker.instances;
+    opponent.boot();
+    analysis.boot();
+
+    expect(opponent.postMessage).toHaveBeenLastCalledWith('go depth 5');
+    expect(analysis.postMessage).toHaveBeenLastCalledWith('go movetime 111000');
+    expect(analysis.postMessage).not.toHaveBeenCalledWith('go depth 5');
+  });
 
   it('uses a separate full-strength analysis search during weakened opponent play', async () => {
     playground.startEngineGame('b', 1);
