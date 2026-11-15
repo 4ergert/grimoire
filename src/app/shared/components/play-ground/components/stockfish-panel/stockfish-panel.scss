@@ -21,6 +21,38 @@ p {
   margin: 8px 0 0 0;
 }
 
+.variation {
+  position: relative;
+
+  &:focus-visible {
+    outline: 2px solid #ffdfbc;
+    outline-offset: 3px;
+  }
+
+  &:hover .variation-tooltip,
+  &:focus .variation-tooltip {
+    display: block;
+  }
+}
+
+.variation-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 8px 12px;
+  border: 1px solid #ffdfbc90;
+  border-radius: 8px;
+  background: #232323;
+  color: #ffdfbc;
+  box-shadow: 0 4px 12px #00000060;
+  overflow-wrap: anywhere;
+}
+
 [role='alert'] {
   color: #ffb4ab;
 }

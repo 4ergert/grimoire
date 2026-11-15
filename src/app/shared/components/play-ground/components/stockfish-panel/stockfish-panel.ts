@@ -30,6 +30,8 @@ export interface EngineMove {
   styleUrl: './stockfish-panel.scss',
 })
 export class StockfishPanel {
+  private static nextTooltipId = 0;
+  readonly tooltipId = StockfishPanel.nextTooltipId++;
   readonly analysisView = viewChild<TemplateRef<unknown>>('analysisView');
   readonly engine = inject(StockfishEngine);
   private readonly analysisEngine = inject(ANALYSIS_ENGINE);
@@ -68,13 +70,12 @@ export class StockfishPanel {
     if (!result || result.fen !== this.position()) return [];
     return result.variations.slice(0, 3).map((variation) => {
       const chess = new Chess(result.fen);
+      const line = variation.line.slice(0, 16).map((move) => chess.move(move).san);
       return {
         rank: variation.rank,
         evaluation: this.formatEvaluation(variation.score),
-        moves: variation.line
-          .slice(0, 8)
-          .map((move) => chess.move(move).san)
-          .join(' '),
+        moves: line.slice(0, 4).join(' '),
+        fullLine: line.join(' '),
       };
     });
   });

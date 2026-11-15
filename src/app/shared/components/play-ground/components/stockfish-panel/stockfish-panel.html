@@ -17,11 +17,20 @@
     <button type="button" (click)="retry()">Retry analysis</button>
   }
   @if ((mode() === 'analysis' || analysis()) && analysisResult(); as result) {
-    <p>Evaluation (White): {{ evaluation() || 'Calculating...' }}. Depth: {{ result.depth }}.</p>
+    <p>(White): {{ evaluation() || 'Calculating...' }}. Depth: {{ result.depth }}.</p>
     @for (variation of variations(); track variation.rank) {
-      <p>
-        {{ variation.rank === 1 ? 'Best line' : 'Line ' + variation.rank }}: {{ variation.moves }}
+      <p
+        class="variation"
+        tabindex="0"
+        [attr.aria-describedby]="'variation-line-' + tooltipId + '-' + variation.rank"
+      >
+        {{variation.rank }}. {{ variation.moves }}
         ({{ variation.evaluation || 'Calculating...' }})
+        <span
+          class="variation-tooltip"
+          role="tooltip"
+          [id]="'variation-line-' + tooltipId + '-' + variation.rank"
+        >{{ variation.fullLine }}</span>
       </p>
     }
   }

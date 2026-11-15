@@ -421,6 +421,34 @@ describe('Stockfish playground integration', () => {
     expect(playground.moveHistory()).toEqual([]);
   });
 
+  it('provides each variation with a focusable tooltip containing at most 16 SAN moves', async () => {
+    playground.setEngineMode('analysis');
+    await fixture.whenStable();
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    worker.receive(
+      'info depth 20 multipv 1 score cp 24 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f8e7 f1e1 b7b5 a4b3 d7d6 c2c3 e8g8 h2h3',
+    );
+    worker.receive('info depth 20 multipv 2 score cp -15 pv d2d4 d7d5');
+    await fixture.whenStable();
+
+    const variations: NodeListOf<HTMLElement> =
+      fixture.nativeElement.querySelectorAll('.analysis-summary .variation');
+    expect(variations).toHaveLength(2);
+    const first = variations[0];
+    const tooltip = first.querySelector<HTMLElement>('[role="tooltip"]')!;
+    expect(first.tabIndex).toBe(0);
+    expect(first.getAttribute('aria-describedby')).toBe(tooltip.id);
+    expect(first.childNodes[0].textContent).toContain('e4 e5 Nf3 Nc6');
+    expect(tooltip.textContent?.trim()).toBe(
+      'e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O',
+    );
+    const secondTooltip = variations[1].querySelector<HTMLElement>('[role="tooltip"]')!;
+    expect(variations[1].getAttribute('aria-describedby')).toBe(secondTooltip.id);
+    expect(secondTooltip.id).not.toBe(tooltip.id);
+    expect(secondTooltip.textContent?.trim()).toBe('d4 d5');
+  });
+
   it('shows engine errors and retries from the panel without changing the board', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     playground.setEngineMode('analysis');
