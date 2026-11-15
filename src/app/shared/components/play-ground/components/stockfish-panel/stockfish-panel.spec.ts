@@ -439,14 +439,42 @@ describe('Stockfish playground integration', () => {
     const tooltip = first.querySelector<HTMLElement>('[role="tooltip"]')!;
     expect(first.tabIndex).toBe(0);
     expect(first.getAttribute('aria-describedby')).toBe(tooltip.id);
-    expect(first.childNodes[0].textContent).toContain('e4 e5 Nf3 Nc6');
+    expect(first.childNodes[0].textContent).toContain('1. e4 e5 2. Nf3 Nc6');
     expect(tooltip.textContent?.trim()).toBe(
-      'e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O',
+      '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O',
     );
     const secondTooltip = variations[1].querySelector<HTMLElement>('[role="tooltip"]')!;
     expect(variations[1].getAttribute('aria-describedby')).toBe(secondTooltip.id);
     expect(secondTooltip.id).not.toBe(tooltip.id);
-    expect(secondTooltip.textContent?.trim()).toBe('d4 d5');
+    expect(secondTooltip.textContent?.trim()).toBe('1. d4 d5');
+  });
+
+  it.each([
+    {
+      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 12',
+      moves: 'e2e4 e7e5 g1f3 b8c6 f1b5',
+      preview: '12. e4 e5 13. Nf3 Nc6',
+      full: '12. e4 e5 13. Nf3 Nc6 14. Bb5',
+    },
+    {
+      fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 12',
+      moves: 'e7e5 g1f3 b8c6 f1b5 a7a6',
+      preview: '12... e5 13. Nf3 Nc6 14. Bb5',
+      full: '12... e5 13. Nf3 Nc6 14. Bb5 a6',
+    },
+  ])('numbers preview and tooltip from the position: $fen', async ({ fen, moves, preview, full }) => {
+    playground.game['game'].load(fen);
+    playground.game.position.set(fen);
+    playground.setEngineMode('analysis');
+    await fixture.whenStable();
+    const worker = EngineWorker.instances[0];
+    worker.boot();
+    worker.receive(`info depth 10 multipv 1 score cp 24 pv ${moves}`);
+    await fixture.whenStable();
+
+    const variation: HTMLElement = fixture.nativeElement.querySelector('.analysis-summary .variation');
+    expect(variation.childNodes[0].textContent).toContain(preview);
+    expect(variation.querySelector('[role="tooltip"]')?.textContent?.trim()).toBe(full);
   });
 
   it('shows engine errors and retries from the panel without changing the board', async () => {

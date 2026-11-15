@@ -70,11 +70,17 @@ export class StockfishPanel {
     if (!result || result.fen !== this.position()) return [];
     return result.variations.slice(0, 3).map((variation) => {
       const chess = new Chess(result.fen);
-      const line = variation.line.slice(0, 16).map((move) => chess.move(move).san);
+      const line = variation.line.slice(0, 16).map((move, index) => {
+        const color = chess.turn();
+        const number = chess.moveNumber();
+        const san = chess.move(move).san;
+        if (color === 'w') return `${number}.${san}`;
+        return index === 0 ? `${number}... ${san}` : san;
+      });
       return {
         rank: variation.rank,
         evaluation: this.formatEvaluation(variation.score),
-        moves: line.slice(0, 4).join(' '),
+        moves: line.slice(0, 3).join(' '),
         fullLine: line.join(' '),
       };
     });
