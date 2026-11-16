@@ -86,7 +86,9 @@ export class PlayGround {
     if (training) return training.positions();
     if (this.trainingFolder()) return [this.displayPosition()];
     const positions = this.replayPositions();
-    return positions.length ? positions.slice(0, this.replayIndex() + 1) : this.game.positions();
+    return positions.length
+      ? positions.slice(0, this.replayIndex() + 1)
+      : this.game.positions().slice(0, this.game.cursor() + 1);
   });
   readonly board = computed(() => new Chess(this.displayPosition()).board());
   readonly engineTurn = computed(() => {

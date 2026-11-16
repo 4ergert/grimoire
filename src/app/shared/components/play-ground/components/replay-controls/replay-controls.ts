@@ -1,39 +1,58 @@
 import { Component, input, output } from '@angular/core';
+import { CustomButton } from '../../../button/button';
 
 @Component({
   selector: 'app-replay-controls',
-  styleUrl: '../controls.scss',
+  styleUrls: ['../controls.scss', './replay-controls.scss'],
+  imports: [CustomButton],
   template: `
-    <nav class="game-toolbar" aria-label="Replay controls">
-      <button class="restart" type="button" [disabled]="index() === 0" (click)="navigate.emit(0)">
-        Start
-      </button>
+    <nav class="game-toolbar" aria-label="Move navigation">
       <button
+        custom-button
         class="restart"
         type="button"
+        aria-label="Start"
+        title="Start"
+        [disabled]="index() === 0"
+        (click)="navigate.emit(0)"
+      >
+        <span aria-hidden="true">&#x23EE;</span>
+      </button>
+      <button
+        custom-button
+        class="restart"
+        type="button"
+        aria-label="Previous move"
+        title="Previous move"
         [disabled]="index() === 0"
         (click)="navigate.emit(index() - 1)"
       >
-        Previous
+        <span aria-hidden="true">&#x2190;</span>
       </button>
       <span role="status"
-        >{{ index() }} / {{ moves().length }} {{ moves()[index() - 1] || '' }}</span
+        >{{ index() }}/{{ moves().length }} {{ moves()[index() - 1] || '' }}</span
       >
       <button
+        custom-button
         class="restart"
         type="button"
+        aria-label="Next move"
+        title="Next move"
         [disabled]="index() === moves().length"
         (click)="navigate.emit(index() + 1)"
       >
-        Next
+        <span aria-hidden="true">&#x2192;</span>
       </button>
       <button
+        custom-button
         class="restart"
         type="button"
+        aria-label="End"
+        title="End"
         [disabled]="index() === moves().length"
         (click)="navigate.emit(moves().length)"
       >
-        End
+        <span aria-hidden="true">&#x23ED;</span>
       </button>
     </nav>
   `,

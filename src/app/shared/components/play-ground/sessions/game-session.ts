@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import { Chess, Square } from 'chess.js';
+import { Chess, Move, Square } from 'chess.js';
 
 export interface GameTurn {
   number: number;
@@ -9,11 +9,30 @@ export interface GameTurn {
 
 export class GameSession {
   private readonly game = new Chess();
+  private readonly redoMoves: Move[] = [];
   readonly position = signal(this.game.fen());
+  readonly cursor = computed(() => {
+    this.position();
+    return this.game.history().length;
+  });
+  readonly timelineMoves = computed(() => {
+    this.position();
+    return [
+      ...this.game.history({ verbose: true }).map((move) => move.san),
+      ...this.redoMoves.map((move) => move.san),
+    ];
+  });
   readonly positions = computed(() => {
     this.position();
     const moves = this.game.history({ verbose: true });
-    return [moves[0]?.before ?? this.game.fen(), ...moves.map((move) => move.after)];
+    const positions = [moves[0]?.before ?? this.game.fen(), ...moves.map((move) => move.after)];
+    const replay = new Chess(this.game.fen());
+    for (const move of this.redoMoves) {
+      positions.push(
+        replay.move({ from: move.from, to: move.to, promotion: move.promotion }).after,
+      );
+    }
+    return positions;
   });
   readonly enginePosition = computed(() => {
     this.position();
@@ -63,10 +82,25 @@ export class GameSession {
   }
   move(from: Square, to: Square, promotion?: string): void {
     this.game.move({ from, to, promotion });
+    this.redoMoves.length = 0;
+    this.position.set(this.game.fen());
+  }
+  navigate(index: number): void {
+    const target = Math.max(0, Math.min(this.timelineMoves().length, Math.trunc(index)));
+    while (this.game.history().length > target) {
+      const move = this.game.undo();
+      if (move) this.redoMoves.unshift(move);
+    }
+    while (this.game.history().length < target) {
+      const move = this.redoMoves.shift();
+      if (!move) break;
+      this.game.move({ from: move.from, to: move.to, promotion: move.promotion });
+    }
     this.position.set(this.game.fen());
   }
   reset(): void {
     this.game.reset();
+    this.redoMoves.length = 0;
     this.position.set(this.game.fen());
   }
   pgn(): string {

@@ -44,6 +44,12 @@
       [moves]="replayMoves()"
       (navigate)="replayIndex.set($event)"
     />
+  } @else if (mode() === 'play' && !computerGame()) {
+    <app-replay-controls
+      [index]="game.cursor()"
+      [moves]="game.timelineMoves()"
+      (navigate)="game.navigate($event)"
+    />
   }
   @if (promotion(); as move) {
     <app-promotion-controls

@@ -22,6 +22,41 @@ describe('PlayGround', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should navigate created moves and discard the future when starting a new line', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const controls = element.querySelector('app-replay-controls')!;
+    const buttons = Array.from(controls.querySelectorAll<HTMLButtonElement>('button'));
+    expect(buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent?.trim()))
+      .toEqual(['Start', 'Previous move', 'Next move', 'End']);
+    expect(buttons[1].disabled).toBe(true);
+    expect(buttons[2].disabled).toBe(true);
+
+    move('e2', 'e4');
+    move('e7', 'e5');
+    await fixture.whenStable();
+    expect(controls.textContent).toContain('2 / 2 e5');
+
+    buttons[1].click();
+    await fixture.whenStable();
+    expect(component.game.cursor()).toBe(1);
+    expect(component.board()[4][4]?.color).toBe('w');
+    expect(component.board()[3][4]).toBeNull();
+    expect(buttons[2].disabled).toBe(false);
+
+    buttons[2].click();
+    await fixture.whenStable();
+    expect(component.game.cursor()).toBe(2);
+    expect(component.board()[3][4]?.color).toBe('b');
+
+    buttons[1].click();
+    await fixture.whenStable();
+    move('c7', 'c5');
+    await fixture.whenStable();
+    expect(component.game.timelineMoves()).toEqual(['e4', 'c5']);
+    expect(component.game.cursor()).toBe(2);
+    expect(buttons[2].disabled).toBe(true);
+  });
+
   it('should toggle the burger menu, restart the game and forward logout', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const menu = element.querySelector<HTMLDetailsElement>('app-game-controls details')!;
