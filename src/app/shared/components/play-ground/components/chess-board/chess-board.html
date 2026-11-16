@@ -52,10 +52,19 @@
         </div>
       }
     </div>
-    <div class="rank-labels rank-labels-right" aria-hidden="true">
-      @for (rank of ranks(); track rank) {
-        <span>{{ rank }}</span>
-      }
+    <div
+      class="analysis-bar"
+      role="img"
+      [attr.aria-label]="
+        evaluationLabel()
+          ? 'Stockfish evaluation ' + evaluationLabel()
+          : 'Stockfish evaluation unavailable'
+      "
+    >
+      <div class="black-advantage" [style.height.%]="100 - whiteAdvantage()"></div>
+    </div>
+    <div class="analysis-score" aria-hidden="true">
+      {{ evaluationLabel() || '—' }}
     </div>
     <div class="file-labels" aria-hidden="true">
       @for (file of files(); track file) {

@@ -66,6 +66,8 @@
     [targets]="mode() === 'play' ? legalTargets() : []"
     [hint]="training()?.hintSquare() ?? null"
     [disabled]="promotion() !== null || engineTurn() || choosingEngineSide()"
+    [evaluation]="stockfishPanel()?.barEvaluation() ?? null"
+    [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''"
     (squareSelected)="select($event)"
   />
 

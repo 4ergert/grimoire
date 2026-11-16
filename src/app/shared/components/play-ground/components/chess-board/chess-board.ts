@@ -15,7 +15,15 @@ export class ChessBoard {
   readonly targets = input<readonly Square[]>([]);
   readonly hint = input<Square | null>(null);
   readonly disabled = input(false);
+  readonly evaluation = input<number | null>(null);
+  readonly evaluationLabel = input('');
   readonly squareSelected = output<Square>();
+  readonly whiteAdvantage = computed(() => {
+    const evaluation = this.evaluation();
+    if (evaluation === null) return 50;
+    const score = Math.max(-2000, Math.min(2000, evaluation));
+    return 100 / (1 + Math.exp(-score / 400));
+  });
   readonly ranks = computed(() =>
     this.flipped() ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1],
   );

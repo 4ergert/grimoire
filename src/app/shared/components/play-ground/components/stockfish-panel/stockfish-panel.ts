@@ -35,7 +35,7 @@ export class StockfishPanel {
   readonly analysisView = viewChild<TemplateRef<unknown>>('analysisView');
   readonly engine = inject(StockfishEngine);
   private readonly analysisEngine = inject(ANALYSIS_ENGINE);
-  readonly position = input.required<string>();
+  readonly position = input(new Chess().fen());
   readonly enginePosition = input.required<string>();
   readonly mode = input<EngineMode>('off');
   readonly analysis = input(false);
@@ -53,7 +53,26 @@ export class StockfishPanel {
       : this.engine.result(),
   );
   readonly analysisError = this.analysisEngine.error;
-  readonly evaluation = computed(() => this.formatEvaluation(this.analysisResult()?.score));
+  private readonly currentAnalysisResult = computed(() => {
+    const result = this.analysisResult();
+    return result?.fen === this.position() ? result : null;
+  });
+  readonly evaluation = computed(() =>
+    this.formatEvaluation(this.currentAnalysisResult()?.score ?? undefined),
+  );
+  readonly barEvaluationLabel = computed(() => {
+    const score = this.currentAnalysisResult()?.score;
+    if (!score) return '';
+    if (score.type === 'mate') {
+      return score.value === 0 ? 'M0' : `${score.value > 0 ? 'M' : '-M'}${Math.abs(score.value)}`;
+    }
+    return (score.value / 100).toFixed(1);
+  });
+  readonly barEvaluation = computed(() => {
+    const score = this.currentAnalysisResult()?.score;
+    if (!score) return null;
+    return score.type === 'mate' ? Math.sign(score.value) * 2000 : score.value;
+  });
 
   private formatEvaluation(score: EngineResult['score'] | undefined): string {
     if (!score) return '';
@@ -66,8 +85,8 @@ export class StockfishPanel {
     return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
   }
   readonly variations = computed(() => {
-    const result = this.analysisResult();
-    if (!result || result.fen !== this.position()) return [];
+    const result = this.currentAnalysisResult();
+    if (!result) return [];
     return result.variations.slice(0, 3).map((variation) => {
       const chess = new Chess(result.fen);
       const line = variation.line.slice(0, 16).map((move, index) => {

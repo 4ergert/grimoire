@@ -213,11 +213,7 @@ describe('PlayGround', () => {
         span.textContent?.trim(),
       ),
     ).toEqual(['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']);
-    expect(
-      Array.from(element.querySelectorAll('.rank-labels-right span'), (span) =>
-        span.textContent?.trim(),
-      ),
-    ).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
+    expect(element.querySelector('.analysis-bar')).not.toBeNull();
     element.querySelector<HTMLButtonElement>('[data-square="e2"]')!.click();
     await fixture.whenStable();
     element.querySelector<HTMLButtonElement>('[data-square="e4"]')!.click();
@@ -483,17 +479,15 @@ describe('PlayGround', () => {
     expect(component.status()).toBe('Draw by the fifty-move rule.');
   });
 
-  it('should display ranks 8 to 1 on both sides of the board', () => {
+  it('should display ranks 8 to 1 on the left and the analysis bar on the right', () => {
     const element: HTMLElement = fixture.nativeElement;
     const labels = element.querySelectorAll('.rank-labels');
 
-    expect(labels).toHaveLength(2);
-    expect(labels[1].classList.contains('rank-labels-right')).toBe(true);
-    for (const label of labels) {
-      expect(
-        Array.from(label.querySelectorAll('span'), (span) => span.textContent?.trim()),
-      ).toEqual(['8', '7', '6', '5', '4', '3', '2', '1']);
-    }
+    expect(labels).toHaveLength(1);
+    expect(
+      Array.from(labels[0].querySelectorAll('span'), (span) => span.textContent?.trim()),
+    ).toEqual(['8', '7', '6', '5', '4', '3', '2', '1']);
+    expect(element.querySelector('.analysis-bar')).not.toBeNull();
   });
 
   it('should display files a to h above and below the board', () => {

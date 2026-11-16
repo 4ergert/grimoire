@@ -30,7 +30,7 @@ import { CustomButton } from '../../../button/button';
         <span aria-hidden="true">&#x2190;</span>
       </button>
       <span role="status"
-        >{{ index() }}/{{ moves().length }} {{ moves()[index() - 1] || '' }}</span
+        >{{ index() }}/{{ moves().length }} </span
       >
       <button
         custom-button
