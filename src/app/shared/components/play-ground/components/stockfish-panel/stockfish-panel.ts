@@ -15,6 +15,7 @@ import { Chess, Color } from 'chess.js';
 import { EngineResult, StockfishEngine } from './stockfish-engine';
 
 const ANALYSIS_ENGINE = new InjectionToken<StockfishEngine>('Stockfish full-strength analysis');
+const OPPONENT_DEPTHS = [5, 6, 7, 9, 10, 12, 14, 16, 20, 26] as const;
 
 export type EngineMode = 'off' | 'analysis' | 'opponent';
 
@@ -125,6 +126,10 @@ export class StockfishPanel {
           (!allowOpponent || (new Chess(fen).turn() === player && !analysis)));
       const candidateCount =
         opponentTurn && strength >= 1 && strength <= 5 ? Math.max(2, 6 - strength) : 1;
+      const opponentDepth =
+        opponentTurn && Number.isInteger(strength) && strength >= 1 && strength <= OPPONENT_DEPTHS.length
+          ? OPPONENT_DEPTHS[strength - 1]
+          : undefined;
       untracked(() => {
         if (stopped) this.engine.stop();
         else
@@ -134,7 +139,7 @@ export class StockfishPanel {
             opponentTurn ? Math.round(((strength - 1) * 20) / 9) : 20,
             opponentTurn ? candidateCount : 3,
             opponentTurn,
-            opponentTurn && strength === 1 ? 5 : undefined,
+            opponentDepth,
           );
         if (!stopped && opponentTurn && analysis)
           this.analysisEngine.search(fen, position, 20, 3, false);

@@ -47,14 +47,17 @@ export class StockfishEngine {
   }
 
   search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true, depth?: number): void {
+    // Validate input parameters 
     if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
       this.fail('Stockfish Skill Level must be an integer between 0 and 20.');
       return;
     }
+    // Validate candidate count
     if (!Number.isInteger(candidateCount) || candidateCount < 1 || candidateCount > 5) {
       this.fail('Stockfish candidate count must be an integer between 1 and 5.');
       return;
     }
+    // Validate search depth
     if (depth !== undefined && (!Number.isInteger(depth) || depth < 1)) {
       this.fail('Stockfish search depth must be a positive integer.');
       return;

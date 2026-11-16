@@ -273,9 +273,20 @@ describe('Stockfish playground integration', () => {
     expect(EngineWorker.instances).toHaveLength(color === 'b' ? 1 : 0);
   });
 
-  it.each([1, 5, 10])(
+  it.each([
+    [1, 5],
+    [2, 6],
+    [3, 7],
+    [4, 9],
+    [5, 10],
+    [6, 12],
+    [7, 14],
+    [8, 16],
+    [9, 20],
+    [10, 26],
+  ])(
     'applies strength %s to opponent searches and preserves it on restart',
-    async (level) => {
+    async (level, depth) => {
       playground.startEngineGame('b', level);
       await fixture.whenStable();
       const worker = EngineWorker.instances[0];
@@ -290,7 +301,7 @@ describe('Stockfish playground integration', () => {
         'setoption name UCI_LimitStrength value false',
       );
       expect(worker.postMessage).toHaveBeenLastCalledWith(
-        level === 1 ? 'go depth 5' : 'go movetime 111000',
+        `go depth ${depth}`,
       );
       worker.receive('bestmove e2e4');
       await fixture.whenStable();
@@ -299,7 +310,7 @@ describe('Stockfish playground integration', () => {
       expect(playground.engineStrength()).toBe(level);
       worker.receive('bestmove e2e4');
       expect(worker.postMessage).toHaveBeenLastCalledWith(
-        level === 1 ? 'go depth 5' : 'go movetime 111000',
+        `go depth ${depth}`,
       );
     },
   );
