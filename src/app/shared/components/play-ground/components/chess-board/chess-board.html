@@ -42,9 +42,12 @@
                 (click)="squareSelected.emit(square)"
               >
                 @if (piece) {
-                  <span class="piece" aria-hidden="true">{{
-                    pieceGlyph(piece.type, piece.color)
-                  }}</span>
+                  <img
+                    class="piece"
+                    [src]="pieceImagePath(piece.type, piece.color)"
+                    alt=""
+                    aria-hidden="true"
+                  />
                 }
               </button>
             </div>

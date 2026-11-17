@@ -32,4 +32,15 @@ describe('ChessBoard analysis bar', () => {
       .toBe('Stockfish evaluation unavailable');
     expect(fixture.nativeElement.querySelector('.black-advantage').style.height).toBe('50%');
   });
+
+  it('renders the standalone SVG assets for each piece color and type', () => {
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-square="e1"] .piece').getAttribute('src'),
+    ).toBe('/img/chess-pieces/white-king.svg');
+    expect(
+      fixture.nativeElement.querySelector('[data-square="a8"] .piece').getAttribute('src'),
+    ).toBe('/img/chess-pieces/black-rook.svg');
+  });
 });

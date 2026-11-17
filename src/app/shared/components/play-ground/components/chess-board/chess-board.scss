@@ -54,18 +54,11 @@
 
 .piece {
   position: relative;
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.808));
   pointer-events: none;
-  font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif;
-  font-size: clamp(24px, 9vw, 64px);
-  line-height: 1;
-  color: #4d0000;
-  text-shadow: 0 0 11px #ffffffe4;
-}
-
-.white-piece .piece {
-  color: #fee6a9;
-  text-shadow:
-    0 0 8px #000;
 }
 
 .square.selected {

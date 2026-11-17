@@ -2,135 +2,75 @@
 @let isReplaying = replayPositions().length > 0;
 
 @if (choosingEngineSide()) {
-  <app-engine-side-dialog
-    (choose)="startEngineGame($event.color, $event.strength)"
-    (cancel)="back.emit()"
-  />
+<app-engine-side-dialog (choose)="startEngineGame($event.color, $event.strength)" (cancel)="back.emit()" />
 }
 
 <section class="game" aria-label="Chess playground">
-  <app-game-controls
-    [training]="isTraining"
-    [computerGame]="computerGame()"
-    [guest]="guest()"
-    [pending]="pending()"
-    [flipped]="flipped()"
-    [analysis]="engineAnalysis()"
-    (back)="back.emit()"
-    (restart)="restart()"
-    (logout)="logout.emit()"
-    (flip)="flipped.set(!flipped())"
-    (analyse)="setEngineMode('analysis')"
-  >
+  <app-game-controls [training]="isTraining" [computerGame]="computerGame()" [guest]="guest()" [pending]="pending()"
+    [flipped]="flipped()" [analysis]="engineAnalysis()" (back)="back.emit()" (restart)="restart()"
+    (logout)="logout.emit()" (flip)="flipped.set(!flipped())" (analyse)="setEngineMode('analysis')">
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
         @if (trainingFolder()) {
-          Folder training
+        Folder training
         } @else if (isReplaying) {
-          Replay
+        Replay
         } @else {
-          {{ status() }}
+        {{ status() }}
         }
       </p>
     </div>
   </app-game-controls>
 
-  @if (replayError(); as error) {
-    <p role="alert">{{ error }}</p>
-  }
-  @if (mode() === 'replay' && replayPositions().length) {
-    <app-replay-controls
-      [index]="replayIndex()"
-      [moves]="replayMoves()"
-      (navigate)="replayIndex.set($event)"
-    />
-  } @else if (mode() === 'play' && !computerGame()) {
-    <app-replay-controls
-      [index]="game.cursor()"
-      [moves]="game.timelineMoves()"
-      (navigate)="game.navigate($event)"
-    />
-  }
-  @if (promotion(); as move) {
-    <app-promotion-controls
-      [square]="move.to"
-      (choose)="promote($event)"
-      (cancel)="promotion.set(null)"
-    />
+  @if (isTraining) {
+  <app-training-panel [session]="training()" [error]="trainingError()" (start)="startTraining($event)"
+    (next)="nextTrainingGame()" (playSolution)="playTrainingSolution()" />
+  } @else {
+  @if (!computerGame() || engineAnalysis()) {
+  <div class="analysis-row">
+    @if (!computerGame() && !alwaysAnalyse()) {
+    <button class="analyse-position" type="button" aria-label="Analyse position" title="Analyse position"
+      [attr.aria-pressed]="engineAnalysis()" (click)="setEngineMode('analysis')">
+      <img src="icon/analyse-position.png" alt="" width="52" height="52" />
+    </button>
+    }
+    <div class="analysis-summary">
+      <ng-container [ngTemplateOutlet]="stockfishPanel()?.analysisView() ?? null" />
+    </div>
+  </div>
   }
 
-  <app-chess-board
-    [position]="displayPosition()"
-    [flipped]="flipped()"
-    [selected]="isReplaying ? null : selected()"
-    [targets]="mode() === 'play' ? legalTargets() : []"
-    [hint]="training()?.hintSquare() ?? null"
+  <app-chess-board [position]="displayPosition()" [flipped]="flipped()" [selected]="isReplaying ? null : selected()"
+    [targets]="mode() === 'play' ? legalTargets() : []" [hint]="training()?.hintSquare() ?? null"
     [disabled]="promotion() !== null || engineTurn() || choosingEngineSide()"
     [evaluation]="stockfishPanel()?.barEvaluation() ?? null"
-    [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''"
-    (squareSelected)="select($event)"
-  />
+    [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''" (squareSelected)="select($event)" />
 
   <app-opening-name [positions]="openingPositions()" />
 
-  @if (isTraining) {
-    <app-training-panel
-      [session]="training()"
-      [error]="trainingError()"
-      (start)="startTraining($event)"
-      (next)="nextTrainingGame()"
-      (playSolution)="playTrainingSolution()"
-    />
-  } @else {
-    @if (!computerGame() || engineAnalysis()) {
-    <div class="analysis-row">
-      @if (!computerGame() && !alwaysAnalyse()) {
-        <button
-          class="analyse-position"
-          type="button"
-          aria-label="Analyse position"
-          title="Analyse position"
-          [attr.aria-pressed]="engineAnalysis()"
-          (click)="setEngineMode('analysis')"
-        >
-          <img src="icon/analyse-position.png" alt="" width="52" height="52" />
-        </button>
-      }
-      <div class="analysis-summary">
-        <ng-container [ngTemplateOutlet]="stockfishPanel()?.analysisView() ?? null" />
-      </div>
-    </div>
-    }
-
-    @if (engineError(); as error) {
-      <p role="alert">{{ error }}</p>
-    }
-    <app-move-history
-      [replaying]="isReplaying"
-      [replayMoves]="replayMoves()"
-      [history]="moveHistory()"
-      [historyPlys]="game.historyPlys()"
-      [showSave]="!guest()"
-      [canSave]="!!moveHistory().length && promotion() === null"
-      [showImport]="mode() === 'play' && !computerGame()"
-      [importError]="pgnImportError()"
-      [showNavigation]="mode() === 'play' && !computerGame()"
-      [currentPly]="game.cursor()"
-      (save)="save()"
-      (importPgn)="importPgn($event)"
-      (navigate)="game.navigate($event)"
-    />
+  @if (replayError(); as error) {
+  <p role="alert">{{ error }}</p>
   }
-  <app-stockfish-panel
-    [position]="displayPosition()"
-    [enginePosition]="enginePosition()"
-    [mode]="engineMode()"
-    [analysis]="engineAnalysis()"
-    [playerColor]="playerColor()"
-    [allowOpponent]="computerGame() && mode() === 'play'"
-    [strength]="engineStrength()"
-    [gameOver]="gameOver()"
-    (bestMove)="playEngineMove($event)"
-  />
+  @if (mode() === 'replay' && replayPositions().length) {
+  <app-replay-controls [index]="replayIndex()" [moves]="replayMoves()" (navigate)="replayIndex.set($event)" />
+  } @else if (mode() === 'play' && !computerGame()) {
+  <app-replay-controls [index]="game.cursor()" [moves]="game.timelineMoves()" (navigate)="game.navigate($event)" />
+  }
+  @if (promotion(); as move) {
+  <app-promotion-controls [square]="move.to" (choose)="promote($event)" (cancel)="promotion.set(null)" />
+  }
+
+  @if (engineError(); as error) {
+  <p role="alert">{{ error }}</p>
+  }
+  <app-move-history [replaying]="isReplaying" [replayMoves]="replayMoves()" [history]="moveHistory()"
+    [historyPlys]="game.historyPlys()" [showSave]="!guest()" [canSave]="!!moveHistory().length && promotion() === null"
+    [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError()"
+    [showNavigation]="mode() === 'play' && !computerGame()" [currentPly]="game.cursor()" (save)="save()"
+    (importPgn)="importPgn($event)" (navigate)="game.navigate($event)" />
+  }
+  <app-stockfish-panel [position]="displayPosition()" [enginePosition]="enginePosition()" [mode]="engineMode()"
+    [analysis]="engineAnalysis()" [playerColor]="playerColor()" [allowOpponent]="computerGame() && mode() === 'play'"
+    [strength]="engineStrength()" [gameOver]="gameOver()" (bestMove)="playEngineMove($event)" />
   <footer class="copyright">&copy; Julian Hergert</footer>
 </section>

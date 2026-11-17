@@ -46,12 +46,16 @@ export class ChessBoard {
     p: 'Pawn',
   };
 
-  pieceGlyph(type: PieceSymbol, color: Color): string {
-    const glyphs = {
-      w: { k: '\u2654', q: '\u2655', r: '\u2656', b: '\u2657', n: '\u2658', p: '\u2659' },
-      b: { k: '\u265a', q: '\u265b', r: '\u265c', b: '\u265d', n: '\u265e', p: '\u265f' },
-      // b: { k: '\u265a', q: '\u265b', r: '\u265c', b: '\u265d', n: '\🦄', p: '\u265f' },
+  pieceImagePath(type: PieceSymbol, color: Color): string {
+    const colorName = color === 'w' ? 'white' : 'black';
+    const pieceNames: Record<PieceSymbol, string> = {
+      k: 'king',
+      q: 'queen',
+      r: 'rook',
+      b: 'bishop',
+      n: 'knight',
+      p: 'pawn',
     };
-    return glyphs[color][type];
+    return `/img/chess-pieces/${colorName}-${pieceNames[type]}.svg`;
   }
 }
