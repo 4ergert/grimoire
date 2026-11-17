@@ -22,6 +22,46 @@ describe('PlayGround', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should import a PGN from the empty move history', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const openImport = Array.from(element.querySelectorAll<HTMLButtonElement>('.move-history button'))
+      .find((button) => button.textContent?.trim() === 'PGN einfügen')!;
+    expect(openImport).toBeTruthy();
+    expect(element.querySelector('.move-history')?.textContent).not.toContain('No moves yet.');
+
+    openImport.click();
+    await fixture.whenStable();
+    const textarea = element.querySelector<HTMLTextAreaElement>('#pgn-input')!;
+    textarea.value = '1. e4 e5 2. Nf3 *';
+    textarea.closest('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await fixture.whenStable();
+
+    expect(component.moveHistory()).toEqual([
+      { number: 1, white: 'e4', black: 'e5' },
+      { number: 2, white: 'Nf3', black: '' },
+    ]);
+    expect(component.board()[5][5]?.type).toBe('n');
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('should show an error and keep the current game when an invalid PGN is submitted', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    Array.from(element.querySelectorAll<HTMLButtonElement>('.move-history button'))
+      .find((button) => button.textContent?.trim() === 'PGN einfügen')!
+      .click();
+    await fixture.whenStable();
+    const textarea = element.querySelector<HTMLTextAreaElement>('#pgn-input')!;
+    textarea.value = '1. e5 *';
+    textarea.closest('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await fixture.whenStable();
+
+    expect(component.moveHistory()).toEqual([]);
+    expect(component.board()[6][4]?.type).toBe('p');
+    expect(element.querySelector('.move-history [role="alert"]')?.textContent).toContain(
+      'Dieses PGN konnte nicht geladen werden.',
+    );
+  });
+
   it('should navigate created moves and discard the future when starting a new line', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const controls = element.querySelector('app-replay-controls')!;
@@ -34,7 +74,7 @@ describe('PlayGround', () => {
     move('e2', 'e4');
     move('e7', 'e5');
     await fixture.whenStable();
-    expect(controls.textContent).toContain('2 / 2 e5');
+    expect(controls.textContent).toContain('2/2');
 
     buttons[1].click();
     await fixture.whenStable();
@@ -55,6 +95,28 @@ describe('PlayGround', () => {
     expect(component.game.timelineMoves()).toEqual(['e4', 'c5']);
     expect(component.game.cursor()).toBe(2);
     expect(buttons[2].disabled).toBe(true);
+  });
+
+  it('should navigate to a position by clicking its move in Create history', async () => {
+    move('e2', 'e4');
+    move('e7', 'e5');
+    move('g1', 'f3');
+    await fixture.whenStable();
+
+    const element: HTMLElement = fixture.nativeElement;
+    const e4 = Array.from(
+      element.querySelectorAll<HTMLButtonElement>('.move-history .move-link'),
+    ).find((button) => button.textContent?.trim() === 'e4')!;
+    expect(e4).toBeTruthy();
+
+    e4.click();
+    await fixture.whenStable();
+
+    expect(component.game.cursor()).toBe(1);
+    expect(component.board()[4][4]?.color).toBe('w');
+    expect(component.board()[3][4]).toBeNull();
+    expect(e4.getAttribute('aria-pressed')).toBe('true');
+    expect(component.game.timelineMoves()).toEqual(['e4', 'e5', 'Nf3']);
   });
 
   it('should toggle the burger menu, restart the game and forward logout', async () => {

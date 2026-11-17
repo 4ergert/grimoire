@@ -109,9 +109,16 @@
       [replaying]="isReplaying"
       [replayMoves]="replayMoves()"
       [history]="moveHistory()"
+      [historyPlys]="game.historyPlys()"
       [showSave]="!guest()"
       [canSave]="!!moveHistory().length && promotion() === null"
+      [showImport]="mode() === 'play' && !computerGame()"
+      [importError]="pgnImportError()"
+      [showNavigation]="mode() === 'play' && !computerGame()"
+      [currentPly]="game.cursor()"
       (save)="save()"
+      (importPgn)="importPgn($event)"
+      (navigate)="game.navigate($event)"
     />
   }
   <app-stockfish-panel

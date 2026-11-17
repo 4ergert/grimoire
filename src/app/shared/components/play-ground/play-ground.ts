@@ -48,6 +48,7 @@ export class PlayGround {
   readonly trainingFolder = input<GameFolder | null>(null);
   readonly training = signal<TrainingSession | null>(null);
   readonly trainingError = signal('');
+  readonly pgnImportError = signal('');
   readonly saveGame = output<string>();
   readonly back = output<void>();
   readonly logout = output<void>();
@@ -206,6 +207,16 @@ export class PlayGround {
 
   save(): void {
     this.saveGame.emit(this.game.pgn());
+  }
+  importPgn(pgn: string): void {
+    try {
+      this.game.loadPgn(pgn);
+      this.pgnImportError.set('');
+      this.clearSelection();
+    } catch (error) {
+      console.error('PGN could not be imported', error);
+      this.pgnImportError.set('Dieses PGN konnte nicht geladen werden.');
+    }
   }
   readonly moveHistory = this.game.history;
   readonly legalTargets = computed(() => {

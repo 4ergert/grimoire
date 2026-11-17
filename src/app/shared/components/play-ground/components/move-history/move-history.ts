@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { GameTurn } from '../../sessions/game-session';
 
 @Component({
@@ -33,23 +33,77 @@ import { GameTurn } from '../../sessions/game-session';
             @for (turn of history(); track turn.number) {
               <tr>
                 <th scope="row">{{ turn.number }}.</th>
-                <td>{{ turn.white }}</td>
-                <td>{{ turn.black }}</td>
+                  <td>
+                    @if (showNavigation() && turn.white) {
+                      <button
+                        class="move-link"
+                        type="button"
+                        [attr.aria-pressed]="currentPly() === historyPlys()[$index].white"
+                        (click)="navigate.emit(historyPlys()[$index].white!)"
+                      >
+                        {{ turn.white }}
+                      </button>
+                    } @else {
+                      {{ turn.white }}
+                    }
+                  </td>
+                  <td>
+                    @if (showNavigation() && turn.black) {
+                      <button
+                        class="move-link"
+                        type="button"
+                        [attr.aria-pressed]="currentPly() === historyPlys()[$index].black"
+                        (click)="navigate.emit(historyPlys()[$index].black!)"
+                      >
+                        {{ turn.black }}
+                      </button>
+                    } @else {
+                      {{ turn.black }}
+                    }
+                  </td>
               </tr>
             }
           </tbody>
         </table>
       } @else {
-        <p>No moves yet.</p>
+        @if (showImport()) {
+          @if (importOpen()) {
+            <form (submit)="$event.preventDefault(); importPgn.emit(pgnInput.value)">
+              <label for="pgn-input">PGN</label>
+              <textarea #pgnInput id="pgn-input" rows="5" required></textarea>
+              <button class="save_button" type="submit">Spiel laden</button>
+              <button class="save_button" type="button" (click)="importOpen.set(false)">
+                Abbrechen
+              </button>
+            </form>
+            @if (importError()) {
+              <p role="alert">{{ importError() }}</p>
+            }
+          } @else {
+            <button class="save_button" type="button" (click)="importOpen.set(true)">
+              PGN einfügen
+            </button>
+          }
+        } @else {
+          <p>No moves yet.</p>
+        }
       }
     </section>
   `,
 })
 export class MoveHistory {
+  readonly importOpen = signal(false);
   readonly replaying = input.required<boolean>();
   readonly replayMoves = input.required<string[]>();
   readonly history = input.required<GameTurn[]>();
+  readonly historyPlys = input.required<{ white: number | null; black: number | null }[]>();
   readonly canSave = input.required<boolean>();
+  readonly showNavigation = input(false);
+  readonly currentPly = input(0);
+  readonly showImport = input(false);
+  readonly importError = input('');
   readonly showSave = input(true);
   readonly save = output<void>();
+  readonly importPgn = output<string>();
+  readonly navigate = output<number>();
 }

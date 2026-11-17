@@ -8,7 +8,7 @@ export interface GameTurn {
 }
 
 export class GameSession {
-  private readonly game = new Chess();
+  private game = new Chess();
   private readonly redoMoves: Move[] = [];
   readonly position = signal(this.game.fen());
   readonly cursor = computed(() => {
@@ -41,21 +41,31 @@ export class GameSession {
     const line = moves.map((move) => `${move.from}${move.to}${move.promotion ?? ''}`).join(' ');
     return `fen ${start}${line ? ` moves ${line}` : ''}`;
   });
-  readonly history = computed(() => {
+  private readonly historyDetails = computed(() => {
     this.position();
     const turns: GameTurn[] = [];
-    for (const move of this.game.history({ verbose: true })) {
+    const plys: { white: number | null; black: number | null }[] = [];
+    const moves = [...this.game.history({ verbose: true }), ...this.redoMoves];
+    moves.forEach((move, index) => {
       const number = Number(move.before.split(' ')[5]);
       let turn = turns[turns.length - 1];
       if (!turn || turn.number !== number) {
         turn = { number, white: '', black: '' };
         turns.push(turn);
+        plys.push({ white: null, black: null });
       }
-      if (move.color === 'w') turn.white = move.san;
-      else turn.black = move.san;
-    }
-    return turns;
+      if (move.color === 'w') {
+        turn.white = move.san;
+        plys[plys.length - 1].white = index + 1;
+      } else {
+        turn.black = move.san;
+        plys[plys.length - 1].black = index + 1;
+      }
+    });
+    return { turns, plys };
   });
+  readonly history = computed(() => this.historyDetails().turns);
+  readonly historyPlys = computed(() => this.historyDetails().plys);
   readonly status = computed(() => {
     this.position();
     const player = this.game.turn() === 'w' ? 'White' : 'Black';
@@ -84,6 +94,13 @@ export class GameSession {
     this.game.move({ from, to, promotion });
     this.redoMoves.length = 0;
     this.position.set(this.game.fen());
+  }
+  loadPgn(pgn: string): void {
+    const game = new Chess();
+    game.loadPgn(pgn);
+    this.game = game;
+    this.redoMoves.length = 0;
+    this.position.set(game.fen());
   }
   navigate(index: number): void {
     const target = Math.max(0, Math.min(this.timelineMoves().length, Math.trunc(index)));

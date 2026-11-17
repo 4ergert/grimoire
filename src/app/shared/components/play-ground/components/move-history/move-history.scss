@@ -55,3 +55,36 @@
     opacity: 0.4;
   }
 }
+
+.move-link {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 3px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: #ffdfbc24;
+    text-decoration: underline;
+  }
+
+  &[aria-pressed='true'] {
+    color: #fff;
+    background: #ffdfbc38;
+    font-weight: 700;
+  }
+}
+
+textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 8px 0;
+  color: #ffdfbc;
+  background: #0505059a;
+  border: 1px solid #ffdfbc54;
+  font: inherit;
+}
