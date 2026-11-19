@@ -10,6 +10,76 @@
   padding: 24px 0 100px;
 }
 
+.play-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+// Below 1000px both columns collapse into one stack; `order` restores the single-column sequence.
+.board-column,
+.side-column {
+  display: contents;
+}
+
+.analysis-row {
+  order: -2;
+}
+
+app-chess-board,
+app-opening-name {
+  order: -1;
+}
+
+app-replay-controls {
+  order: 1;
+}
+
+app-move-history {
+  order: 2;
+}
+
+@media (min-width: 1000px) {
+  .game {
+    padding: 16px;
+  }
+
+  .game-wide {
+    width: min(1440px, 100%);
+  }
+
+  .play-layout {
+    display: grid;
+    grid-template-columns: minmax(50%, 750px) minmax(42%, 500px);
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .board-column {
+    display: block;
+  }
+
+  .side-column {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 16px;
+  }
+
+  app-move-history {
+    flex: 0.97;
+    display: flex;
+  }
+
+  .analysis-row,
+  app-opening-name,
+  app-replay-controls,
+  app-move-history {
+    order: 0;
+  }
+}
+
 .game-status-row {
   display: flex;
   justify-content: space-between;

@@ -25,6 +25,9 @@
         [attr.aria-describedby]="'variation-line-' + tooltipId + '-' + variation.rank"
       >
         ({{ variation.evaluation || 'Calculating...' }}) {{ variation.moves }}
+        @if (variation.extraMoves) {
+          <span class="variation-extra">{{ variation.extraMoves }}</span>
+        }
         <span
           class="variation-tooltip"
           role="tooltip"

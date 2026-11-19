@@ -35,6 +35,14 @@ p {
   }
 }
 
+.variation-extra {
+  display: none;
+
+  @media (min-width: 1000px) {
+    display: inline;
+  }
+}
+
 .variation-tooltip {
   display: none;
   position: absolute;

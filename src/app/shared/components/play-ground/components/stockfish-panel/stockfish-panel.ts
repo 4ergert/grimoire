@@ -101,6 +101,7 @@ export class StockfishPanel {
         rank: variation.rank,
         evaluation: this.formatEvaluation(variation.score),
         moves: line.slice(0, 3).join(' '),
+        extraMoves: line.slice(3, 7).join(' '),
         fullLine: line.join(' '),
       };
     });
