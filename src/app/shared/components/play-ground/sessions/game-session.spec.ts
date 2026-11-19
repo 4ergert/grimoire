@@ -1,6 +1,29 @@
 import { Chess } from 'chess.js';
 import { GameSession } from './game-session';
 
+describe('GameSession outcome', () => {
+  it('has no outcome while the game is running', () => {
+    expect(new GameSession().outcome()).toBeNull();
+  });
+
+  it('reports the winner of a checkmate', () => {
+    const session = new GameSession();
+    session.move('f2', 'f3');
+    session.move('e7', 'e5');
+    session.move('g2', 'g4');
+    session.move('d8', 'h4');
+
+    expect(session.outcome()).toEqual({ winner: 'b', reason: 'Checkmate' });
+  });
+
+  it('reports a draw without a winner', () => {
+    const session = new GameSession();
+    session.loadPgn('[SetUp "1"]\n[FEN "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1"]\n\n*');
+
+    expect(session.outcome()).toEqual({ winner: null, reason: 'Stalemate' });
+  });
+});
+
 describe('GameSession comments', () => {
   let session: GameSession;
 

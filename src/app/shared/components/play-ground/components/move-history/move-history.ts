@@ -91,7 +91,7 @@ import { GameTurn } from '../../sessions/game-session';
                       type="text"
                       maxlength="500"
                       [attr.aria-label]="'Comment for move ' + turn.number"
-                      [value]="comments()[turn.number] ?? ''"
+                      [value]="comments()[turn.number] || ''"
                       (keydown.enter)="commitComment(turn.number, commentInput.value)"
                       (keydown.escape)="editingTurn.set(null)"
                       (blur)="commitComment(turn.number, commentInput.value)"

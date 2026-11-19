@@ -26,6 +26,7 @@
   grid-template-rows: repeat(8, minmax(0, 1fr));
   aspect-ratio: 1;
   overflow: hidden;
+  touch-action: none;
 }
 
 .board-row {
@@ -44,13 +45,13 @@
   border: 0;
   border-radius: 0;
   cursor: pointer;
-  background-color: #0000003e;
+  background-color: var(--square-dark, #0000003e);
 }
 
 .square.light {
   background:
     repeating-linear-gradient(115deg, transparent 0 8px, #8b694522 9px, transparent 10px 17px),
-    #fafafab0;
+    var(--square-light, #fafafab0);
 }
 
 .piece {
@@ -60,6 +61,15 @@
   object-fit: contain;
   filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.808));
   pointer-events: none;
+}
+
+.square.dragging {
+  z-index: 3;
+  cursor: grabbing;
+
+  .piece {
+    filter: drop-shadow(0 8px 8px #000a);
+  }
 }
 
 .square.selected {

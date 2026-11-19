@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Chess } from 'chess.js';
+import { BOARD_THEMES, BoardThemeService } from '../../../../services/board-theme';
 import { ChessBoard } from './chess-board';
 
 describe('ChessBoard analysis bar', () => {
@@ -7,6 +8,7 @@ describe('ChessBoard analysis bar', () => {
   let component: ChessBoard;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({ imports: [ChessBoard] }).compileComponents();
     fixture = TestBed.createComponent(ChessBoard);
     component = fixture.componentInstance;
@@ -31,6 +33,15 @@ describe('ChessBoard analysis bar', () => {
     expect(fixture.nativeElement.querySelector('.analysis-bar').getAttribute('aria-label'))
       .toBe('Stockfish evaluation unavailable');
     expect(fixture.nativeElement.querySelector('.black-advantage').style.height).toBe('50%');
+  });
+
+  it('applies the selected board colors to the squares', () => {
+    TestBed.inject(BoardThemeService).next();
+    fixture.detectChanges();
+
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.style.getPropertyValue('--square-dark')).toBe(BOARD_THEMES[1].dark);
+    expect(host.style.getPropertyValue('--square-light')).toBe(BOARD_THEMES[1].light);
   });
 
   it('renders the standalone SVG assets for each piece color and type', () => {

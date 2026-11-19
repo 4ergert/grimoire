@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import { Chess, Move, Square } from 'chess.js';
+import { Chess, Color, Move, Square } from 'chess.js';
 
 export interface GameTurn {
   number: number;
@@ -8,6 +8,11 @@ export interface GameTurn {
 }
 
 const MAX_COMMENT_LENGTH = 500;
+
+export interface GameOutcome {
+  winner: Color | null;
+  reason: string;
+}
 
 function turnNumber(move: Move): number {
   return Number(move.before.split(' ')[5]);
@@ -74,6 +79,17 @@ export class GameSession {
   });
   readonly history = computed(() => this.historyDetails().turns);
   readonly historyPlys = computed(() => this.historyDetails().plys);
+  readonly outcome = computed<GameOutcome | null>(() => {
+    this.position();
+    if (!this.game.isGameOver()) return null;
+    if (this.game.isCheckmate()) {
+      return { winner: this.game.turn() === 'w' ? 'b' : 'w', reason: 'Checkmate' };
+    }
+    if (this.game.isStalemate()) return { winner: null, reason: 'Stalemate' };
+    if (this.game.isInsufficientMaterial()) return { winner: null, reason: 'Insufficient material' };
+    if (this.game.isThreefoldRepetition()) return { winner: null, reason: 'Threefold repetition' };
+    return { winner: null, reason: 'Fifty-move rule' };
+  });
   readonly status = computed(() => {
     this.position();
     const player = this.game.turn() === 'w' ? 'White' : 'Black';

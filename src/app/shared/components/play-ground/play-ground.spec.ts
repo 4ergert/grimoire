@@ -125,7 +125,7 @@ describe('PlayGround', () => {
     const trigger = menu.querySelector('summary')!;
     const buttons = Array.from(menu.querySelectorAll('button'));
     expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Menu', 'Flip board', 'New game', 'Log Out',
+      'Menu', 'Flip board', 'New game', 'Settings', 'Log Out',
     ]);
     expect(menu.open).toBe(false);
     trigger.click();

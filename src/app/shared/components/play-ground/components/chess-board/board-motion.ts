@@ -14,6 +14,9 @@ import { Chess, Piece, Square, SQUARES } from 'chess.js';
 export class BoardMotion implements OnChanges, OnDestroy {
   @Input({ required: true }) appBoardMotion = '';
   @Input() boardFlipped = false;
+  // Increments when a piece was dragged onto its target, so that move is not animated again.
+  @Input() boardDrops = 0;
+  private handledDrops = 0;
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   private previous = '';
@@ -26,6 +29,10 @@ export class BoardMotion implements OnChanges, OnDestroy {
     this.render?.destroy();
     this.cancel();
     if (!before || before === this.appBoardMotion) return;
+    if (this.boardDrops !== this.handledDrops) {
+      this.handledDrops = this.boardDrops;
+      return;
+    }
     const oldGame = new Chess(before);
     const newGame = new Chess(this.appBoardMotion);
     const changed = SQUARES.filter((square) => {

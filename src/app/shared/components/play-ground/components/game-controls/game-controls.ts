@@ -33,6 +33,7 @@ import { Component, ElementRef, HostListener, input, output, ViewChild } from '@
             {{ computerGame() ? 'New game' : 'Create New' }}
           </button>
         }
+        <button type="button" (click)="menu.open = false; settings.emit()">Settings</button>
         @if (!guest()) {
           <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
             Log Out
@@ -56,6 +57,7 @@ export class GameControls {
   readonly logout = output<void>();
   readonly flip = output<void>();
   readonly analyse = output<void>();
+  readonly settings = output<void>();
 
   @HostListener('document:click', ['$event'])
   closeOnOutsideClick(event: MouseEvent): void {

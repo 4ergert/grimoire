@@ -14,8 +14,13 @@
       class="chessboard"
       [appBoardMotion]="position()"
       [boardFlipped]="flipped()"
+      [boardDrops]="drops()"
       role="grid"
       aria-label="Chessboard, files a to h and ranks 1 to 8"
+      (pointerdown)="dragStart($event)"
+      (pointermove)="dragMove($event)"
+      (pointerup)="dragEnd($event)"
+      (pointercancel)="dragCancel()"
     >
       @for (rank of board(); track $index; let row = $index) {
         <div class="board-row" role="row">
@@ -31,6 +36,7 @@
                 [class.legal-target]="targets().includes(square)"
                 [class.hint-square]="hint() === square"
                 [class.white-piece]="piece?.color === 'w'"
+                [class.dragging]="dragSquare() === square"
                 [disabled]="disabled()"
                 [attr.aria-pressed]="selected() === square"
                 [attr.aria-label]="
@@ -39,7 +45,7 @@
                     ? ' ' + (piece.color === 'w' ? 'White ' : 'Black ') + pieceNames[piece.type]
                     : '')
                 "
-                (click)="squareSelected.emit(square)"
+                (click)="squareClicked(square)"
               >
                 @if (piece) {
                   <img

@@ -12,6 +12,8 @@ import { Promotion, PromotionControls } from './components/promotion-controls/pr
 import { TrainingPanel } from './components/training-panel/training-panel';
 import { MoveHistory } from './components/move-history/move-history';
 import { EngineSideDialog } from './components/engine-side-dialog/engine-side-dialog';
+import { SettingsDialog } from './components/settings-dialog/settings-dialog';
+import { GameOverDialog } from './components/game-over-dialog/game-over-dialog';
 import { OpeningName } from './components/opening-name/opening-name';
 import {
   EngineMode,
@@ -31,6 +33,8 @@ import {
     MoveHistory,
     StockfishPanel,
     EngineSideDialog,
+    SettingsDialog,
+    GameOverDialog,
     OpeningName,
   ],
   templateUrl: './play-ground.html',
@@ -41,6 +45,7 @@ export class PlayGround {
   readonly computerGame = input(false);
   readonly guest = input(false);
   readonly engineSideChosen = signal(false);
+  readonly settingsOpen = signal(false);
   readonly choosingEngineSide = computed(
     () => this.computerGame() && this.mode() === 'play' && !this.engineSideChosen(),
   );
@@ -73,6 +78,30 @@ export class PlayGround {
         : 'play',
   );
   readonly alwaysAnalyse = computed(() => !this.computerGame() && this.mode() === 'play');
+  readonly reviewing = signal(false);
+  readonly resultDismissed = signal(false);
+  readonly canNavigate = computed(
+    () => this.mode() === 'play' && (!this.computerGame() || this.reviewing()),
+  );
+  readonly gameResult = computed(() => {
+    const outcome = this.game.outcome();
+    if (
+      !outcome ||
+      !this.computerGame() ||
+      this.mode() !== 'play' ||
+      !this.engineSideChosen() ||
+      this.reviewing()
+    ) {
+      return null;
+    }
+    const title = !outcome.winner
+      ? 'Draw'
+      : outcome.winner === this.playerColor()
+        ? 'You win!'
+        : 'Stockfish wins';
+    return { title, detail: `${outcome.reason} · Level ${this.engineStrength()}` };
+  });
+  readonly showResult = computed(() => !!this.gameResult() && !this.resultDismissed());
   readonly selected = signal<Square | null>(null);
   readonly promotion = signal<{ from: Square; to: Square } | null>(null);
   readonly displayPosition = computed(() => {
@@ -159,6 +188,26 @@ export class PlayGround {
     this.flipped.set(color === 'b');
     this.setEngineMode('opponent');
     this.engineAnalysis.set(analyse);
+  }
+
+  chooseNewEngineGame(): void {
+    this.setEngineMode('off');
+    this.restart();
+    this.engineSideChosen.set(false);
+  }
+
+  analyseFinishedGame(): void {
+    this.resultDismissed.set(true);
+    this.reviewing.set(true);
+    this.engineMode.set('analysis');
+    this.engineAnalysis.set(true);
+    this.engineError.set('');
+    this.clearSelection();
+  }
+
+  saveFinishedGame(): void {
+    this.resultDismissed.set(true);
+    this.save();
   }
 
   playEngineMove(result: EngineMove): void {
@@ -294,6 +343,8 @@ export class PlayGround {
 
   restart(): void {
     this.engineError.set('');
+    this.reviewing.set(false);
+    this.resultDismissed.set(false);
     this.replay.clear();
     this.game.reset();
     this.clearSelection();

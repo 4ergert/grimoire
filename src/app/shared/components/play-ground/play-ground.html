@@ -5,10 +5,21 @@
 <app-engine-side-dialog (choose)="startEngineGame($event.color, $event.strength)" (cancel)="back.emit()" />
 }
 
+@if (settingsOpen()) {
+<app-settings-dialog (close)="settingsOpen.set(false)" />
+}
+
+@if (showResult()) {
+<app-game-over-dialog [title]="gameResult()!.title" [detail]="gameResult()!.detail" [canSave]="!guest()"
+  (newGame)="chooseNewEngineGame()" (analyse)="analyseFinishedGame()" (save)="saveFinishedGame()"
+  (menu)="back.emit()" (dismiss)="resultDismissed.set(true)" />
+}
+
 <section class="game" [class.game-wide]="!isTraining" aria-label="Chess playground">
   <app-game-controls [training]="isTraining" [computerGame]="computerGame()" [guest]="guest()" [pending]="pending()"
     [flipped]="flipped()" [analysis]="engineAnalysis()" (back)="back.emit()" (restart)="restart()"
-    (logout)="logout.emit()" (flip)="flipped.set(!flipped())" (analyse)="setEngineMode('analysis')">
+    (logout)="logout.emit()" (flip)="flipped.set(!flipped())" (analyse)="setEngineMode('analysis')"
+    (settings)="settingsOpen.set(true)">
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
         @if (trainingFolder()) {
@@ -63,12 +74,12 @@
   <app-move-history [replaying]="isReplaying" [replayMoves]="replayMoves()" [history]="moveHistory()"
     [historyPlys]="game.historyPlys()" [showSave]="!guest()" [canSave]="!!moveHistory().length && promotion() === null"
     [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError()"
-    [showNavigation]="mode() === 'play' && !computerGame()" [currentPly]="game.cursor()" [comments]="comments()"
-    [allowComments]="mode() === 'play' && !computerGame()" (save)="save()" (commentChange)="setComment($event)"
+    [showNavigation]="canNavigate()" [currentPly]="game.cursor()" [comments]="comments()"
+    [allowComments]="canNavigate()" (save)="save()" (commentChange)="setComment($event)"
     (importPgn)="importPgn($event)" (navigate)="game.navigate($event)" />
   @if (mode() === 'replay' && replayPositions().length) {
   <app-replay-controls [index]="replayIndex()" [moves]="replayMoves()" (navigate)="replayIndex.set($event)" />
-  } @else if (mode() === 'play' && !computerGame()) {
+  } @else if (canNavigate()) {
   <app-replay-controls [index]="game.cursor()" [moves]="game.timelineMoves()" (navigate)="game.navigate($event)" />
   }
   </div>
