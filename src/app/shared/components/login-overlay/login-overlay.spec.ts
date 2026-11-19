@@ -192,7 +192,7 @@ describe('LoginOverlay', () => {
     details.open = true;
     const password = details.querySelector<HTMLInputElement>('#delete-password')!;
     password.value = 'current-password';
-    details.querySelector<HTMLButtonElement>('button[type="button"]')!.click();
+    details.querySelector<HTMLButtonElement>('button[type="button"]:not(.password_visibility)')!.click();
     expect(password.value).toBe('');
     expect(details.open).toBe(false);
     expect(auth.deleteAccount).not.toHaveBeenCalled();
@@ -223,7 +223,7 @@ describe('LoginOverlay', () => {
         .click();
       await fixture.whenStable();
     };
-    await click('Play as guest');
+    await click('guest');
     expect(auth.user()).toBeNull();
     expect(auth.login).not.toHaveBeenCalled();
     expect(auth.register).not.toHaveBeenCalled();
@@ -241,7 +241,7 @@ describe('LoginOverlay', () => {
     await click('Menu');
     expect(element.querySelector('app-play-ground')).toBeNull();
     expect(element.querySelector('form')).not.toBeNull();
-    await click('Play as guest');
+    await click('guest');
     expect(element.textContent).toContain('Play as Black');
     await click('Back');
     expect(element.querySelector('form')).not.toBeNull();
@@ -253,7 +253,7 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
     const guest = Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
-      .find((button) => button.textContent?.trim() === 'Play as guest')!;
+      .find((button) => button.textContent?.trim() === 'guest')!;
     expect(guest.disabled).toBe(true);
     guest.click();
     expect(component.guest()).toBe(false);
@@ -291,7 +291,7 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
     const libraryButton = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.textContent?.trim() === 'Saved games',
+      (button) => button.textContent?.trim() === 'Repertoire',
     )!;
     libraryButton.click();
     await fixture.whenStable();
@@ -299,7 +299,7 @@ describe('LoginOverlay', () => {
     element.querySelector<HTMLButtonElement>('app-game-library li button')!.click();
     await fixture.whenStable();
     expect(element.querySelector('app-game-library')).toBeNull();
-    expect(element.querySelector('nav[aria-label="Replay controls"]')).not.toBeNull();
+    expect(element.querySelector('nav[aria-label="Move navigation"]')).not.toBeNull();
     const menuButton = Array.from(
       element.querySelectorAll<HTMLButtonElement>('app-play-ground button'),
     ).find((button) => button.textContent?.trim() === 'Menu')!;
@@ -318,7 +318,7 @@ describe('LoginOverlay', () => {
         .click();
       await fixture.whenStable();
     };
-    await click('Play');
+    await click('Create');
     element.querySelector<HTMLButtonElement>('[data-square="e2"]')!.click();
     await fixture.whenStable();
     element.querySelector<HTMLButtonElement>('[data-square="e4"]')!.click();
@@ -326,7 +326,7 @@ describe('LoginOverlay', () => {
     element.querySelector<HTMLButtonElement>('[data-square="e7"]')!.click();
     await fixture.whenStable();
     const playground = element.querySelector('app-play-ground');
-    await click('Save game');
+    await click('Save to repertoire');
     expect(element.querySelector('app-game-library #game-name')).not.toBeNull();
     expect(component.savePgn()).toContain('1. e4');
     await click('Back');
@@ -346,8 +346,8 @@ describe('LoginOverlay', () => {
         .click();
       await fixture.whenStable();
     };
-    await click('Saved games');
-    await click('Practise folder');
+    await click('Repertoire');
+    await click('Practise');
     expect(element.querySelector('app-game-library')).toBeNull();
     expect(element.querySelector('.move-history')).toBeNull();
     await click('Train Black');
@@ -358,14 +358,17 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
     expect(element.textContent).toContain('Round complete!');
     await click('Menu');
-    await click('Play');
+    await click('Create');
     expect(element.querySelector('.training-panel')).toBeNull();
     expect(element.querySelector('.move-history')).not.toBeNull();
     expect(element.querySelector('[aria-label="e2 White Pawn"]')).not.toBeNull();
   });
 
-  it('shows legal links only in the login and sign-up window', async () => {
+  it('shows legal links in the login, sign-up and menu windows but not during a game', async () => {
     const element: HTMLElement = fixture.nativeElement;
+    const expectMenuLinks = () => {
+      expect(element.querySelector('app-menu-overlay app-legal-footer')).not.toBeNull();
+    };
     const expectLinks = () => {
       expect(element.querySelector('app-legal-footer a[href="/impressum"]')).not.toBeNull();
       expect(element.querySelector('app-legal-footer a[href="/datenschutz"]')).not.toBeNull();
@@ -381,6 +384,9 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('app-legal-footer')).toBeNull();
     component.leaveGuest();
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    expectMenuLinks();
+    component.startPlaying(true);
     await fixture.whenStable();
     expect(element.querySelector('app-legal-footer')).toBeNull();
   });
@@ -558,6 +564,7 @@ describe('LoginOverlay', () => {
     await component.submit(new Event('submit'), form);
     expect(auth.register).toHaveBeenCalledWith('abcd', maxLengthEmail, 'a'.repeat(42));
 
+    form.querySelector<HTMLInputElement>('#accept-terms')!.checked = true;
     name.value = 'a'.repeat(43);
     email.value = `${'a'.repeat(31)}@example.com`;
     password.value = 'a'.repeat(43);
@@ -616,6 +623,7 @@ describe('LoginOverlay', () => {
     component.isSignUp.set(true);
     await fixture.whenStable();
     const form = fillForm(true);
+    form.querySelector<HTMLInputElement>('#accept-terms')!.checked = false;
 
     await component.submit(new Event('submit'), form);
 
@@ -718,7 +726,9 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Test User');
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
     expect(element.querySelector('#email')).toBeNull();
-    element.querySelector<HTMLButtonElement>('.logout_button')!.click();
+    Array.from(element.querySelectorAll<HTMLButtonElement>('app-menu-overlay button')).find(
+      (button) => button.textContent?.trim() === 'Log Out',
+    )!.click();
     await fixture.whenStable();
 
     expect(auth.logout).toHaveBeenCalledOnce();
@@ -739,7 +749,9 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('#email')).toBeNull();
 
     auth.logout.mockRejectedValue(new FirebaseError('auth/network-request-failed', 'Offline'));
-    element.querySelector<HTMLButtonElement>('.logout_button')!.click();
+    Array.from(element.querySelectorAll<HTMLButtonElement>('app-menu-overlay button')).find(
+      (button) => button.textContent?.trim() === 'Log Out',
+    )!.click();
     await fixture.whenStable();
 
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
@@ -751,7 +763,9 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
 
-    element.querySelector<HTMLButtonElement>('.play_button')!.click();
+    Array.from(element.querySelectorAll<HTMLButtonElement>('app-menu-overlay button')).find(
+      (button) => button.textContent?.trim() === 'Create',
+    )!.click();
     await fixture.whenStable();
 
     expect(element.querySelector('app-menu-overlay')).toBeNull();

@@ -75,7 +75,7 @@ describe('StockfishEngine', () => {
       ['setoption name Skill Level value 20'],
       ['setoption name MultiPV value 1'],
       [`position fen ${start}`],
-      ['go movetime 1000'],
+      ['go movetime 11111'],
     ]);
   });
 
@@ -163,7 +163,7 @@ describe('StockfishEngine', () => {
       ['setoption name Skill Level value 7'],
       ['setoption name MultiPV value 1'],
       [`position fen ${latest.fen()}`],
-      ['go movetime 1000'],
+      ['go movetime 11111'],
     ]);
     worker.receive('bestmove d7d5');
     expect(engine.result()).toMatchObject({ fen: latest.fen(), bestMove: 'd7d5' });
@@ -174,7 +174,7 @@ describe('StockfishEngine', () => {
     const worker = EngineWorker.instances[0];
     engine.stop();
     worker.boot();
-    expect(worker.postMessage).not.toHaveBeenCalledWith('go movetime 1000');
+    expect(worker.postMessage).not.toHaveBeenCalledWith('go movetime 11111');
     engine.search(start, `fen ${start}`);
     engine.stop();
     worker.receive('bestmove e2e4');
@@ -207,7 +207,7 @@ describe('StockfishEngine', () => {
     engine.reset();
     engine.search(start, `fen ${start}`);
     EngineWorker.instances[1].boot();
-    vi.advanceTimersByTime(10000);
+    vi.advanceTimersByTime(22222);
     expect(engine.error()).toContain('did not finish');
     expect(EngineWorker.instances[1].terminate).toHaveBeenCalledOnce();
   });
@@ -324,7 +324,7 @@ describe('Stockfish playground integration', () => {
     analysis.boot();
 
     expect(opponent.postMessage).toHaveBeenLastCalledWith('go depth 5');
-    expect(analysis.postMessage).toHaveBeenLastCalledWith('go movetime 111000');
+    expect(analysis.postMessage).toHaveBeenLastCalledWith('go movetime 11111');
     expect(analysis.postMessage).not.toHaveBeenCalledWith('go depth 5');
   });
 
@@ -348,14 +348,12 @@ describe('Stockfish playground integration', () => {
     expect(playground.moveHistory()).toEqual([]);
     expect(fixture.nativeElement.textContent).toContain('+0.28');
     expect(fixture.nativeElement.querySelector('.analysis-summary').textContent).toContain(
-      'Line 3: Nf3 Nf6',
+      '1.Nf3 Nf6',
     );
     opponent.receive('bestmove e2e4');
     await fixture.whenStable();
     expect(playground.moveHistory()[0].white).toBe('e4');
-    expect(opponent.postMessage.mock.calls.slice(-3)).toContainEqual(['go movetime 1000']);
-    expect(opponent.postMessage).toHaveBeenLastCalledWith('go movetime 1000');
-    expect(opponent.postMessage).toHaveBeenCalledWith('setoption name Skill Level value 20');
+    expect(opponent.postMessage).toHaveBeenCalledWith('go depth 5');
   });
 
   it.each(['escape', 'back'])('returns to the menu via %s in the side dialog', async (action) => {
@@ -424,7 +422,9 @@ describe('Stockfish playground integration', () => {
     worker.receive('bestmove e2e4');
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain('+0.24');
-    expect(fixture.nativeElement.textContent).toContain('Best line: e4 e5');
+    expect(fixture.nativeElement.querySelector('.analysis-summary .variation').textContent).toContain(
+      '1.e4 e5',
+    );
     expect(playground.moveHistory()).toEqual([]);
     expect(
       worker.postMessage.mock.calls.filter(([command]) => command.startsWith('go ')),
@@ -443,13 +443,15 @@ describe('Stockfish playground integration', () => {
     worker.receive('bestmove e2e4');
     await fixture.whenStable();
     const summary: HTMLElement = fixture.nativeElement.querySelector('.analysis-summary');
-    const lines = [...summary.querySelectorAll('p')].slice(1).map((line) => line.textContent?.trim());
+    const lines = [...summary.querySelectorAll('.variation')].map((line) =>
+      line.childNodes[0].textContent?.trim(),
+    );
     expect(lines).toEqual([
-      'Best line: e4 e5 (+0.24)',
-      'Line 2: d4 d5 (-0.15)',
-      'Line 3: Nf3 Nf6 (Mate in 3 for Black)',
+      '(+0.24) 1.e4 e5',
+      '(-0.15) 1.d4 d5',
+      '(Mate in 3 for Black) 1.Nf3 Nf6',
     ]);
-    expect(summary.textContent).toContain('Evaluation (White): +0.24');
+    expect(summary.textContent).toContain('(White): +0.24');
     expect(playground.moveHistory()).toEqual([]);
   });
 
@@ -471,28 +473,29 @@ describe('Stockfish playground integration', () => {
     const tooltip = first.querySelector<HTMLElement>('[role="tooltip"]')!;
     expect(first.tabIndex).toBe(0);
     expect(first.getAttribute('aria-describedby')).toBe(tooltip.id);
-    expect(first.childNodes[0].textContent).toContain('1. e4 e5 2. Nf3 Nc6');
+    expect(first.childNodes[0].textContent).toContain('1.e4 e5 2.Nf3');
+    expect(first.querySelector('.variation-extra')?.textContent?.trim()).toBe('Nc6 3.Bb5 a6 4.Ba4');
     expect(tooltip.textContent?.trim()).toBe(
-      '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O',
+      '1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7 6.Re1 b5 7.Bb3 d6 8.c3 O-O',
     );
     const secondTooltip = variations[1].querySelector<HTMLElement>('[role="tooltip"]')!;
     expect(variations[1].getAttribute('aria-describedby')).toBe(secondTooltip.id);
     expect(secondTooltip.id).not.toBe(tooltip.id);
-    expect(secondTooltip.textContent?.trim()).toBe('1. d4 d5');
+    expect(secondTooltip.textContent?.trim()).toBe('1.d4 d5');
   });
 
   it.each([
     {
       fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 12',
       moves: 'e2e4 e7e5 g1f3 b8c6 f1b5',
-      preview: '12. e4 e5 13. Nf3 Nc6',
-      full: '12. e4 e5 13. Nf3 Nc6 14. Bb5',
+      preview: '12.e4 e5 13.Nf3',
+      full: '12.e4 e5 13.Nf3 Nc6 14.Bb5',
     },
     {
       fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 12',
       moves: 'e7e5 g1f3 b8c6 f1b5 a7a6',
-      preview: '12... e5 13. Nf3 Nc6 14. Bb5',
-      full: '12... e5 13. Nf3 Nc6 14. Bb5 a6',
+      preview: '12... e5 13.Nf3 Nc6',
+      full: '12... e5 13.Nf3 Nc6 14.Bb5 a6',
     },
   ])('numbers preview and tooltip from the position: $fen', async ({ fen, moves, preview, full }) => {
     playground.game['game'].load(fen);
@@ -516,11 +519,11 @@ describe('Stockfish playground integration', () => {
     EngineWorker.instances[0].onerror?.(new ErrorEvent('error'));
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('app-stockfish-panel [role="alert"]')?.textContent).toContain(
+    expect(element.querySelector('.analysis-summary [role="alert"]')?.textContent).toContain(
       'could not be loaded',
     );
     const retry = Array.from(element.querySelectorAll<HTMLButtonElement>('button')).find(
-      (button) => button.textContent?.trim() === 'Retry engine',
+      (button) => button.textContent?.trim() === 'Retry analysis',
     )!;
     retry.click();
     await fixture.whenStable();
@@ -528,8 +531,29 @@ describe('Stockfish playground integration', () => {
     EngineWorker.instances[1].boot();
     EngineWorker.instances[1].receive('bestmove e2e4');
     await fixture.whenStable();
-    expect(element.querySelector('app-stockfish-panel [role="alert"]')).toBeNull();
+    expect(element.querySelector('.analysis-summary [role="alert"]')).toBeNull();
     expect(playground.moveHistory()).toEqual([]);
+  });
+
+  it('shows engine errors and offers a retry even when the analysis is hidden', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    playground.startEngineGame('b');
+    await fixture.whenStable();
+    EngineWorker.instances[0].onerror?.(new ErrorEvent('error'));
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('.analysis-summary')).toBeNull();
+    expect(element.querySelector('.board-column p[role="alert"]')?.textContent).toContain(
+      'could not be loaded',
+    );
+    Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'Retry engine')!
+      .click();
+    await fixture.whenStable();
+
+    expect(EngineWorker.instances).toHaveLength(2);
+    expect(element.querySelector('.board-column p[role="alert"]')?.textContent ?? null).toBeNull();
   });
 
   it.each(['w', 'b'] as const)(
@@ -552,8 +576,8 @@ describe('Stockfish playground integration', () => {
         worker.receive('bestmove e2e4');
       }
       await fixture.whenStable();
-      expect(fixture.nativeElement.textContent).toContain('Evaluation (White):');
-      expect(fixture.nativeElement.textContent).toContain('Best line:');
+      expect(fixture.nativeElement.textContent).toContain('(White):');
+      expect(fixture.nativeElement.querySelector('.analysis-summary .variation')).not.toBeNull();
       expect(playground.engineTurn()).toBe(false);
       expect(playground.moveHistory()).toHaveLength(color === 'b' ? 1 : 0);
       if (color === 'b') expect(playground.moveHistory()[0].black).toBe('');
@@ -680,7 +704,7 @@ describe('Stockfish playground integration', () => {
     expect(EngineWorker.instances).toHaveLength(0);
   });
 
-  it('allows replay analysis but not engine play and hides the panel during training', async () => {
+  it('allows replay analysis but not engine play and hides the analysis during training', async () => {
     fixture.componentRef.setInput('replayPgn', '1. e4 e5 *');
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('app-stockfish-panel').textContent).not.toContain(
@@ -700,8 +724,8 @@ describe('Stockfish playground integration', () => {
       games: [{ id: 'game', name: 'Line', pgn: '1. e4 e5 *' }],
     });
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('app-stockfish-panel')).toBeNull();
-    expect(worker.terminate).toHaveBeenCalledOnce();
+    expect(fixture.nativeElement.querySelector('.analysis-summary')).toBeNull();
+    expect(playground.stockfishPanel()!.engine.busy()).toBe(false);
     expect(playground.engineMode()).toBe('off');
   });
 

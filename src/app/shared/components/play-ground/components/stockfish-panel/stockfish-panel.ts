@@ -53,7 +53,7 @@ export class StockfishPanel {
       ? this.analysisEngine.result()
       : this.engine.result(),
   );
-  readonly analysisError = this.analysisEngine.error;
+  readonly analysisError = computed(() => this.engine.error() || this.analysisEngine.error());
   private readonly currentAnalysisResult = computed(() => {
     const result = this.analysisResult();
     return result?.fen === this.position() ? result : null;

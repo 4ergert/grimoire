@@ -41,7 +41,7 @@ describe('PlayGround', () => {
       { number: 2, white: 'Nf3', black: '' },
     ]);
     expect(component.board()[5][5]?.type).toBe('n');
-    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(element.querySelector('.board-column [role="alert"]')).toBeNull();
   });
 
   it('should show an error and keep the current game when an invalid PGN is submitted', async () => {
@@ -125,7 +125,7 @@ describe('PlayGround', () => {
     const trigger = menu.querySelector('summary')!;
     const buttons = Array.from(menu.querySelectorAll('button'));
     expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Menu', 'Flip board', 'New game', 'Settings', 'Log Out',
+      'Menu', 'Flip board', 'Create New', 'Settings', 'Log Out',
     ]);
     expect(menu.open).toBe(false);
     trigger.click();
@@ -145,11 +145,11 @@ describe('PlayGround', () => {
     component.logout.subscribe(logout);
     fixture.componentRef.setInput('pending', true);
     await fixture.whenStable();
-    expect(buttons[3].disabled).toBe(true);
+    expect(buttons[4].disabled).toBe(true);
     fixture.componentRef.setInput('pending', false);
     await fixture.whenStable();
     trigger.click();
-    buttons[3].click();
+    buttons[4].click();
     expect(logout).toHaveBeenCalledOnce();
     expect(menu.open).toBe(false);
   });
@@ -195,10 +195,10 @@ describe('PlayGround', () => {
     const saved = vi.fn();
     component.saveGame.subscribe(saved);
 
-    expect(button.textContent).toContain('Save game');
+    expect(button.textContent).toContain('Save to repertoire');
     expect(button.hasAttribute('custom-button')).toBe(false);
     expect(button.disabled).toBe(true);
-    expect(element.querySelector('app-game-controls')?.textContent).not.toContain('Save game');
+    expect(element.querySelector('app-game-controls')?.textContent).not.toContain('Save to repertoire');
 
     move('e2', 'e4');
     await fixture.whenStable();
@@ -370,9 +370,7 @@ describe('PlayGround', () => {
     expect(component.replayMoves()).toEqual(['e4', 'e5']);
     expect(component.board()[6][4]?.type).toBe('p');
     const element: HTMLElement = fixture.nativeElement;
-    const next = Array.from(element.querySelectorAll<HTMLButtonElement>('nav button')).find(
-      (button) => button.textContent?.trim() === 'Next',
-    )!;
+    const next = element.querySelector<HTMLButtonElement>('nav button[aria-label="Next move"]')!;
     next.click();
     await fixture.whenStable();
     expect(component.board()[4][4]?.color).toBe('w');
@@ -382,8 +380,8 @@ describe('PlayGround', () => {
     await fixture.whenStable();
     expect(component.board()[3][4]?.color).toBe('b');
     expect(next.disabled).toBe(true);
-    const previous = Array.from(element.querySelectorAll<HTMLButtonElement>('nav button')).find(
-      (button) => button.textContent?.trim() === 'Previous',
+    const previous = element.querySelector<HTMLButtonElement>(
+      'nav button[aria-label="Previous move"]',
     )!;
     previous.click();
     await fixture.whenStable();
@@ -410,7 +408,8 @@ describe('PlayGround', () => {
 
   it('should record legal moves by turn and clear the rendered history on restart', async () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.move-history')?.textContent).toContain('No moves yet.');
+    expect(element.querySelector('.move-history')?.textContent).toContain('PGN einfügen');
+    expect(element.querySelector('.move-history table')).toBeNull();
     component.select('e2');
     component.select('e5');
     expect(component.moveHistory()).toEqual([]);
@@ -423,8 +422,8 @@ describe('PlayGround', () => {
     expect(
       Array.from(rows, (row) => Array.from(row.children, (cell) => cell.textContent?.trim())),
     ).toEqual([
-      ['1.', 'e4', 'e5'],
-      ['2.', 'Nf3', ''],
+      ['1.', 'e4', 'e5', '\u{1F4AC}'],
+      ['2.', 'Nf3', '', '\u{1F4AC}'],
     ]);
     component.restart();
     await fixture.whenStable();

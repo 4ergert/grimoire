@@ -34,27 +34,15 @@
   </app-game-controls>
 
   @if (isTraining) {
+  <ng-container [ngTemplateOutlet]="board" />
+  <ng-container [ngTemplateOutlet]="boardNotices" />
   <app-training-panel [session]="training()" [error]="trainingError()" (start)="startTraining($event)"
     (next)="nextTrainingGame()" (playSolution)="playTrainingSolution()" />
   } @else {
   <div class="play-layout">
   <div class="board-column">
-  <app-chess-board [position]="displayPosition()" [flipped]="flipped()" [selected]="isReplaying ? null : selected()"
-    [targets]="mode() === 'play' ? legalTargets() : []" [hint]="training()?.hintSquare() ?? null"
-    [disabled]="promotion() !== null || engineTurn() || choosingEngineSide()"
-    [evaluation]="stockfishPanel()?.barEvaluation() ?? null"
-    [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''" (squareSelected)="select($event)" />
-
-  @if (replayError(); as error) {
-  <p role="alert">{{ error }}</p>
-  }
-  @if (promotion(); as move) {
-  <app-promotion-controls [square]="move.to" (choose)="promote($event)" (cancel)="promotion.set(null)" />
-  }
-
-  @if (engineError(); as error) {
-  <p role="alert">{{ error }}</p>
-  }
+  <ng-container [ngTemplateOutlet]="board" />
+  <ng-container [ngTemplateOutlet]="boardNotices" />
   </div>
   <div class="side-column">
   @if (!computerGame() || engineAnalysis()) {
@@ -90,3 +78,27 @@
     [strength]="engineStrength()" [gameOver]="gameOver()" (bestMove)="playEngineMove($event)" />
   <footer class="copyright">&copy; Julian Hergert</footer>
 </section>
+
+<ng-template #board>
+  <app-chess-board [position]="displayPosition()" [flipped]="flipped()" [selected]="isReplaying ? null : selected()"
+    [targets]="mode() === 'play' ? legalTargets() : []" [hint]="training()?.hintSquare() ?? null"
+    [disabled]="promotion() !== null || engineTurn() || choosingEngineSide()"
+    [evaluation]="stockfishPanel()?.barEvaluation() ?? null"
+    [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''" (squareSelected)="select($event)" />
+</ng-template>
+
+<ng-template #boardNotices>
+  @if (replayError(); as error) {
+  <p role="alert">{{ error }}</p>
+  }
+  @if (promotion(); as move) {
+  <app-promotion-controls [square]="move.to" (choose)="promote($event)" (cancel)="promotion.set(null)" />
+  }
+  @if (engineError(); as error) {
+  <p role="alert">{{ error }}</p>
+  }
+  @if (computerGame() && !engineAnalysis() && stockfishPanel()?.analysisError(); as error) {
+  <p role="alert">{{ error }}</p>
+  <button type="button" (click)="stockfishPanel()?.retry()">Retry engine</button>
+  }
+</ng-template>

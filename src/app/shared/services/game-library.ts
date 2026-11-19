@@ -1,7 +1,13 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, InjectionToken, inject } from '@angular/core';
 import { get, push, ref, remove, set } from 'firebase/database';
 import { Chess } from 'chess.js';
 import { Auth } from './auth';
+
+// Injected so tests can replace the database without mocking the Firebase module itself.
+export const DATABASE_API = new InjectionToken('Firebase Realtime Database API', {
+  providedIn: 'root',
+  factory: () => ({ get, push, ref, remove, set }),
+});
 
 export interface SavedGame {
   id: string;
@@ -18,6 +24,7 @@ export interface GameFolder {
 @Injectable({ providedIn: 'root' })
 export class GameLibrary {
   private readonly auth = inject(Auth);
+  private readonly db = inject(DATABASE_API);
 
   private path(): string {
     const user = this.auth.user();
@@ -32,7 +39,7 @@ export class GameLibrary {
   }
 
   async list(): Promise<GameFolder[]> {
-    const snapshot = await get(ref(this.auth.database, this.path()));
+    const snapshot = await this.db.get(this.db.ref(this.auth.database, this.path()));
     const folders: GameFolder[] = [];
     snapshot.forEach((folder) => {
       const name: unknown = folder.child('name').val();
@@ -53,14 +60,14 @@ export class GameLibrary {
 
   async createFolder(name: string): Promise<void> {
     const value = this.name(name);
-    await set(push(ref(this.auth.database, this.path())), { name: value });
+    await this.db.set(this.db.push(this.db.ref(this.auth.database, this.path())), { name: value });
   }
 
   async deleteGame(folderId: string, gameId: string): Promise<void> {
     if (![folderId, gameId].every((id) => /^[A-Za-z0-9_-]+$/.test(id))) {
       throw new Error('Please select a valid folder and game.');
     }
-    await remove(ref(this.auth.database, `${this.path()}/${folderId}/games/${gameId}`));
+    await this.db.remove(this.db.ref(this.auth.database, `${this.path()}/${folderId}/games/${gameId}`));
   }
 
   async save(folderId: string, name: string, pgn: string): Promise<void> {
@@ -71,9 +78,9 @@ export class GameLibrary {
     game.loadPgn(pgn);
     if (!game.history().length) throw new Error('Make at least one move before saving.');
     const path = `${this.path()}/${folderId}`;
-    if (!(await get(ref(this.auth.database, `${path}/name`))).exists()) {
+    if (!(await this.db.get(this.db.ref(this.auth.database, `${path}/name`))).exists()) {
       throw new Error('This folder no longer exists. Please reload your folders.');
     }
-    await set(push(ref(this.auth.database, `${path}/games`)), { name: value, pgn });
+    await this.db.set(this.db.push(this.db.ref(this.auth.database, `${path}/games`)), { name: value, pgn });
   }
 }

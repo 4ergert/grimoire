@@ -1,22 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
 
-import { Button } from './button';
+import { CustomButton } from './button';
 
-describe('Button', () => {
-  let component: Button;
-  let fixture: ComponentFixture<Button>;
+@Component({
+  imports: [CustomButton],
+  template: `<button custom-button type="button">Click me</button>`,
+})
+class Host {}
+
+describe('CustomButton', () => {
+  let fixture: ComponentFixture<Host>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Button],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Button);
-    component = fixture.componentInstance;
+    await TestBed.configureTestingModule({ imports: [Host] }).compileComponents();
+    fixture = TestBed.createComponent(Host);
     await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should project its label into the button', () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    expect(button.querySelector('.custom_button')?.textContent?.trim()).toBe('Click me');
   });
 });

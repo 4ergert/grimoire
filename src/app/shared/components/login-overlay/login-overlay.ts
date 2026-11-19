@@ -158,7 +158,7 @@ export class LoginOverlay {
     const firstInvalid = (['name', 'email', 'password', 'confirm-password', 'terms'] as const)
       .find((field) => errors[field]);
     if (firstInvalid) {
-      const input = form.elements.namedItem(firstInvalid);
+      const input = form.elements.namedItem(firstInvalid === 'terms' ? 'accept-terms' : firstInvalid);
       if (input instanceof HTMLElement) input.focus();
       return;
     }
@@ -166,7 +166,7 @@ export class LoginOverlay {
     const data = new FormData(form);
     const email = String(data.get('email') ?? '').trim();
     const password = String(data.get('password') ?? '');
-    const username = String(data.get('name') ?? '').trim();
+    const username = String(data.get('name') ?? '').trim().replace(/\s+/g, ' ');
 
     this.pending.set(true);
     try {

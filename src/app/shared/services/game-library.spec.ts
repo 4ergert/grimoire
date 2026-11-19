@@ -3,16 +3,15 @@ import { vi } from 'vitest';
 import { signal } from '@angular/core';
 import { Chess } from 'chess.js';
 import { Auth } from './auth';
-import { GameLibrary } from './game-library';
+import { DATABASE_API, GameLibrary } from './game-library';
 
-const database = vi.hoisted(() => ({
+const database = {
   get: vi.fn(),
   set: vi.fn(),
   remove: vi.fn(),
   ref: vi.fn((_db: unknown, path: string) => path),
   push: vi.fn((path: string) => `${path}/new-id`),
-}));
-vi.mock('firebase/database', () => database);
+};
 
 describe('GameLibrary', () => {
   const user = signal<{ uid: string } | null>({ uid: 'user-a' });
@@ -25,7 +24,10 @@ describe('GameLibrary', () => {
     database.remove.mockResolvedValue(undefined);
     database.get.mockResolvedValue({ exists: () => true });
     TestBed.configureTestingModule({
-      providers: [{ provide: Auth, useValue: { user, database: {} } }],
+      providers: [
+        { provide: Auth, useValue: { user, database: {} } },
+        { provide: DATABASE_API, useValue: database },
+      ],
     });
     library = TestBed.inject(GameLibrary);
   });

@@ -201,8 +201,8 @@ export class StockfishEngine {
     if (!this.send(`setoption name Skill Level value ${this.active.skill}`)) return;
     if (!this.send(`setoption name MultiPV value ${this.active.candidateCount}`)) return;
     if (!this.send(`position ${this.active.position}`)) return;
-    this.watchdog(222222, 'Stockfish did not finish its search. Please try again.');
-    this.send(this.active.depth === undefined ? 'go movetime 111000' : `go depth ${this.active.depth}`);
+    this.watchdog(22222, 'Stockfish did not finish its search. Please try again.');
+    this.send(this.active.depth === undefined ? 'go movetime 11111' : `go depth ${this.active.depth}`);
   }
 
   private selectCandidate(bestMove: string): string {

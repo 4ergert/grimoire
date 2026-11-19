@@ -61,7 +61,7 @@ describe('GameLibrary component', () => {
     fixture.componentInstance.practise.subscribe(practise);
     const element: HTMLElement = fixture.nativeElement;
     const button = Array.from(element.querySelectorAll<HTMLButtonElement>('details button')).find(
-      (button) => button.textContent?.trim() === 'Practise folder',
+      (button) => button.textContent?.trim() === 'Practise',
     )!;
     button.click();
     expect(practise).toHaveBeenCalledWith(fixture.componentInstance.folders()[0]);
@@ -97,7 +97,7 @@ describe('GameLibrary component', () => {
     finish();
     await fixture.whenStable();
     expect(element.querySelector('.saved-game')).toBeNull();
-    expect(element.querySelector('summary')?.textContent).toContain('(0)');
+    expect(element.querySelector('summary')?.textContent?.trim()).toBe('Training 0');
     expect(fixture.componentInstance.folders()).toHaveLength(1);
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Game deleted.');
   });
