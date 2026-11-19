@@ -1,28 +1,57 @@
 # Grimoire
 
-A browser-based chess application for local two-player games and opening
-practice using your own saved games.
+A browser-based chess application for analysis, playing against Stockfish, and
+opening practice with your own saved games. Positions can be played, annotated,
+saved as PGN, replayed, and drilled in randomized training rounds.
 
 Built with Angular, TypeScript, SCSS, [chess.js](https://github.com/jhlywa/chess.js),
-Firebase Authentication, and Firebase Realtime Database.
+[Stockfish.js](https://github.com/nmrugg/stockfish.js), Firebase Authentication,
+and Firebase Realtime Database.
 
 ## Features
 
-- Email/password registration, login, restored sessions, and logout.
-- Guest access without an account, limited to games against Stockfish without
-  saving games or accessing the library.
-- Responsive chessboard with coordinates on all four sides and classic Unicode
-  pieces rendered by the system's symbol font.
-- Click-to-move controls, legal destination highlights, and SAN move notation.
+**Board and play**
+
+- Responsive chessboard with coordinates on all four sides and SVG pieces
+  (`public/img/chess-pieces/`).
+- Move pieces by clicking or by **drag and drop** with mouse or touch. Legal
+  destinations are highlighted while dragging; illegal drops snap back.
 - Castling, en passant, promotion, check, checkmate, and draw detection.
-- Animated piece movement and a reversible board perspective.
-- Opening names and ECO codes beneath the board, using a local snapshot of
+- Animated piece movement (disabled by reduced-motion preferences) and a
+  reversible board perspective.
+- Selectable board color themes (**Settings** in the game menu), remembered in
+  the browser.
+- Opening names and ECO codes, using a local snapshot of
   [Lichess chess-openings](https://github.com/lichess-org/chess-openings).
   Names are in English. The latest known opening is retained as play continues;
   replay and training only use positions already reached. No positions are sent
   to Lichess. The data is dedicated to the public domain under CC0.
-- Local Stockfish analysis with up to three candidate lines and games against
-  the engine as White or Black.
+- Two-column layout from 1000 px width: board on the left; analysis, opening,
+  move history and the move toolbar on the right. Narrower windows use a single
+  column.
+
+**Create mode (free play and annotation)**
+
+- Move history grouped by move number. Click a move to jump to that position,
+  or step through with the move toolbar (start, previous, next, end).
+- Add a **comment to every full move**. Comments are written into the saved PGN
+  as `{...}` and comments found in imported PGNs are shown too.
+- Paste a PGN into an empty history to load a game.
+- Continuous Stockfish analysis with an evaluation bar next to the board.
+
+**Stockfish**
+
+- Local analysis with up to three candidate lines per position.
+- Games against the engine as White or Black on ten strength levels.
+- A dialog at the end of an engine game offers a new game, analysis of the
+  game, saving it, or a return to the menu.
+
+**Accounts and library**
+
+- Email/password registration with email verification, login, restored
+  sessions, logout, and account deletion.
+- Guest access without an account, limited to games against Stockfish without
+  saving games or accessing the repertoire.
 - Personal folders containing games saved as PGN text in Firebase.
 - Step-by-step replay and randomized folder training for either color.
 - Individual game deletion with confirmation.
@@ -50,15 +79,17 @@ before registering an account or using saved games.
 | `npm test` | Run unit tests in watch mode |
 | `npm test -- --watch=false` | Run unit tests once |
 
-Tests use Vitest through the Angular unit-test builder. To test the chessboard
-and its supporting logic only:
+Tests use Vitest with jsdom through the Angular unit-test builder. To run a
+single spec file:
 
 ```bash
-npx ng test --watch=false --include "src/app/shared/components/play-ground/*.spec.ts"
+npx ng test --watch=false --include src/app/shared/components/play-ground/play-ground.spec.ts
 ```
 
-No end-to-end test runner is configured. Mocked Firebase tests do not verify
-deployed database permissions or live connectivity.
+Firebase is not mocked at module level: `GameLibrary` receives its database
+functions through the `DATABASE_API` injection token, which specs replace with
+test doubles. No end-to-end test runner is configured, and the unit tests do
+not verify deployed database permissions or live connectivity.
 
 To regenerate the opening data, update the pinned revision in
 `scripts/update-openings.mjs` and run `node scripts/update-openings.mjs`.
@@ -245,26 +276,51 @@ Data access is enforced by Firebase Security Rules, not by hiding the web key.
 
 ## Playing chess
 
-After signing in, select **Play**. White moves first.
+After signing in, select **Create** in the main menu. White moves first.
 
-1. Click a piece to select it and show its legal destinations.
-2. Click a destination to move or capture.
+1. Click a piece to select it and show its legal destinations, or drag it.
+2. Click or drop it on a destination to move or capture.
 3. Click the selected piece again to deselect it.
 
-Moves appear below the board in standard algebraic notation (SAN), grouped by
-move number with White and Black columns.
+Moves appear in the history in standard algebraic notation (SAN), grouped by
+move number with White and Black columns. Click a move to show that position;
+the toolbar below the history steps through the game. Playing a new move after
+going back discards the later moves and their comments.
+
+Open the ☰ game menu for these controls:
 
 | Control | Behavior |
 | --- | --- |
-| **Flip board** | Switch perspective, coordinates, and animation direction without changing the game |
-| **New game** | Immediately reset the position and move list |
-| **Save game** | Open the library to name the game and choose a folder |
 | **Menu** | Leave the board; unsaved progress is discarded |
-| **Log Out** | Sign out and return to the login form |
+| **Flip board** | Switch perspective, coordinates, and animation direction without changing the game |
+| **Analyse position** | Toggle analysis (games against Stockfish only; Create always analyses) |
+| **Create New** / **New game** | Immediately reset the position, move list and comments |
+| **Settings** | Open the board color dialog |
+| **Log Out** | Sign out and return to the login form (not shown to guests) |
+
+**Save to repertoire** in the history header opens the library to name the game
+and choose a folder.
+
+### Comments and PGN import
+
+Each full move has a comment button (💬) in the history. Enter a comment and
+press Enter to keep it, Escape to cancel; an empty comment removes it.
+Comments are limited to 500 characters and braces are replaced by parentheses.
+They are written into the PGN after the last half-move of that move. When a PGN
+contains comments for both half-moves of a move, they are shown together.
+
+With an empty history, **PGN einfügen** lets you paste a PGN and load it.
+Variations are not supported.
+
+### Board colors
+
+**Settings** opens a dialog whose **Change board colors** button cycles through
+the Classic, Walnut, Forest, Ocean, and Rose themes. The choice applies to light
+and dark squares and is stored in the browser's `localStorage`.
 
 Promotion offers queen, rook, bishop, and knight. Cancel returns to the board
 without making the promotion move. Piece movement is animated, including both
-pieces during castling. Reduced-motion preferences disable animations.
+pieces during castling; moves made by dragging are not animated a second time.
 
 `chess.js` validates legal moves and king safety. The status reports check,
 checkmate, stalemate, insufficient material, threefold repetition, and the
@@ -273,21 +329,21 @@ the game automatically rather than requiring a draw claim.
 
 ## Saving, replaying, and deleting games
 
-Open **Saved games** from the menu to create named folders and browse their
-games. You can also create a folder from the **Save game** screen.
+Open **Repertoire** from the menu to create named folders and browse their
+games. You can also create a folder from the save screen.
 
 To save a game:
 
-1. Make at least one move and select **Save game**.
+1. Make at least one move and select **Save to repertoire**.
 2. Enter a game name and select a folder.
 3. Select **Save PGN** and wait for confirmation.
 
 Opening the save screen preserves the current board while you choose a folder.
 Saving creates a new entry; it does not overwrite an existing game.
 
-Expand a folder and select a game's **Replay** button. Use **Start**,
-**Previous**, **Next**, and **End** to navigate the saved positions. Replay does
-not modify the PGN.
+Expand a folder and select a game's **Replay** button. Use the move toolbar
+(start, previous, next, end) to navigate the saved positions. Replay does not
+modify the PGN and does not display comments.
 
 The trash button beside each game asks for confirmation before permanently
 deleting that game's record from Firebase. The folder and other games remain.
@@ -295,7 +351,7 @@ If deletion fails, the game stays listed and an error is displayed.
 
 ## Folder training
 
-Expand a folder, select **Practise folder**, then choose **Train White** or
+Expand a folder, select **Practise**, then choose **Train White** or
 **Train Black**.
 
 - Games are shuffled, with each game practised once per round.
@@ -316,37 +372,58 @@ Training never changes saved PGNs. Scores are held only in memory.
 
 ## Stockfish analysis and opponent
 
-Choose **Create** in the main menu for manual two-player play and analysis.
-Analysis starts automatically in Create and stays enabled, including after
-moves and restarts. Its toggle is disabled in this mode.
+Choose **Create** in the main menu for free play and analysis. Analysis starts
+automatically in Create and stays enabled, including after moves and restarts.
 Computer play is available only through the separate **Play against Stockfish**
-menu button. A modal overlay asks you to choose **Play as White** or
-**Play as Black** before the board accepts moves. **Back** or Escape returns to
-the menu. Stockfish makes the opening move when you choose Black.
-Returning to the menu and choosing Create removes the computer-play controls.
+menu button (and for guests). A modal overlay asks you to choose a strength
+level and **Play as White** or **Play as Black** before the board accepts
+moves. **Back** or Escape returns to the menu. Stockfish makes the opening move
+when you choose Black.
 
-The separate Stockfish panel below the board offers:
+The analysis area shows:
 
-- **Analyse position** (magnifying-glass PNG button, below the board): evaluation from White's perspective, search depth, and
-  the best line in SAN, displayed to the right of the button. Replay positions can also be analysed. During an engine
-  game, this button toggles analysis without leaving opponent mode, including
-  analysis on your own turn.
-- **Play as White / Play as Black** (in the initial overlay): starts a game against Stockfish and
-  orients the board towards your side. The board is locked during engine turns.
-  An already enabled analysis remains enabled.
+- the evaluation from White's perspective and the search depth,
+- up to three candidate lines in SAN. Each line shows three half-moves, seven
+  from 1000 px width; hover or focus a line for its first 16 half-moves,
+- an **evaluation bar** beside the board with the score underneath.
 
-To leave a computer game, return to the menu. Restarting an engine game keeps
-the chosen side. There is no separate Engine off button.
+Replay positions can also be analysed. During an engine game, **Analyse
+position** in the game menu toggles analysis without leaving opponent mode,
+including analysis on your own turn. The board is locked during engine turns.
 
-The side-selection dialog uses a dedicated strength selector offering levels 1–10 (default 1), mapped to
-Stockfish Skill Level 0–20 using `round((level - 1) * 20 / 9)`.
-Restarting keeps the selected strength. These levels are not calibrated Elo ratings.
-Level 1 opponent searches are limited to depth 5. Levels 2–10 and analysis retain
-the existing time-based search limit. Analysis always uses Skill Level 20;
-when analysing during an opponent turn, a separate local worker keeps the analysis
-independent of the opponent's selected strength.
-Analysis never plays moves automatically and is unavailable during folder training.
-Loading/search errors are displayed with a retry option.
+### Strength levels
+
+The strength selector offers levels 1–10 (default 1). They are not calibrated
+Elo ratings. Each level fixes the Skill Level and the search depth:
+
+| Level | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Search depth | 5 | 6 | 7 | 9 | 10 | 12 | 14 | 16 | 20 | 26 |
+
+The Skill Level is `round((level - 1) * 20 / 9)`. Levels 1–5 additionally
+search `max(2, 6 - level)` candidate lines and pick one at random. Restarting
+keeps the selected strength. Analysis always uses Skill Level 20 and a search
+time of 11 seconds; a separate local worker keeps it independent of the
+opponent's strength. A search that does not finish within 22 seconds is
+reported as an error. Analysis never plays moves automatically and is
+unavailable during folder training.
+
+Loading and search errors are displayed with a retry option, above the board
+when the analysis is hidden.
+
+### End of a game
+
+When an engine game ends in a win, loss, or draw, a dialog announces the result
+and offers:
+
+- **New game…** – reset the board and choose level and side again.
+- **Analyse game** – turn the finished game into a navigable analysis board.
+- **Save to repertoire** – not available to guests.
+- **Back to menu**
+
+Escape closes the dialog and leaves the final position on the board.
+
+### Engine details
 
 Stockfish.js 19.0.1 runs locally in a lazily created Web Worker. No chess
 positions are sent to an engine server. The lite, single-threaded WebAssembly
@@ -358,7 +435,7 @@ After installing Stockfish or changing the Angular asset configuration, restart
 the development server. An already running server may return a HTML 404 page
 for the worker, which browsers report as a blocked `text/html` MIME type.
 
-Stockfish is GPL-3.0 software. The panel links to the distributed license and
+Stockfish is GPL-3.0 software. The page links to the distributed license and
 the [corresponding Stockfish.js source](https://github.com/nmrugg/stockfish.js/tree/v19.0.1).
 Preserve these notices and comply with the GPL distribution/source requirements
 when deploying or redistributing the engine.
@@ -367,9 +444,11 @@ when deploying or redistributing the engine.
 
 - No online multiplayer or chess clock.
 - Unsaved games and training rounds reset on reload or logout.
-- No PGN file import/export interface, folder deletion, or folder renaming.
+- No PGN file import/export interface (PGN text can be pasted and is saved to
+  the repertoire), folder deletion, or folder renaming.
+- PGN variations are not supported.
 - No alternative-move evaluation in training; only the saved line is accepted.
-- Board symbols can look different across operating systems.
+- The interface mixes English and German labels.
 
 ## Deployment and legal notices
 
@@ -392,6 +471,9 @@ Before public operation:
   international transfers, processing agreements, legal bases, and browser storage.
 - Obtain appropriate legal review.
 - Complete and verify the Firebase security configuration and deployed rules.
+- Verify the licenses and attribution of the artwork: the chess piece SVGs in
+  `public/img/chess-pieces/` were extracted from `public/img/Chess_Pieces_Sprite.svg`,
+  and the images in `public/img/` and `public/icon/` need a documented source.
 
 Account data is retained until account deletion, without automatic inactivity
 deletion. In the signed-in main menu, **Settings > Delete account** requires confirmation
@@ -412,13 +494,17 @@ Repeated view conditions use local `@let` bindings; gameplay and engine logic
 remain in their components and sessions. The library uses `[hidden]` on the
 mounted playground to preserve the current game while saving. The custom button
 uses its external template to project content into the existing native button.
+Dialogs use the native `<dialog>` element opened with `showModal()`.
 
 | Location | Responsibility |
 | --- | --- |
-| [play-ground/](./src/app/shared/components/play-ground/) | Playground coordinator, chessboard and controls, local game/replay/training sessions, and board animations |
+| [play-ground/](./src/app/shared/components/play-ground/) | Playground coordinator and its sub-components: chessboard (click and drag input, animations), game menu, move history with comments, replay toolbar, Stockfish panel, training panel, and the settings, side-selection and game-over dialogs |
+| [play-ground/sessions/](./src/app/shared/components/play-ground/sessions/) | Game, replay and training state: legal moves, history, comments, PGN, outcome |
 | [game-library/](./src/app/shared/components/game-library/) | Folder browser, save forms, and deletion confirmation |
 | [login-overlay/](./src/app/shared/components/login-overlay/) | Authentication forms and navigation between menu, library, and board |
-| [menu-overlay/](./src/app/shared/components/menu-overlay/) | Signed-in menu |
-| [services/](./src/app/shared/services/) | Firebase authentication and game-library access |
+| [menu-overlay/](./src/app/shared/components/menu-overlay/) | Signed-in menu and account settings |
+| [services/](./src/app/shared/services/) | Firebase authentication, game-library access, and board color themes |
+| [public/img/chess-pieces/](./public/img/chess-pieces/) | One transparent SVG per piece and color |
 | [legal/](./src/app/pages/legal/) | Public legal page drafts |
 | [database.rules.json](./database.rules.json) | Realtime Database access and validation rules |
+| [scripts/](./scripts/) | Opening data update and username migration/rule-test helpers |
