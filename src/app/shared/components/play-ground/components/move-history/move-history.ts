@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, ElementRef, effect, input, output, signal, viewChild } from '@angular/core';
 import { GameTurn } from '../../sessions/game-session';
 
 @Component({
@@ -27,6 +27,9 @@ import { GameTurn } from '../../sessions/game-session';
               <th scope="col">Move</th>
               <th scope="col">White</th>
               <th scope="col">Black</th>
+              @if (allowComments()) {
+                <th scope="col" class="comment-col"><span class="visually-hidden">Comment</span></th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -61,7 +64,47 @@ import { GameTurn } from '../../sessions/game-session';
                       {{ turn.black }}
                     }
                   </td>
+                  @if (allowComments()) {
+                    <td class="comment-col">
+                      <button
+                        class="comment-button"
+                        type="button"
+                        [attr.aria-label]="
+                          (comments()[turn.number] ? 'Edit comment for move ' : 'Add comment to move ') +
+                          turn.number
+                        "
+                        [attr.aria-pressed]="editingTurn() === turn.number"
+                        [class.has-comment]="!!comments()[turn.number]"
+                        (click)="toggleEditing(turn.number)"
+                      >
+                        <span aria-hidden="true">&#x1F4AC;</span>
+                      </button>
+                    </td>
+                  }
               </tr>
+              @if (editingTurn() === turn.number) {
+                <tr class="comment-row">
+                  <td [attr.colspan]="allowComments() ? 4 : 3">
+                    <input
+                      #commentInput
+                      class="comment-input"
+                      type="text"
+                      maxlength="500"
+                      [attr.aria-label]="'Comment for move ' + turn.number"
+                      [value]="comments()[turn.number] ?? ''"
+                      (keydown.enter)="commitComment(turn.number, commentInput.value)"
+                      (keydown.escape)="editingTurn.set(null)"
+                      (blur)="commitComment(turn.number, commentInput.value)"
+                    />
+                  </td>
+                </tr>
+              } @else if (comments()[turn.number]) {
+                <tr class="comment-row">
+                  <td class="comment-text" [attr.colspan]="allowComments() ? 4 : 3">
+                    {{ comments()[turn.number] }}
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
@@ -93,10 +136,14 @@ import { GameTurn } from '../../sessions/game-session';
 })
 export class MoveHistory {
   readonly importOpen = signal(false);
+  readonly editingTurn = signal<number | null>(null);
+  private readonly commentInput = viewChild<ElementRef<HTMLInputElement>>('commentInput');
   readonly replaying = input.required<boolean>();
   readonly replayMoves = input.required<string[]>();
   readonly history = input.required<GameTurn[]>();
   readonly historyPlys = input.required<{ white: number | null; black: number | null }[]>();
+  readonly comments = input<Record<number, string>>({});
+  readonly allowComments = input(false);
   readonly canSave = input.required<boolean>();
   readonly showNavigation = input(false);
   readonly currentPly = input(0);
@@ -106,4 +153,19 @@ export class MoveHistory {
   readonly save = output<void>();
   readonly importPgn = output<string>();
   readonly navigate = output<number>();
+  readonly commentChange = output<{ turn: number; text: string }>();
+
+  constructor() {
+    effect(() => this.commentInput()?.nativeElement.focus());
+  }
+
+  toggleEditing(turn: number): void {
+    this.editingTurn.update((current) => (current === turn ? null : turn));
+  }
+
+  commitComment(turn: number, text: string): void {
+    if (this.editingTurn() !== turn) return;
+    this.editingTurn.set(null);
+    this.commentChange.emit({ turn, text });
+  }
 }

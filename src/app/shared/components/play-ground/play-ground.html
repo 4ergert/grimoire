@@ -63,7 +63,8 @@
   <app-move-history [replaying]="isReplaying" [replayMoves]="replayMoves()" [history]="moveHistory()"
     [historyPlys]="game.historyPlys()" [showSave]="!guest()" [canSave]="!!moveHistory().length && promotion() === null"
     [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError()"
-    [showNavigation]="mode() === 'play' && !computerGame()" [currentPly]="game.cursor()" (save)="save()"
+    [showNavigation]="mode() === 'play' && !computerGame()" [currentPly]="game.cursor()" [comments]="comments()"
+    [allowComments]="mode() === 'play' && !computerGame()" (save)="save()" (commentChange)="setComment($event)"
     (importPgn)="importPgn($event)" (navigate)="game.navigate($event)" />
   @if (mode() === 'replay' && replayPositions().length) {
   <app-replay-controls [index]="replayIndex()" [moves]="replayMoves()" (navigate)="replayIndex.set($event)" />

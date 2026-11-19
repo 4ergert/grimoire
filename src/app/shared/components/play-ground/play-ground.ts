@@ -219,6 +219,10 @@ export class PlayGround {
     }
   }
   readonly moveHistory = this.game.history;
+  readonly comments = this.game.comments;
+  setComment(event: { turn: number; text: string }): void {
+    this.game.setComment(event.turn, event.text);
+  }
   readonly legalTargets = computed(() => {
     const square = this.selected();
     const position = this.training()?.position() ?? this.game.position();

@@ -7,9 +7,17 @@ export interface GameTurn {
   black: string;
 }
 
+const MAX_COMMENT_LENGTH = 500;
+
+function turnNumber(move: Move): number {
+  return Number(move.before.split(' ')[5]);
+}
+
 export class GameSession {
   private game = new Chess();
   private readonly redoMoves: Move[] = [];
+  private readonly commentStore = signal<Record<number, string>>({});
+  readonly comments = this.commentStore.asReadonly();
   readonly position = signal(this.game.fen());
   readonly cursor = computed(() => {
     this.position();
@@ -91,6 +99,7 @@ export class GameSession {
     return this.game.moves({ square, verbose: true });
   }
   move(from: Square, to: Square, promotion?: string): void {
+    this.pruneComments();
     this.game.move({ from, to, promotion });
     this.redoMoves.length = 0;
     this.position.set(this.game.fen());
@@ -98,9 +107,28 @@ export class GameSession {
   loadPgn(pgn: string): void {
     const game = new Chess();
     game.loadPgn(pgn);
+    const byFen = new Map(game.getComments().map(({ fen, comment }) => [fen, comment]));
+    const comments: Record<number, string> = {};
+    for (const move of game.history({ verbose: true })) {
+      const text = byFen.get(move.after);
+      if (!text) continue;
+      const number = turnNumber(move);
+      const comment = this.normalizeComment(comments[number] ? `${comments[number]} ${text}` : text);
+      if (comment) comments[number] = comment;
+    }
     this.game = game;
     this.redoMoves.length = 0;
+    this.commentStore.set(comments);
     this.position.set(game.fen());
+  }
+  setComment(turn: number, text: string): void {
+    const comment = this.normalizeComment(text);
+    this.commentStore.update((comments) => {
+      const next = { ...comments };
+      if (comment) next[turn] = comment;
+      else delete next[turn];
+      return next;
+    });
   }
   navigate(index: number): void {
     const target = Math.max(0, Math.min(this.timelineMoves().length, Math.trunc(index)));
@@ -118,6 +146,7 @@ export class GameSession {
   reset(): void {
     this.game.reset();
     this.redoMoves.length = 0;
+    this.commentStore.set({});
     this.position.set(this.game.fen());
   }
   pgn(): string {
@@ -132,6 +161,41 @@ export class GameSession {
           ? '1/2-1/2'
           : '*',
     );
-    return this.game.pgn();
+    return this.pgnWithComments();
+  }
+
+  private pgnWithComments(): string {
+    const comments = this.commentStore();
+    const moves = this.game.history({ verbose: true });
+    if (!moves.length || !Object.keys(comments).length) return this.game.pgn();
+    const annotated = new Chess(moves[0].before);
+    for (const [key, value] of Object.entries(this.game.getHeaders())) {
+      annotated.setHeader(key, value);
+    }
+    moves.forEach((move, index) => {
+      annotated.move({ from: move.from, to: move.to, promotion: move.promotion });
+      if (move.color === 'w' && index < moves.length - 1) return;
+      const comment = comments[turnNumber(move)];
+      if (comment) annotated.setComment(comment);
+    });
+    return annotated.pgn();
+  }
+
+  // Comments belong to whole moves of the current line; moves discarded by a new move lose theirs.
+  private pruneComments(): void {
+    const last = this.game.history({ verbose: true }).at(-1);
+    const lastTurn = last ? turnNumber(last) : 0;
+    this.commentStore.update((comments) =>
+      Object.fromEntries(Object.entries(comments).filter(([turn]) => Number(turn) <= lastTurn)),
+    );
+  }
+
+  private normalizeComment(text: string): string {
+    return text
+      .replace(/\{/g, '(')
+      .replace(/\}/g, ')')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, MAX_COMMENT_LENGTH);
   }
 }
