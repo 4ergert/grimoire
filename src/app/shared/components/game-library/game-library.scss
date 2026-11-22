@@ -64,8 +64,18 @@ button {
   border-radius: 0;
 }
 
+// Keeps the default display: list-item so the disclosure marker survives; the row inside
+// does the flex layout. The marker hangs outside the summary, hence the left margin.
 summary {
   padding: 4px 8px;
+  margin-left: 1.25em;
+  list-style-position: outside;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 details {
@@ -103,6 +113,11 @@ li {
   border: 1px solid #cdcdcdc3;
   background: #46464686;
   padding: 4px 8px;
+}
+
+.delet_section {
+  display: flex;
+  gap: 8px;
 }
 
 .delete-game {
