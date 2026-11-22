@@ -269,6 +269,9 @@ export class PlayGround {
   }
   readonly moveHistory = this.game.history;
   readonly comments = this.game.comments;
+  readonly exportPgn = computed(() =>
+    this.mode() === 'replay' ? this.replayPgn() : this.game.pgnText(),
+  );
   setComment(event: { turn: number; text: string }): void {
     this.game.setComment(event.turn, event.text);
   }

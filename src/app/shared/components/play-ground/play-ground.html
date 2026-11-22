@@ -60,6 +60,7 @@
   }
   <app-opening-name [positions]="openingPositions()" />
   <app-move-history [replaying]="isReplaying" [replayMoves]="replayMoves()" [history]="moveHistory()"
+    [pgn]="exportPgn()"
     [historyPlys]="game.historyPlys()" [showSave]="!guest()" [canSave]="!!moveHistory().length && promotion() === null"
     [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError()"
     [showNavigation]="canNavigate()" [currentPly]="game.cursor()" [comments]="comments()"

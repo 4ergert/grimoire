@@ -1,4 +1,15 @@
-import { Component, ElementRef, effect, input, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { GameTurn } from '../../sessions/game-session';
 
 @Component({
@@ -131,17 +142,36 @@ import { GameTurn } from '../../sessions/game-session';
           <p>No moves yet.</p>
         }
       }
+      @if (pgn() && (replaying() ? replayMoves().length : history().length)) {
+        <footer class="move-history-footer">
+          <button class="save_button" type="button" (click)="copyPgn()">
+            {{ copyLabel() }}
+          </button>
+        </footer>
+      }
     </section>
   `,
 })
 export class MoveHistory {
+  private readonly destroyRef = inject(DestroyRef);
+  private copyTimer: ReturnType<typeof setTimeout> | undefined;
   readonly importOpen = signal(false);
   readonly editingTurn = signal<number | null>(null);
+  readonly copyStatus = signal<'idle' | 'copied' | 'failed'>('idle');
+  readonly copyLabel = computed(() => {
+    const status = this.copyStatus();
+    return status === 'copied'
+      ? 'PGN kopiert'
+      : status === 'failed'
+        ? 'Kopieren fehlgeschlagen'
+        : 'PGN kopieren';
+  });
   private readonly commentInput = viewChild<ElementRef<HTMLInputElement>>('commentInput');
   readonly replaying = input.required<boolean>();
   readonly replayMoves = input.required<string[]>();
   readonly history = input.required<GameTurn[]>();
   readonly historyPlys = input.required<{ white: number | null; black: number | null }[]>();
+  readonly pgn = input('');
   readonly comments = input<Record<number, string>>({});
   readonly allowComments = input(false);
   readonly canSave = input.required<boolean>();
@@ -157,6 +187,37 @@ export class MoveHistory {
 
   constructor() {
     effect(() => this.commentInput()?.nativeElement.focus());
+    this.destroyRef.onDestroy(() => clearTimeout(this.copyTimer));
+  }
+
+  async copyPgn(): Promise<void> {
+    this.copyStatus.set((await this.writeToClipboard(this.pgn())) ? 'copied' : 'failed');
+    clearTimeout(this.copyTimer);
+    this.copyTimer = setTimeout(() => this.copyStatus.set('idle'), 2000);
+  }
+
+  private async writeToClipboard(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (error) {
+      console.error('PGN could not be copied with the Clipboard API', error);
+    }
+    // Fallback for insecure contexts or denied permission.
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    try {
+      return document.execCommand('copy');
+    } catch {
+      return false;
+    } finally {
+      area.remove();
+    }
   }
 
   toggleEditing(turn: number): void {

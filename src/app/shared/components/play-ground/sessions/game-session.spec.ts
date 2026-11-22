@@ -73,6 +73,28 @@ describe('GameSession comments', () => {
     expect(session.comments()).toEqual({ 1: 'Keep' });
   });
 
+  it('exports the whole timeline, including moves stepped back over', () => {
+    session.navigate(1);
+    session.setComment(2, 'Developing');
+
+    const pgn = session.pgn();
+    expect(pgn).toContain('1. e4 e5');
+    expect(pgn).toContain('2. Nf3 {Developing}');
+    expect(session.pgnText()).toBe(pgn);
+    expect(session.cursor()).toBe(1);
+  });
+
+  it('records the result of the full game even when stepped back', () => {
+    const mate = new GameSession();
+    mate.move('f2', 'f3');
+    mate.move('e7', 'e5');
+    mate.move('g2', 'g4');
+    mate.move('d8', 'h4');
+    mate.navigate(0);
+
+    expect(mate.pgn()).toContain('[Result "0-1"]');
+  });
+
   it('clears comments on reset', () => {
     session.setComment(1, 'Gone');
     session.reset();

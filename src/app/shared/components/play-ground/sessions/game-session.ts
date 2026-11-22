@@ -79,6 +79,11 @@ export class GameSession {
   });
   readonly history = computed(() => this.historyDetails().turns);
   readonly historyPlys = computed(() => this.historyDetails().plys);
+  readonly pgnText = computed(() => {
+    this.position();
+    this.commentStore();
+    return this.pgn();
+  });
   readonly outcome = computed<GameOutcome | null>(() => {
     this.position();
     if (!this.game.isGameOver()) return null;
@@ -166,24 +171,14 @@ export class GameSession {
     this.position.set(this.game.fen());
   }
   pgn(): string {
-    this.game.setHeader('Event', 'Grimoire local game');
-    this.game.setHeader(
-      'Result',
-      this.game.isCheckmate()
-        ? this.game.turn() === 'w'
-          ? '0-1'
-          : '1-0'
-        : this.game.isDraw()
-          ? '1/2-1/2'
-          : '*',
-    );
-    return this.pgnWithComments();
-  }
-
-  private pgnWithComments(): string {
+    const moves = [...this.game.history({ verbose: true }), ...this.redoMoves];
+    if (!moves.length) {
+      this.game.setHeader('Event', 'Grimoire local game');
+      this.game.setHeader('Result', '*');
+      return this.game.pgn();
+    }
+    // The export covers the whole timeline, including moves currently stepped back over.
     const comments = this.commentStore();
-    const moves = this.game.history({ verbose: true });
-    if (!moves.length || !Object.keys(comments).length) return this.game.pgn();
     const annotated = new Chess(moves[0].before);
     for (const [key, value] of Object.entries(this.game.getHeaders())) {
       annotated.setHeader(key, value);
@@ -194,6 +189,17 @@ export class GameSession {
       const comment = comments[turnNumber(move)];
       if (comment) annotated.setComment(comment);
     });
+    annotated.setHeader('Event', 'Grimoire local game');
+    annotated.setHeader(
+      'Result',
+      annotated.isCheckmate()
+        ? annotated.turn() === 'w'
+          ? '0-1'
+          : '1-0'
+        : annotated.isDraw()
+          ? '1/2-1/2'
+          : '*',
+    );
     return annotated.pgn();
   }
 
