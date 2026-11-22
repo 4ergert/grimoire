@@ -169,7 +169,7 @@ describe('GameLibrary component', () => {
     await fixture.whenStable();
     expect(element.querySelector('.saved-game')).toBeNull();
     expect(element.querySelector('summary .summary-row > div')?.textContent?.trim()).toBe(
-      'Training - 0 games',
+      'Training',
     );
     expect(fixture.componentInstance.folders()).toHaveLength(1);
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Game deleted.');

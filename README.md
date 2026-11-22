@@ -317,8 +317,14 @@ Variations are not supported.
 ### Board colors
 
 **Settings** opens a dialog whose **Change board colors** button cycles through
-the Classic, Walnut, Forest, Ocean, and Rose themes. The choice applies to light
-and dark squares and is stored in the browser's `localStorage`.
+the Classic, Walnut, Forest, Ocean, Rose, and Custom themes. The choice applies
+to light and dark squares and is stored in the browser's `localStorage`.
+
+With the **Custom** theme every square of the preview is a color picker: hover
+a square (it is outlined) and click it to choose its color in the browser's
+color picker. Both light squares share one color, and so do both dark squares.
+Custom colors are opaque `#rrggbb` values, remembered separately from the
+selected theme.
 
 Promotion offers queen, rook, bishop, and knight. Cancel returns to the board
 without making the promotion move. Piece movement is animated, including both

@@ -7,26 +7,49 @@ export interface BoardTheme {
   light: string;
 }
 
+export const CUSTOM_THEME_ID = 'custom';
+
 export const BOARD_THEMES: readonly BoardTheme[] = [
   { id: 'classic', name: 'Classic', dark: '#0000003e', light: '#fafafab0' },
   { id: 'walnut', name: 'Walnut', dark: '#6b4428d9', light: '#e8cfa4d9' },
   { id: 'forest', name: 'Forest', dark: '#3d6b45d9', light: '#e1e8c9d9' },
   { id: 'ocean', name: 'Ocean', dark: '#3a5a7ad9', light: '#d3e0ecd9' },
   { id: 'rose', name: 'Rose', dark: '#8a4a5ed9', light: '#f3dde3d9' },
+  // The colors of the custom theme are replaced by the user's choice.
+  { id: CUSTOM_THEME_ID, name: 'Custom', dark: '#7a5a3c', light: '#e9d8b4' },
 ];
 
+export type SquareColor = 'dark' | 'light';
+
 const STORAGE_KEY = 'grimoire.boardTheme';
+const CUSTOM_STORAGE_KEY = 'grimoire.boardTheme.custom';
+const COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 @Injectable({ providedIn: 'root' })
 export class BoardThemeService {
   private readonly index = signal(this.restore());
-  readonly theme = computed(() => BOARD_THEMES[this.index()]);
+  private readonly customColors = signal(this.restoreCustom());
+  readonly theme = computed<BoardTheme>(() => {
+    const theme = BOARD_THEMES[this.index()];
+    return theme.id === CUSTOM_THEME_ID ? { ...theme, ...this.customColors() } : theme;
+  });
+  readonly isCustom = computed(() => this.theme().id === CUSTOM_THEME_ID);
 
   next(): void {
     const index = (this.index() + 1) % BOARD_THEMES.length;
     this.index.set(index);
+    this.store(STORAGE_KEY, BOARD_THEMES[index].id);
+  }
+
+  setCustomColor(square: SquareColor, color: string): void {
+    if (!COLOR_PATTERN.test(color)) return;
+    this.customColors.update((colors) => ({ ...colors, [square]: color.toLowerCase() }));
+    this.store(CUSTOM_STORAGE_KEY, JSON.stringify(this.customColors()));
+  }
+
+  private store(key: string, value: string): void {
     try {
-      localStorage.setItem(STORAGE_KEY, BOARD_THEMES[index].id);
+      localStorage.setItem(key, value);
     } catch {
       // Storage can be unavailable (private mode); the choice then lasts for this session only.
     }
@@ -39,5 +62,21 @@ export class BoardThemeService {
     } catch {
       return 0;
     }
+  }
+
+  private restoreCustom(): Record<SquareColor, string> {
+    const defaults = BOARD_THEMES.find((theme) => theme.id === CUSTOM_THEME_ID)!;
+    const colors = { dark: defaults.dark, light: defaults.light };
+    try {
+      const stored: unknown = JSON.parse(localStorage.getItem(CUSTOM_STORAGE_KEY) ?? 'null');
+      if (typeof stored === 'object' && stored !== null) {
+        const { dark, light } = stored as Partial<Record<SquareColor, unknown>>;
+        if (typeof dark === 'string' && COLOR_PATTERN.test(dark)) colors.dark = dark;
+        if (typeof light === 'string' && COLOR_PATTERN.test(light)) colors.light = light;
+      }
+    } catch {
+      // Unreadable or unavailable storage: keep the defaults.
+    }
+    return colors;
   }
 }

@@ -2,13 +2,32 @@
   <h2 id="settings-title">Settings</h2>
   <div
     class="preview"
-    aria-hidden="true"
+    [class.editable]="themes.isCustom()"
+    [attr.aria-hidden]="themes.isCustom() ? null : 'true'"
     [style.--preview-dark]="themes.theme().dark"
     [style.--preview-light]="themes.theme().light"
   >
-    <span></span><span></span><span></span><span></span>
+    @for (square of previewSquares; track $index) {
+      <span>
+        @if (themes.isCustom()) {
+          <input
+            type="color"
+            [value]="themes.theme()[square]"
+            [attr.aria-label]="'Color of the ' + square + ' squares'"
+            [title]="'Choose the color of the ' + square + ' squares'"
+            (input)="pick(square, $event)"
+          />
+        }
+      </span>
+    }
   </div>
   <p role="status">Board colors: {{ themes.theme().name }}</p>
+  @if (themes.isCustom()) {
+    <p class="hint">
+      Click a square to choose its color. Both light squares share one color, and so do both dark
+      squares.
+    </p>
+  }
   <div class="settings-actions">
     <button custom-button type="button" autofocus (click)="themes.next()">
       Change board colors
