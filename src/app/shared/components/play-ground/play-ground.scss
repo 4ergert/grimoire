@@ -39,6 +39,9 @@ app-move-history {
 }
 
 @media (min-width: 1000px) {
+  :host {
+    place-items: start;
+  }
   .game {
     padding: 16px;
   }

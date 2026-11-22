@@ -125,7 +125,7 @@ describe('PlayGround', () => {
     const trigger = menu.querySelector('summary')!;
     const buttons = Array.from(menu.querySelectorAll('button'));
     expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Menu', 'Flip board', 'Create New', 'Settings', 'Log Out',
+      'Create New', 'Flip board', 'Settings', 'Main Menu', 'Log Out',
     ]);
     expect(menu.open).toBe(false);
     trigger.click();
@@ -136,7 +136,7 @@ describe('PlayGround', () => {
     move('e2', 'e4');
     await fixture.whenStable();
     trigger.click();
-    buttons[2].click();
+    buttons[0].click();
     await fixture.whenStable();
     expect(component.moveHistory()).toHaveLength(0);
     expect(menu.open).toBe(false);

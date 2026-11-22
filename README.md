@@ -287,15 +287,16 @@ move number with White and Black columns. Click a move to show that position;
 the toolbar below the history steps through the game. Playing a new move after
 going back discards the later moves and their comments.
 
-Open the ☰ game menu for these controls:
+Use the ☰ game menu for these controls. From 1000 px width the same actions
+appear in a navbar at the top instead:
 
 | Control | Behavior |
 | --- | --- |
-| **Menu** | Leave the board; unsaved progress is discarded |
-| **Flip board** | Switch perspective, coordinates, and animation direction without changing the game |
 | **Analyse position** | Toggle analysis (games against Stockfish only; Create always analyses) |
 | **Create New** / **New game** | Immediately reset the position, move list and comments |
+| **Flip board** | Switch perspective, coordinates, and animation direction without changing the game |
 | **Settings** | Open the board color dialog |
+| **Main Menu** | Leave the board; unsaved progress is discarded |
 | **Log Out** | Sign out and return to the login form (not shown to guests) |
 
 **Save to repertoire** in the history header opens the library to name the game

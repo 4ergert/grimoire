@@ -238,7 +238,7 @@ describe('LoginOverlay', () => {
     await click('New game');
     expect(element.querySelector('app-menu-overlay')).toBeNull();
     expect(element.querySelector('.save_button')).toBeNull();
-    await click('Menu');
+    await click('Main Menu');
     expect(element.querySelector('app-play-ground')).toBeNull();
     expect(element.querySelector('form')).not.toBeNull();
     await click('guest');
@@ -272,7 +272,7 @@ describe('LoginOverlay', () => {
     await click('Create');
     expect(component.computerGame()).toBe(false);
     expect(element.textContent).not.toContain('Play as White');
-    await click('Menu');
+    await click('Main Menu');
     await click('Play against Stockfish');
     expect(component.computerGame()).toBe(true);
     expect(element.textContent).toContain('Play as White');
@@ -281,7 +281,7 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('dialog')).toBeNull();
     await click('New game');
     expect(component.computerGame()).toBe(true);
-    await click('Menu');
+    await click('Main Menu');
     await click('Create');
     expect(component.computerGame()).toBe(false);
     expect(element.textContent).not.toContain('Play as Black');
@@ -302,7 +302,7 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('nav[aria-label="Move navigation"]')).not.toBeNull();
     const menuButton = Array.from(
       element.querySelectorAll<HTMLButtonElement>('app-play-ground button'),
-    ).find((button) => button.textContent?.trim() === 'Menu')!;
+    ).find((button) => button.textContent?.trim() === 'Main Menu')!;
     menuButton.click();
     await fixture.whenStable();
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
@@ -357,7 +357,7 @@ describe('LoginOverlay', () => {
     element.querySelector<HTMLButtonElement>('[aria-label="e5"]')!.click();
     await fixture.whenStable();
     expect(element.textContent).toContain('Round complete!');
-    await click('Menu');
+    await click('Main Menu');
     await click('Create');
     expect(element.querySelector('.training-panel')).toBeNull();
     expect(element.querySelector('.move-history')).not.toBeNull();

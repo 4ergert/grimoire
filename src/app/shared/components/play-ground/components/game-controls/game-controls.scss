@@ -38,25 +38,48 @@
   border-radius: 8px;
   background: #636363e7;
   box-shadow: 0 4px 12px #00000060;
+}
 
-  button {
-    padding: 10px 12px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
+.game-nav {
+  display: none;
+  margin-left: auto;
+  gap: 16px;
+  color: #ffdfbc;
+}
 
-    &:hover:not(:disabled),
-    &:focus-visible {
-      background: #ffdfbc20;
-    }
+.game-menu-actions button,
+.game-nav button {
+  padding: 10px 12px;
+  border: 1px solid #ffdfbccc;
+  background: rgba(68, 68, 68, 0.719);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
+  &:hover:not(:disabled),
+  &:focus-visible {
+    background: #ffdfbc20;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.game-nav button[aria-pressed='true'] {
+  background: #ffdfbc30;
+}
+
+// From 1000px the actions sit in a navbar instead of the burger menu.
+@media (min-width: 1000px) {
+  .game-menu {
+    display: none;
+  }
+
+  .game-nav {
+    display: flex;
+    align-items: center;
   }
 }

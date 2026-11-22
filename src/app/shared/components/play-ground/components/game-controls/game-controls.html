@@ -1,0 +1,45 @@
+<ng-content />
+<details #menu class="game-menu" (keydown.escape)="menu.open = false">
+  <summary aria-label="Game menu" title="Game menu">
+    <span aria-hidden="true">&#x2630;</span>
+  </summary>
+  <div class="game-menu-actions">
+    <ng-container [ngTemplateOutlet]="actions" />
+  </div>
+</details>
+<nav class="game-nav" aria-label="Game">
+  <ng-container [ngTemplateOutlet]="actions" />
+</nav>
+
+<ng-template #actions>
+  @if (computerGame() && !training()) {
+  <button type="button" [attr.aria-pressed]="analysis()" (click)="menu.open = false; analyse.emit()">
+    Analyse position
+  </button>
+  }
+
+  @if (!training()) {
+  <button type="button" (click)="menu.open = false; restart.emit()">
+    {{ computerGame() ? 'New game' : 'Create New' }}
+  </button>
+  }
+
+  <button type="button" aria-label="Flip board" [attr.aria-pressed]="flipped()"
+    (click)="menu.open = false; flip.emit()">
+    Flip board
+  </button>
+
+  <button type="button" (click)="menu.open = false; settings.emit()">
+    Settings
+  </button>
+
+  <button type="button" (click)="menu.open = false; back.emit()">
+    Main Menu
+  </button>
+
+  @if (!guest()) {
+  <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
+    Log Out
+  </button>
+  }
+</ng-template>

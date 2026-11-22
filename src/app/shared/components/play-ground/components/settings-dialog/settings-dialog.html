@@ -1,0 +1,18 @@
+<dialog #dialog aria-labelledby="settings-title" (cancel)="close.emit()">
+  <h2 id="settings-title">Settings</h2>
+  <div
+    class="preview"
+    aria-hidden="true"
+    [style.--preview-dark]="themes.theme().dark"
+    [style.--preview-light]="themes.theme().light"
+  >
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <p role="status">Board colors: {{ themes.theme().name }}</p>
+  <div class="settings-actions">
+    <button custom-button type="button" autofocus (click)="themes.next()">
+      Change board colors
+    </button>
+    <button custom-button type="button" (click)="close.emit()">Close</button>
+  </div>
+</dialog>

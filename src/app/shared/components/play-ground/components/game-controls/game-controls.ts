@@ -1,47 +1,11 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, HostListener, input, output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-game-controls',
+  imports: [NgTemplateOutlet],
+  templateUrl: './game-controls.html',
   styleUrl: './game-controls.scss',
-  template: `
-    <ng-content />
-    <details #menu class="game-menu" (keydown.escape)="menu.open = false">
-      <summary aria-label="Game menu" title="Game menu">
-        <span aria-hidden="true">&#x2630;</span>
-      </summary>
-      <div class="game-menu-actions">
-        <button type="button" (click)="menu.open = false; back.emit()">Menu</button>
-        <button
-          type="button"
-          aria-label="Flip board"
-          [attr.aria-pressed]="flipped()"
-          (click)="menu.open = false; flip.emit()"
-        >
-          Flip board
-        </button>
-        @if (computerGame() && !training()) {
-          <button
-            type="button"
-            [attr.aria-pressed]="analysis()"
-            (click)="menu.open = false; analyse.emit()"
-          >
-            Analyse position
-          </button>
-        }
-        @if (!training()) {
-          <button type="button" (click)="menu.open = false; restart.emit()">
-            {{ computerGame() ? 'New game' : 'Create New' }}
-          </button>
-        }
-        <button type="button" (click)="menu.open = false; settings.emit()">Settings</button>
-        @if (!guest()) {
-          <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
-            Log Out
-          </button>
-        }
-      </div>
-    </details>
-  `,
 })
 export class GameControls {
   @ViewChild('menu') private menu?: ElementRef<HTMLDetailsElement>;
