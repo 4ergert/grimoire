@@ -14,13 +14,15 @@ h2 {
   border: 1px solid #cdcdcdc3;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.848);
   background: #3f3f3f9a;
-  padding: 8px 24px;
+  padding: 8px 24px 24px 24px;
+
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
 }
 
 section {
@@ -41,12 +43,6 @@ select {
   max-width: 100%;
   padding: 8px 12px;
   font: inherit;
-
-  &.create_folder {
-    width: fit-content;
-    margin-top: 8px;
-    align-self: flex-start;
-  }
 }
 
 input {
@@ -70,6 +66,16 @@ summary {
   padding: 4px 8px;
   margin-left: 1.25em;
   list-style-position: outside;
+
+  & p {
+    margin: 0;
+    cursor: pointer;
+
+    &:hover {
+      color: #f7eee5;
+      text-shadow: 0 0 1px rgba(204, 203, 203, 0.623);
+    }
+  }
 }
 
 .summary-row {
@@ -143,11 +149,58 @@ li {
   }
 }
 
-.practise_button {
+// Buttons that look like the "practise" text in the folder summary.
+.text_button {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  font-weight: normal;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: none;
+    box-shadow: none;
+    color: #f7eee5;
+    text-shadow: 0 0 1px rgba(204, 203, 203, 0.623);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.folder_actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+
+.create_game_button,
+.delete_folder_button {
   display: block;
   width: fit-content;
-  margin: 16px 0 8px auto;
+}
 
+.create_folder_section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  & input {
+    display: flex;
+    width: 100%;
+  }
 }
 
 [role='alert'] {

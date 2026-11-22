@@ -308,6 +308,26 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('app-menu-overlay')).not.toBeNull();
   });
 
+  it('should start Create from a repertoire folder like the main menu does', async () => {
+    auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'Repertoire')!
+      .click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-game-library')).not.toBeNull();
+
+    element.querySelector<HTMLButtonElement>('app-game-library .create_game_button')!.click();
+    await fixture.whenStable();
+
+    expect(element.querySelector('app-game-library')).toBeNull();
+    expect(element.querySelector('app-play-ground')).not.toBeNull();
+    expect(component.isPlaying()).toBe(true);
+    expect(component.computerGame()).toBe(false);
+    expect(element.querySelector('.move-history')).not.toBeNull();
+  });
+
   it('should preserve the game and selection when returning from the save library', async () => {
     auth.user.set({ displayName: 'Test User', email: 'test@example.com' });
     await fixture.whenStable();
@@ -347,7 +367,8 @@ describe('LoginOverlay', () => {
       await fixture.whenStable();
     };
     await click('Repertoire');
-    await click('Practise');
+    element.querySelector<HTMLElement>('app-game-library summary .summary-row p')!.click();
+    await fixture.whenStable();
     expect(element.querySelector('app-game-library')).toBeNull();
     expect(element.querySelector('.move-history')).toBeNull();
     await click('Train Black');

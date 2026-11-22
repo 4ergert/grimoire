@@ -63,6 +63,11 @@ export class GameLibrary {
     await this.db.set(this.db.push(this.db.ref(this.auth.database, this.path())), { name: value });
   }
 
+  async deleteFolder(folderId: string): Promise<void> {
+    if (!/^[A-Za-z0-9_-]+$/.test(folderId)) throw new Error('Please select a valid folder.');
+    await this.db.remove(this.db.ref(this.auth.database, `${this.path()}/${folderId}`));
+  }
+
   async deleteGame(folderId: string, gameId: string): Promise<void> {
     if (![folderId, gameId].every((id) => /^[A-Za-z0-9_-]+$/.test(id))) {
       throw new Error('Please select a valid folder and game.');

@@ -35,7 +35,6 @@
   min-width: 150px;
   padding: 8px;
   border: 1px solid #ffdfbc90;
-  border-radius: 8px;
   background: #636363e7;
   box-shadow: 0 4px 12px #00000060;
 }
@@ -50,12 +49,13 @@
 .game-menu-actions button,
 .game-nav button {
   padding: 10px 12px;
-  border: 1px solid #ffdfbccc;
+  border: none;
   background: rgba(68, 68, 68, 0.719);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  margin: 2px;
 
   &:hover:not(:disabled),
   &:focus-visible {

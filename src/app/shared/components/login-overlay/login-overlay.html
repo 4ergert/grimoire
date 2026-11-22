@@ -9,6 +9,7 @@
         (close)="libraryOpen.set(false)"
         (openGame)="openReplay($event)"
         (practise)="startTraining($event)"
+        (create)="startCreating()"
       />
     }
     @if (auth.emailVerified() && isPlaying()) {

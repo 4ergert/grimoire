@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { Auth, UsernameTakenError } from './auth';
+import { Auth, FIREBASE_API, UsernameTakenError } from './auth';
 
-const firebase = vi.hoisted(() => ({
+const firebase = {
   initializeApp: vi.fn(() => ({})),
   getAuth: vi.fn(() => ({})),
   getDatabase: vi.fn(() => ({})),
@@ -20,29 +20,7 @@ const firebase = vi.hoisted(() => ({
   ref: vi.fn((_database: unknown, path = '') => path),
   get: vi.fn(),
   onValue: vi.fn((_ref: unknown, _next: (snapshot: { val: () => unknown }) => void, _error: (error: Error) => void) => vi.fn()),
-}));
-
-vi.mock('firebase/app', () => ({ initializeApp: firebase.initializeApp }));
-vi.mock('firebase/auth', () => ({
-  getAuth: firebase.getAuth,
-  onAuthStateChanged: firebase.onAuthStateChanged,
-  createUserWithEmailAndPassword: firebase.createUserWithEmailAndPassword,
-  signInWithEmailAndPassword: firebase.signInWithEmailAndPassword,
-  signOut: firebase.signOut,
-  updateProfile: firebase.updateProfile,
-  deleteUser: firebase.deleteUser,
-  sendEmailVerification: firebase.sendEmailVerification,
-  reload: firebase.reload,
-  EmailAuthProvider: { credential: firebase.credential },
-  reauthenticateWithCredential: firebase.reauthenticateWithCredential,
-}));
-vi.mock('firebase/database', () => ({
-  getDatabase: firebase.getDatabase,
-  ref: firebase.ref,
-  get: firebase.get,
-  onValue: firebase.onValue,
-  update: firebase.update,
-}));
+};
 
 describe('Auth', () => {
   let auth: Auth;
@@ -71,7 +49,9 @@ describe('Auth', () => {
     firebase.update.mockResolvedValue(undefined);
     firebase.sendEmailVerification.mockResolvedValue(undefined);
     firebase.reload.mockReset().mockResolvedValue(undefined);
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [{ provide: FIREBASE_API, useValue: { ...firebase, EmailAuthProvider: { credential: firebase.credential } } }],
+    });
     auth = TestBed.inject(Auth);
   });
 

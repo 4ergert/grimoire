@@ -87,6 +87,11 @@ export class LoginOverlay {
     this.isPlaying.set(true);
   }
 
+  startCreating(): void {
+    this.startPlaying();
+    this.libraryOpen.set(false);
+  }
+
   switchAuthMode(form: HTMLFormElement): void {
     form.reset();
     this.error.set('');

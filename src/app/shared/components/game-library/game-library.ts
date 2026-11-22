@@ -14,6 +14,7 @@ export class GameLibrary implements OnInit {
   readonly pgn = input('');
   readonly openGame = output<string>();
   readonly practise = output<GameFolder>();
+  readonly create = output<void>();
   readonly close = output<void>();
   readonly folders = signal<GameFolder[]>([]);
   readonly selectedFolder = signal('');
@@ -21,6 +22,7 @@ export class GameLibrary implements OnInit {
   readonly error = signal('');
   readonly message = signal('');
   readonly deleteTarget = signal<{ folderId: string; gameId: string } | null>(null);
+  readonly deleteFolderTarget = signal<string | null>(null);
 
   ngOnInit(): void {
     this.tasks.run(() => this.run(() => this.reload()));
@@ -43,6 +45,19 @@ export class GameLibrary implements OnInit {
       await this.library.save(this.selectedFolder(), name, this.pgn());
       this.message.set('Game saved.');
       await this.reload();
+    });
+  }
+
+  async deleteFolder(): Promise<void> {
+    const folderId = this.deleteFolderTarget();
+    if (!folderId) return;
+    await this.run(async () => {
+      await this.library.deleteFolder(folderId);
+      this.folders.update((folders) => folders.filter((folder) => folder.id !== folderId));
+      this.deleteFolderTarget.set(null);
+      if (this.deleteTarget()?.folderId === folderId) this.deleteTarget.set(null);
+      if (this.selectedFolder() === folderId) this.selectedFolder.set('');
+      this.message.set('Folder deleted.');
     });
   }
 

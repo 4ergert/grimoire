@@ -54,7 +54,7 @@ and Firebase Realtime Database.
   saving games or accessing the repertoire.
 - Personal folders containing games saved as PGN text in Firebase.
 - Step-by-step replay and randomized folder training for either color.
-- Individual game deletion with confirmation.
+- Individual game and folder deletion with confirmation.
 
 ## Local setup
 
@@ -86,10 +86,11 @@ single spec file:
 npx ng test --watch=false --include src/app/shared/components/play-ground/play-ground.spec.ts
 ```
 
-Firebase is not mocked at module level: `GameLibrary` receives its database
-functions through the `DATABASE_API` injection token, which specs replace with
-test doubles. No end-to-end test runner is configured, and the unit tests do
-not verify deployed database permissions or live connectivity.
+Firebase is not mocked at module level: `Auth` and `GameLibrary` receive their
+Firebase functions through the `FIREBASE_API` and `DATABASE_API` injection
+tokens, which specs replace with test doubles. No end-to-end test runner is
+configured, and the unit tests do not verify deployed database permissions or
+live connectivity.
 
 To regenerate the opening data, update the pinned revision in
 `scripts/update-openings.mjs` and run `node scripts/update-openings.mjs`.
@@ -346,9 +347,16 @@ Expand a folder and select a game's **Replay** button. Use the move toolbar
 (start, previous, next, end) to navigate the saved positions. Replay does not
 modify the PGN and does not display comments.
 
+**Create** at the bottom left of an expanded folder closes the repertoire and
+opens Create mode, like **Create** in the main menu.
+
 The trash button beside each game asks for confirmation before permanently
 deleting that game's record from Firebase. The folder and other games remain.
 If deletion fails, the game stays listed and an error is displayed.
+
+**Delete folder** at the bottom right of an expanded folder asks for confirmation
+before permanently removing the folder and all games in it from Firebase. If the
+deletion fails, the folder stays listed and an error is displayed.
 
 ## Folder training
 
@@ -445,8 +453,8 @@ when deploying or redistributing the engine.
 
 - No online multiplayer or chess clock.
 - Unsaved games and training rounds reset on reload or logout.
-- No PGN file import/export interface (PGN text can be pasted and is saved to
-  the repertoire), folder deletion, or folder renaming.
+- No PGN file import/export interface (PGN text can be pasted and copied, and is saved to
+  the repertoire) or folder renaming.
 - PGN variations are not supported.
 - No alternative-move evaluation in training; only the saved line is accepted.
 - The interface mixes English and German labels.

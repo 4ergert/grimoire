@@ -77,6 +77,20 @@ describe('GameLibrary', () => {
     expect(database.remove).not.toHaveBeenCalled();
   });
 
+  it('should delete only the selected folder belonging to the signed-in user', async () => {
+    await library.deleteFolder('folder-1');
+    expect(database.remove).toHaveBeenCalledWith('gameLibrary/user-a/folders/folder-1');
+    database.remove.mockClear();
+    await expect(library.deleteFolder('../other')).rejects.toThrow('valid');
+    await expect(library.deleteFolder('')).rejects.toThrow('valid');
+    user.set(null);
+    await expect(library.deleteFolder('folder-1')).rejects.toThrow('sign in');
+    expect(database.remove).not.toHaveBeenCalled();
+    user.set({ uid: 'user-a' });
+    database.remove.mockRejectedValue(new Error('Permission denied'));
+    await expect(library.deleteFolder('folder-1')).rejects.toThrow('Permission denied');
+  });
+
   it('should propagate rejected deletions', async () => {
     database.remove.mockRejectedValue(new Error('Permission denied'));
     await expect(library.deleteGame('folder-1', 'game-1')).rejects.toThrow('Permission denied');

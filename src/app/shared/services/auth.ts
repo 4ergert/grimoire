@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, InjectionToken, inject, signal } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import {
   User,
@@ -36,11 +36,36 @@ export class UsernameTakenError extends Error {
   }
 }
 
+// Injected so tests can replace Firebase without mocking its modules.
+export const FIREBASE_API = new InjectionToken('Firebase API', {
+  providedIn: 'root',
+  factory: () => ({
+    initializeApp,
+    getAuth,
+    getDatabase,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile,
+    deleteUser,
+    sendEmailVerification,
+    reload,
+    reauthenticateWithCredential,
+    EmailAuthProvider,
+    update,
+    ref,
+    get,
+    onValue,
+  }),
+});
+
 @Injectable({ providedIn: 'root' })
 export class Auth {
-  private readonly app = initializeApp(firebaseConfig);
-  private readonly auth = getAuth(this.app);
-  readonly database = getDatabase(this.app);
+  private readonly api = inject(FIREBASE_API);
+  private readonly app = this.api.initializeApp(firebaseConfig);
+  private readonly auth = this.api.getAuth(this.app);
+  readonly database = this.api.getDatabase(this.app);
   private readonly currentUser = signal<User | null>(null, { equal: () => false });
   readonly user = this.currentUser.asReadonly();
   private readonly verified = signal(false);
@@ -52,7 +77,7 @@ export class Auth {
 
   constructor() {
     let unsubscribeProfile: (() => void) | undefined;
-    const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+    const unsubscribe = this.api.onAuthStateChanged(this.auth, (user) => {
       unsubscribeProfile?.();
       unsubscribeProfile = undefined;
       this.profileName.set(null);
@@ -60,7 +85,7 @@ export class Auth {
       this.verified.set(user?.emailVerified === true);
       this.currentUser.set(user);
       if (user) {
-        unsubscribeProfile = onValue(ref(this.database, `users/${user.uid}/username`), (snapshot) => {
+        unsubscribeProfile = this.api.onValue(this.api.ref(this.database, `users/${user.uid}/username`), (snapshot) => {
           const value: unknown = snapshot.val();
           this.profileName.set(typeof value === 'string' ? value : null);
           this.profileReadError.set(false);
@@ -77,7 +102,7 @@ export class Auth {
   }
 
   async login(email: string, password: string): Promise<void> {
-    await signInWithEmailAndPassword(this.auth, email, password);
+    await this.api.signInWithEmailAndPassword(this.auth, email, password);
   }
 
   async register(username: string, email: string, password: string): Promise<void> {
@@ -92,32 +117,32 @@ export class Auth {
       );
     }
     const key = normalizedUsername.toLowerCase();
-    const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
+    const { user } = await this.api.createUserWithEmailAndPassword(this.auth, email, password);
 
     try {
-      await updateProfile(user, { displayName: normalizedUsername });
-      await update(ref(this.database), {
+      await this.api.updateProfile(user, { displayName: normalizedUsername });
+      await this.api.update(this.api.ref(this.database), {
         [`users/${user.uid}`]: { username: normalizedUsername },
         [`usernames/${key}`]: user.uid,
       });
     } catch (error) {
       try {
         const [profile, reservation] = await Promise.all([
-          get(ref(this.database, `users/${user.uid}`)),
-          get(ref(this.database, `usernames/${key}`)),
+          this.api.get(this.api.ref(this.database, `users/${user.uid}`)),
+          this.api.get(this.api.ref(this.database, `usernames/${key}`)),
         ]);
         if (profile.exists()) {
           if (profile.child('username').val() !== normalizedUsername || reservation.val() !== user.uid) {
             throw new Error('The saved profile and username reservation do not match.');
           }
-          await update(ref(this.database), {
+          await this.api.update(this.api.ref(this.database), {
             [`users/${user.uid}`]: null,
             [`usernames/${key}`]: null,
           });
         } else if (reservation.val() === user.uid) {
           throw new Error('The username reservation exists without its profile.');
         }
-        await deleteUser(user);
+        await this.api.deleteUser(user);
         if (reservation.exists() && reservation.val() !== user.uid) throw new UsernameTakenError();
       } catch (rollbackError) {
         if (rollbackError instanceof UsernameTakenError) throw rollbackError;
@@ -146,19 +171,19 @@ export class Auth {
     if (!user) throw new Error('Please sign in to request a verification email.');
     if (user.emailVerified) throw new Error('Your email address is already verified.');
     this.auth.languageCode = 'en';
-    await sendEmailVerification(user, {
+    await this.api.sendEmailVerification(user, {
       url: 'https://grimoire.julian-hergert.de/',
     });
   }
 
   async logout(): Promise<void> {
-    await signOut(this.auth);
+    await this.api.signOut(this.auth);
   }
 
   async refreshVerification(): Promise<boolean> {
     const user = this.user();
     if (!user) throw new Error('Please sign in to check your email verification.');
-    await reload(user);
+    await this.api.reload(user);
     await user.getIdToken(true);
     if (this.user() !== user) throw new Error('Your session changed. Please sign in again.');
     this.verified.set(user.emailVerified);
@@ -171,11 +196,11 @@ export class Auth {
     if (!user?.email || !password) {
       throw new Error('Please sign in and enter your current password to delete your account.');
     }
-    await reauthenticateWithCredential(
+    await this.api.reauthenticateWithCredential(
       user,
-      EmailAuthProvider.credential(user.email, password),
+      this.api.EmailAuthProvider.credential(user.email, password),
     );
-    const profile = await get(ref(this.database, `users/${user.uid}`));
+    const profile = await this.api.get(this.api.ref(this.database, `users/${user.uid}`));
     const changes: Record<string, null> = {
       [`gameLibrary/${user.uid}`]: null,
     };
@@ -192,9 +217,9 @@ export class Auth {
       changes[`users/${user.uid}`] = null;
       changes[`usernames/${username.toLowerCase()}`] = null;
     }
-    await update(ref(this.database), changes);
+    await this.api.update(this.api.ref(this.database), changes);
     try {
-      await deleteUser(user);
+      await this.api.deleteUser(user);
     } catch (error) {
       throw new AggregateError(
         [error],

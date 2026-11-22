@@ -4,7 +4,13 @@ import { GameLibrary } from './game-library';
 import { GameLibrary as Library } from '../../services/game-library';
 
 describe('GameLibrary component', () => {
-  const library = { list: vi.fn(), createFolder: vi.fn(), save: vi.fn(), deleteGame: vi.fn() };
+  const library = {
+    list: vi.fn(),
+    createFolder: vi.fn(),
+    save: vi.fn(),
+    deleteGame: vi.fn(),
+    deleteFolder: vi.fn(),
+  };
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -60,12 +66,77 @@ describe('GameLibrary component', () => {
     const practise = vi.fn();
     fixture.componentInstance.practise.subscribe(practise);
     const element: HTMLElement = fixture.nativeElement;
-    const button = Array.from(element.querySelectorAll<HTMLButtonElement>('details button')).find(
-      (button) => button.textContent?.trim() === 'Practise',
-    )!;
-    button.click();
+    element.querySelector<HTMLElement>('summary .summary-row p')!.click();
     expect(practise).toHaveBeenCalledWith(fixture.componentInstance.folders()[0]);
     expect(library.save).not.toHaveBeenCalled();
+  });
+
+  it('should offer a Create button in each folder that asks to start creating', async () => {
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    const create = vi.fn();
+    fixture.componentInstance.create.subscribe(create);
+
+    const button = fixture.nativeElement.querySelector('details .folder_actions .create_game_button');
+    expect(button.textContent.trim()).toBe('Create');
+    button.click();
+
+    expect(create).toHaveBeenCalledOnce();
+    expect(library.save).not.toHaveBeenCalled();
+  });
+
+  it('should require confirmation and remove a folder only after successful deletion', async () => {
+    library.list.mockResolvedValue([
+      { id: 'folder-1', name: 'Training', games: [{ id: 'game-1', name: 'Opening', pgn: '1. e4 *' }] },
+      { id: 'folder-2', name: 'Endgames', games: [] },
+    ]);
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    const first = () => element.querySelector('details')!;
+    const buttonLabels = () =>
+      Array.from(first().querySelectorAll('.folder_actions button'), (b) => b.textContent?.trim());
+
+    expect(buttonLabels()).toEqual(['Create', 'Delete folder']);
+    first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();
+    await fixture.whenStable();
+    expect(library.deleteFolder).not.toHaveBeenCalled();
+    expect(first().querySelector('.folder_actions')?.textContent).toContain(
+      'Delete folder "Training" with 1 game permanently?',
+    );
+
+    first().querySelectorAll<HTMLButtonElement>('.folder_actions button')[2].click();
+    await fixture.whenStable();
+    expect(buttonLabels()).toEqual(['Create', 'Delete folder']);
+    expect(library.deleteFolder).not.toHaveBeenCalled();
+
+    first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();
+    await fixture.whenStable();
+    fixture.componentInstance.selectedFolder.set('folder-1');
+    first().querySelector<HTMLButtonElement>('.confirm-delete-folder')!.click();
+    await fixture.whenStable();
+
+    expect(library.deleteFolder).toHaveBeenCalledWith('folder-1');
+    expect(fixture.componentInstance.folders().map((folder) => folder.id)).toEqual(['folder-2']);
+    expect(fixture.componentInstance.selectedFolder()).toBe('');
+    expect(element.querySelectorAll('details')).toHaveLength(1);
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Folder deleted.');
+  });
+
+  it('should keep the folder and show the error when its deletion fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    library.deleteFolder.mockRejectedValue(new Error('Permission denied'));
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    fixture.componentInstance.deleteFolderTarget.set('folder-1');
+    await fixture.componentInstance.deleteFolder();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.folders()).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Permission denied',
+    );
+    expect(fixture.componentInstance.pending()).toBe(false);
   });
 
   it('should require confirmation and remove a game only after successful deletion', async () => {
@@ -98,7 +169,7 @@ describe('GameLibrary component', () => {
     await fixture.whenStable();
     expect(element.querySelector('.saved-game')).toBeNull();
     expect(element.querySelector('summary .summary-row > div')?.textContent?.trim()).toBe(
-      'Training 0',
+      'Training - 0 games',
     );
     expect(fixture.componentInstance.folders()).toHaveLength(1);
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Game deleted.');
