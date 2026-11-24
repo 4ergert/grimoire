@@ -97,7 +97,7 @@
               maxlength="42"
               [autocomplete]="signingUp ? 'new-password' : 'current-password'"
               required
-              [attr.minlength]="signingUp ? 6 : null"
+              [attr.minlength]="signingUp ? 8 : null"
               [attr.aria-invalid]="fieldErrors().password ? 'true' : null"
               [attr.aria-describedby]="fieldErrors().password ? 'password-error' : null"
             />

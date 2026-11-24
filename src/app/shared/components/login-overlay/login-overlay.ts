@@ -13,6 +13,7 @@ type AuthField = 'name' | 'email' | 'password' | 'confirm-password' | 'terms';
 type FieldErrors = Partial<Record<AuthField, string>>;
 const MAX_AUTH_FIELD_LENGTH = 42;
 const MIN_NAME_LENGTH = 4;
+const MIN_PASSWORD_LENGTH = 8;
 
 @Component({
   selector: 'login-overlay',
@@ -137,8 +138,8 @@ export class LoginOverlay {
     else if (emailInput.validity.typeMismatch) errors.email = 'Please enter a valid email address.';
     if (!password) errors.password = 'Please enter your password.';
     else if (password.length > MAX_AUTH_FIELD_LENGTH) errors.password = 'Please enter no more than 42 characters.';
-    else if (this.isSignUp() && password.length < 6) {
-      errors.password = 'Please enter at least 6 characters.';
+    else if (this.isSignUp() && password.length < MIN_PASSWORD_LENGTH) {
+      errors.password = `Please enter at least ${MIN_PASSWORD_LENGTH} characters.`;
     }
     if (this.isSignUp()) {
       const confirmation = String(data.get('confirm-password') ?? '');
@@ -299,7 +300,9 @@ export class LoginOverlay {
         case 'auth/email-already-in-use':
           return 'An account with this email already exists.';
         case 'auth/weak-password':
-          return 'Please choose a stronger password with at least 6 characters.';
+          return `Please choose a stronger password with at least ${MIN_PASSWORD_LENGTH} characters.`;
+        case 'auth/password-does-not-meet-requirements':
+          return `The password does not meet the password requirements. Please use at least ${MIN_PASSWORD_LENGTH} characters.`;
         case 'auth/invalid-email':
           return 'Please enter a valid email address.';
         case 'auth/too-many-requests':

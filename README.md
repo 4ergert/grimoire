@@ -489,9 +489,13 @@ Before public operation:
   international transfers, processing agreements, legal bases, and browser storage.
 - Obtain appropriate legal review.
 - Complete and verify the Firebase security configuration and deployed rules.
-- Verify the licenses and attribution of the artwork: the chess piece SVGs in
-  `public/img/chess-pieces/` were extracted from `public/img/Chess_Pieces_Sprite.svg`,
-  and the images in `public/img/` and `public/icon/` need a documented source.
+- Artwork and licenses: the chess piece SVGs in `public/img/chess-pieces/` were
+  extracted from `public/img/Chess_Pieces_Sprite.svg`, which is
+  [Chess Pieces Sprite.svg](https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg)
+  on Wikimedia Commons (pieces originally by Cburnett, CC BY-SA 3.0). The
+  attribution is on the legal notice page. The login background and the icons
+  in `public/img/` and `public/icon/` were created with AI image tools; keep the
+  terms of the tool used and its permission for commercial and public use on file.
 
 Account data is retained until account deletion, without automatic inactivity
 deletion. In the signed-in main menu, **Settings > Delete account** requires confirmation

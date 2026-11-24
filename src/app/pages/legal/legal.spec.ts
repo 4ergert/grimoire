@@ -14,6 +14,15 @@ describe('Legal pages', () => {
     expect(harness.routeNativeElement?.textContent).toContain('unreviewed draft');
     expect(document.title).toBe('Legal notice | Grimoire');
     expect(harness.routeNativeElement?.querySelector('.draft')).toBeNull();
+    expect(harness.routeNativeElement?.textContent).toContain('Third-party material');
+    expect(
+      harness.routeNativeElement?.querySelector(
+        'a[href="https://creativecommons.org/licenses/by-sa/3.0/"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      harness.routeNativeElement?.querySelector('a[href="stockfish/Copying.txt"]'),
+    ).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('a[href="/"]')).not.toBeNull();
     expect(
       harness.routeNativeElement?.querySelectorAll('app-legal-footer a'),

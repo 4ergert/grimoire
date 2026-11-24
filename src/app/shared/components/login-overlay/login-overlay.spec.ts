@@ -537,14 +537,18 @@ describe('LoginOverlay', () => {
     expect(auth.register).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(name);
     expect(element.querySelector('#name-error')?.textContent).toContain('enter a name');
-    expect(element.querySelector('#password-error')?.textContent).toContain('6 characters');
+    expect(element.querySelector('#password-error')?.textContent).toContain('8 characters');
     expect(element.querySelector('#confirm-password-error')?.textContent).toContain('do not match');
 
     name.value = ' Test ';
     name.dispatchEvent(new Event('input', { bubbles: true }));
-    password.value = '123456';
+    password.value = '1234567';
     password.dispatchEvent(new Event('input', { bubbles: true }));
-    confirm.value = '123456';
+    await fixture.whenStable();
+    expect(element.querySelector('#password-error')?.textContent).toContain('8 characters');
+    password.value = '12345678';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    confirm.value = '12345678';
     confirm.dispatchEvent(new Event('input', { bubbles: true }));
     await fixture.whenStable();
     expect(element.querySelectorAll('.field_error')).toHaveLength(0);
