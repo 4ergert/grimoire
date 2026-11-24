@@ -23,7 +23,7 @@
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
         @if (trainingFolder()) {
-        Folder training
+        Practice your repertoire
         } @else if (isReplaying) {
         Replay
         } @else {
@@ -34,10 +34,16 @@
   </app-game-controls>
 
   @if (isTraining) {
+  <div class="play-layout training-layout">
+  <div class="board-column">
   <ng-container [ngTemplateOutlet]="board" />
   <ng-container [ngTemplateOutlet]="boardNotices" />
+  </div>
+  <div class="side-column">
   <app-training-panel [session]="training()" [error]="trainingError()" (start)="startTraining($event)"
     (next)="nextTrainingGame()" (playSolution)="playTrainingSolution()" />
+  </div>
+  </div>
   } @else {
   <div class="play-layout">
   <div class="board-column">
@@ -82,7 +88,7 @@
 
 <ng-template #board>
   <app-chess-board [position]="displayPosition()" [flipped]="flipped()" [selected]="isReplaying ? null : selected()"
-    [targets]="mode() === 'play' ? legalTargets() : []" [hint]="training()?.hintSquare() ?? null"
+    [targets]="mode() === 'play' || isTraining ? legalTargets() : []" [hint]="training()?.hintSquare() ?? null"
     [disabled]="promotion() !== null || engineTurn() || choosingEngineSide()"
     [evaluation]="stockfishPanel()?.barEvaluation() ?? null"
     [evaluationLabel]="stockfishPanel()?.barEvaluationLabel() ?? ''" (squareSelected)="select($event)" />

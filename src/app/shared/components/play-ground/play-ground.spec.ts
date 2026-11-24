@@ -347,7 +347,7 @@ describe('PlayGround', () => {
       element.querySelector('[aria-label="e2 White Pawn"]')?.classList.contains('hint-square'),
     ).toBe(true);
     expect(element.querySelectorAll('.legal-target')).toHaveLength(0);
-    await click('Show move');
+    await click('Show');
     expect(element.textContent).toContain('Saved move: e4');
     await click('Play shown move');
     expect(component.board()[3][4]?.color).toBe('b');

@@ -42,12 +42,29 @@ app-move-history {
   :host {
     place-items: start;
   }
+
   .game {
     padding: 16px;
   }
 
-  .game-wide {
+  // .game-wide {
+  //   width: min(1440px, 100%);
+  // }
+
+  .game:not(.game-wide) {
     width: min(1440px, 100%);
+    margin-inline: auto;
+  }
+
+  .training-layout {
+    grid-template-columns: minmax(0, 700px) minmax(260px, 1fr);
+  }
+
+  app-training-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 1440px);
   }
 
   .play-layout {
