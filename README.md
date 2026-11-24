@@ -473,10 +473,29 @@ when deploying or redistributing the engine.
 The login, sign-up and signed-in menu provide links to the legal pages. There
 is no shared legal footer in the game or guest views.
 
-Build with `npm run build` and serve the generated browser assets from
-`dist/grimoire/browser/`. Configure the web host to return Angular's
-`index.html` for client routes, including direct visits to `/impressum` and
-`/datenschutz`.
+Build with `npm run build` and upload the **entire contents** of
+`dist/grimoire/browser/` to the web root of `grimoire.julian-hergert.de`
+(the app expects to live at `/`). The build includes
+[public/.htaccess](./public/.htaccess) for Apache hosts such as ALL-INKL. It:
+
+- redirects HTTP to HTTPS,
+- returns `index.html` for client routes like `/impressum` and `/datenschutz`
+  (requests with a file extension are not rewritten, so a missing file is a
+  real 404),
+- sets the `application/wasm` MIME type Stockfish needs,
+- enables compression and caching (hashed build files are cached for a year,
+  `index.html` and `openings.json` are always revalidated),
+- adds basic security headers (`nosniff`, no framing, referrer policy, HSTS for
+  180 days).
+
+`.htaccess` is a hidden file: enable hidden files in the FTP client or it will
+not be uploaded. Without it, direct visits to `/impressum` return a 404 and the
+engine fails to load. After the upload, check that `/impressum` opens directly,
+that `/stockfish/stockfish-19-lite-single.wasm` is served as
+`application/wasm`, and that the web host allows `.htaccess` overrides
+(`AllowOverride`). The headers need `mod_headers`; the other rules fall back
+silently if a module is missing. No Content-Security-Policy is set yet.
+On a host other than Apache, replicate these rules in its own configuration.
 
 The public legal pages in [legal.html](./src/app/pages/legal/legal.html) are
 **unfinished, legally unreviewed English translations**, not a guarantee of legal compliance.

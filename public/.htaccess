@@ -1,0 +1,54 @@
+# Apache configuration for the static Angular build (ALL-INKL and other Apache hosts).
+# Upload it together with the build output; it is hidden, so enable hidden files in the FTP client.
+
+# Force HTTPS.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Serve index.html for client routes such as /impressum and /datenschutz.
+# Requests with a file extension are never rewritten, so a missing script or WebAssembly
+# file returns a real 404 instead of an HTML page that browsers report as a MIME error.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]{2,5}$
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Stockfish needs these MIME types.
+<IfModule mod_mime.c>
+  AddType application/wasm .wasm
+  AddType text/javascript .js .mjs
+  AddType application/json .json
+  AddType image/svg+xml .svg
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml application/wasm text/plain
+</IfModule>
+
+# Hashed build files never change, everything else is revalidated.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "(index\.html|openings\.json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  # Stockfish files have no content hash in their names.
+  <FilesMatch "^(stockfish-.*|Copying\.txt)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=15552000"
+</IfModule>
