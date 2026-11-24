@@ -40,7 +40,7 @@ describe('Legal pages', () => {
     expect(harness.routeNativeElement?.textContent).toContain('heartbeat information');
     expect(harness.routeNativeElement?.textContent).toContain('fixed general deletion period');
     expect(harness.routeNativeElement?.textContent).toContain('website data');
-    expect(harness.routeNativeElement?.textContent).toContain('any required consent procedure');
+    expect(harness.routeNativeElement?.textContent).toContain('no consent banner is shown');
     expect(document.title).toBe('Privacy policy | Grimoire');
     expect(harness.routeNativeElement?.textContent).toContain('automatic deletion due to inactivity');
     expect(harness.routeNativeElement?.textContent).toContain(

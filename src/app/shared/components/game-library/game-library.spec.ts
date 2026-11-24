@@ -48,15 +48,15 @@ describe('GameLibrary component', () => {
     expect(library.createFolder).toHaveBeenCalledWith('Endgames', 'b');
   });
 
-  it('should toggle the practise color of a folder', async () => {
+  it('should show the practise color of a folder on its drill tag', async () => {
+    library.list.mockResolvedValue([
+      { id: 'folder-1', name: 'Training', color: 'b', games: [] },
+    ]);
     const fixture = TestBed.createComponent(GameLibrary);
     await fixture.whenStable();
-    const component = fixture.componentInstance;
-    await component.toggleFolderColor(component.folders()[0]);
-    expect(library.setFolderColor).toHaveBeenCalledWith('folder-1', 'b');
-    expect(component.folders()[0].color).toBe('b');
-    await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('.practise_tag').textContent).toContain('Black');
+    const square = fixture.nativeElement.querySelector('.practise_tag .color_square');
+    expect(square.classList.contains('black')).toBe(true);
+    expect(square.getAttribute('aria-label')).toBe('Black');
   });
 
   it('should show failed reads and writes explicitly', async () => {
@@ -110,7 +110,7 @@ describe('GameLibrary component', () => {
     const buttonLabels = () =>
       Array.from(first().querySelectorAll('.folder_actions button'), (b) => b.textContent?.trim());
 
-    expect(buttonLabels()).toEqual(['new line', 'Practise as White', 'Delete folder']);
+    expect(buttonLabels()).toEqual(['new line', 'Delete folder']);
     first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();
     await fixture.whenStable();
     expect(library.deleteFolder).not.toHaveBeenCalled();
@@ -118,9 +118,9 @@ describe('GameLibrary component', () => {
       'Delete folder "Training" with 1 game permanently?',
     );
 
-    first().querySelectorAll<HTMLButtonElement>('.folder_actions button')[3].click();
+    first().querySelectorAll<HTMLButtonElement>('.folder_actions button')[2].click();
     await fixture.whenStable();
-    expect(buttonLabels()).toEqual(['new line', 'Practise as White', 'Delete folder']);
+    expect(buttonLabels()).toEqual(['new line', 'Delete folder']);
     expect(library.deleteFolder).not.toHaveBeenCalled();
 
     first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();

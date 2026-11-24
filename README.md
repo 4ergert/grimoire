@@ -246,6 +246,7 @@ gameLibrary/
     folders/
       {folderId}/
         name
+        color        ("w" or "b", defaults to "w" for older folders)
         games/
           {gameId}/
             name
@@ -366,16 +367,18 @@ deletion fails, the folder stays listed and an error is displayed.
 
 ## Folder training
 
-Expand a folder, select **Practise**, then choose **Train White** or
-**Train Black**.
+Choose **White** or **Black** in the folder's color selector when creating it.
+Expand a folder and select **drill**; training starts immediately with the
+folder's color.
 
 - Games are shuffled, with each game practised once per round.
-- You play the chosen color; opponent moves follow the PGN automatically.
+- You play the folder's color; opponent moves follow the PGN automatically.
 - Only the exact recorded move is accepted. A different move leaves the
   position unchanged and counts as a mistake, not a judgement of chess quality.
-- Game names, notation, and legal destination dots remain hidden.
+- Game names and notation remain hidden. Legal destination dots are shown for
+  the selected piece, and pieces can be clicked or dragged.
 - **Hint** highlights the piece to move.
-- **Show move** reveals the expected SAN; **Play shown move** executes it.
+- **Show** reveals the expected SAN; **Play shown move** executes it.
 - Progress, mistakes, hints, and revealed moves are counted for the round.
 - **Next game** advances after completion; **Restart round** reshuffles and
   clears scores.

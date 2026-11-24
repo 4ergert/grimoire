@@ -47,9 +47,9 @@ app-move-history {
     padding: 16px;
   }
 
-  // .game-wide {
-  //   width: min(1440px, 100%);
-  // }
+  .game-wide {
+    width: min(1440px, 100%);
+  }
 
   .game:not(.game-wide) {
     width: min(1440px, 100%);

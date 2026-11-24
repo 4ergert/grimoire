@@ -25,7 +25,7 @@ describe('PlayGround', () => {
   it('should import a PGN from the empty move history', async () => {
     const element: HTMLElement = fixture.nativeElement;
     const openImport = Array.from(element.querySelectorAll<HTMLButtonElement>('.move-history button'))
-      .find((button) => button.textContent?.trim() === 'PGN einfügen')!;
+      .find((button) => button.textContent?.trim() === 'Insert PGN')!;
     expect(openImport).toBeTruthy();
     expect(element.querySelector('.move-history')?.textContent).not.toContain('No moves yet.');
 
@@ -47,7 +47,7 @@ describe('PlayGround', () => {
   it('should show an error and keep the current game when an invalid PGN is submitted', async () => {
     const element: HTMLElement = fixture.nativeElement;
     Array.from(element.querySelectorAll<HTMLButtonElement>('.move-history button'))
-      .find((button) => button.textContent?.trim() === 'PGN einfügen')!
+      .find((button) => button.textContent?.trim() === 'Insert PGN')!
       .click();
     await fixture.whenStable();
     const textarea = element.querySelector<HTMLTextAreaElement>('#pgn-input')!;
@@ -411,7 +411,7 @@ describe('PlayGround', () => {
 
   it('should record legal moves by turn and clear the rendered history on restart', async () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.move-history')?.textContent).toContain('PGN einfügen');
+    expect(element.querySelector('.move-history')?.textContent).toContain('Insert PGN');
     expect(element.querySelector('.move-history table')).toBeNull();
     component.select('e2');
     component.select('e5');
