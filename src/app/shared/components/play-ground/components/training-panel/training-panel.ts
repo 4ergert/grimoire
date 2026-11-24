@@ -1,10 +1,12 @@
 import { Component, input, output } from '@angular/core';
 import { Color } from 'chess.js';
 import { TrainingSession } from '../../sessions/training-session';
+import { CustomButton } from '../../../button/button';
 
 @Component({
   selector: 'app-training-panel',
   styleUrl: '../controls.scss',
+  imports: [CustomButton],
   template: `
     <section class="training-panel" aria-label="Folder training">
       @if (session(); as session) {
@@ -28,22 +30,19 @@ import { TrainingSession } from '../../sessions/training-session';
             <button type="button" class="restart" (click)="next.emit()">Next game</button>
           }
         } @else {
-          <button type="button" class="restart" (click)="session.hint()">Hint</button>
-          <button type="button" class="restart" (click)="session.reveal()">Show move</button>
+          <div class="help_section">
+            <button custom-button type="button" class="restart" (click)="session.hint()">Hint</button>
+            <button custom-button type="button" class="restart" (click)="session.reveal()">Show move</button>
+          </div>
           @if (session.revealedMove()) {
             <p>Saved move: {{ session.revealedMove() }}</p>
-            <button type="button" class="restart" (click)="playSolution.emit()">
+            <button custom-button type="button" class="restart" (click)="playSolution.emit()">
               Play shown move
             </button>
           }
         }
-      } @else {
-        <p>
-          Choose your side. Practise each saved game once in random order. Only the exact saved move
-          is accepted, not every good chess move.
-        </p>
-        <button type="button" class="restart" (click)="start.emit('w')">Train White</button>
-        <button type="button" class="restart" (click)="start.emit('b')">Train Black</button>
+      } @else if (!error()) {
+        <p>Preparing your training…</p>
       }
       @if (error()) {
         <p role="alert">{{ error() }}</p>

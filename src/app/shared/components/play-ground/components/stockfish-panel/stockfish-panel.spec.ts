@@ -721,6 +721,7 @@ describe('Stockfish playground integration', () => {
     fixture.componentRef.setInput('trainingFolder', {
       id: 'folder',
       name: 'Opening',
+      color: 'w',
       games: [{ id: 'game', name: 'Line', pgn: '1. e4 e5 *' }],
     });
     await fixture.whenStable();

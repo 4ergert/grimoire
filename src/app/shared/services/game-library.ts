@@ -1,6 +1,6 @@
 import { Injectable, InjectionToken, inject } from '@angular/core';
 import { get, push, ref, remove, set } from 'firebase/database';
-import { Chess } from 'chess.js';
+import { Chess, Color } from 'chess.js';
 import { Auth } from './auth';
 
 // Injected so tests can replace the database without mocking the Firebase module itself.
@@ -18,6 +18,7 @@ export interface SavedGame {
 export interface GameFolder {
   id: string;
   name: string;
+  color: Color;
   games: SavedGame[];
 }
 
@@ -53,14 +54,31 @@ export class GameLibrary {
         }
         games.push({ id: game.key!, name, pgn });
       });
-      folders.push({ id: folder.key!, name, games });
+      // Folders created before the color setting existed are practised as White.
+      const color: unknown = folder.child('color').val() ?? 'w';
+      if (color !== 'w' && color !== 'b') throw new Error('A saved folder has invalid data.');
+      folders.push({ id: folder.key!, name, color, games });
     });
     return folders;
   }
 
-  async createFolder(name: string): Promise<void> {
+  async createFolder(name: string, color: Color = 'w'): Promise<void> {
     const value = this.name(name);
-    await this.db.set(this.db.push(this.db.ref(this.auth.database, this.path())), { name: value });
+    this.validColor(color);
+    await this.db.set(this.db.push(this.db.ref(this.auth.database, this.path())), {
+      name: value,
+      color,
+    });
+  }
+
+  async setFolderColor(folderId: string, color: Color): Promise<void> {
+    if (!/^[A-Za-z0-9_-]+$/.test(folderId)) throw new Error('Please select a valid folder.');
+    this.validColor(color);
+    await this.db.set(this.db.ref(this.auth.database, `${this.path()}/${folderId}/color`), color);
+  }
+
+  private validColor(color: string): void {
+    if (color !== 'w' && color !== 'b') throw new Error('Please choose White or Black.');
   }
 
   async deleteFolder(folderId: string): Promise<void> {

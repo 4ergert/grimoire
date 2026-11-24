@@ -17,7 +17,9 @@
             {{ folder.name }}
           </div>
           <p class="practise_tag" (click)="practise.emit(folder)">
-            practise
+            drill
+            <span class="color_square" [class.black]="folder.color === 'b'" role="img"
+              [attr.aria-label]="folder.color === 'w' ? 'White' : 'Black'"></span>
           </p>
         </div>
       </summary>
@@ -93,10 +95,14 @@
 
 
     <!-- Create new folder and save PGN section -->
-    <form (submit)="$event.preventDefault(); createFolder(folderName.value)">
-      <label for="folder-name">Create new Repertoire folder</label>
+    <form (submit)="$event.preventDefault(); createFolder(folderName.value, folderColor.value)">
+      <label for="folder-name">Create new folder</label>
       <div class="create_folder_section">
         <input id="folder-name" #folderName required maxlength="100" />
+        <select id="folder-color" #folderColor aria-label="Practise as">
+          <option value="w">White</option>
+          <option value="b">Black</option>
+        </select>
         <button custom-button class="create_folder" [disabled]="pending()">+</button>
       </div>
     </form>

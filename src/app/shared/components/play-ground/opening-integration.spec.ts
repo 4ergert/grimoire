@@ -26,6 +26,7 @@ describe('PlayGround opening positions', () => {
     fixture.componentRef.setInput('trainingFolder', {
       id: 'one',
       name: 'test',
+      color: 'w',
       games: [{ id: 'game', name: 'test', pgn: '1. e4 e5 2. Nf3 Nc6 *' }],
     });
     fixture.detectChanges();

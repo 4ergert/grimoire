@@ -47,6 +47,7 @@ describe('LoginOverlay', () => {
               {
                 id: 'folder',
                 name: 'Training',
+                color: 'b',
                 games: [{ id: 'game', name: 'Opening', pgn: '1. e4 e5 *' }],
               },
             ],
@@ -122,7 +123,7 @@ describe('LoginOverlay', () => {
     component.startPlaying(true);
     component.openLibrary();
     component.openReplay('1. e4 *');
-    component.startTraining({ id: 'folder', name: 'Training', games: [] });
+    component.startTraining({ id: 'folder', name: 'Training', color: 'w', games: [] });
     expect(component.isPlaying()).toBe(false);
     expect(component.libraryOpen()).toBe(false);
     expect(component.error()).toContain('Please verify');
@@ -371,7 +372,7 @@ describe('LoginOverlay', () => {
     await fixture.whenStable();
     expect(element.querySelector('app-game-library')).toBeNull();
     expect(element.querySelector('.move-history')).toBeNull();
-    await click('Train Black');
+    expect(element.textContent).toContain('Playing Black');
     expect(element.querySelector('[aria-label="e4 White Pawn"]')).not.toBeNull();
     element.querySelector<HTMLButtonElement>('[aria-label="e7 Black Pawn"]')!.click();
     await fixture.whenStable();

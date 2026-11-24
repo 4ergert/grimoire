@@ -182,6 +182,7 @@ describe('PlayGround', () => {
     fixture.componentRef.setInput('trainingFolder', {
       id: 'folder',
       name: 'Training',
+      color: 'w',
       games: [{ id: 'game', name: 'Game', pgn: '1. e4 e5 *' }],
     });
     await fixture.whenStable();
@@ -321,6 +322,7 @@ describe('PlayGround', () => {
     fixture.componentRef.setInput('trainingFolder', {
       id: 'folder',
       name: 'Spanish',
+      color: 'w',
       games: [{ id: 'game', name: 'Secret variation', pgn: '1. e4 e5 2. Nf3 Nc6 *' }],
     });
     await fixture.whenStable();
@@ -334,7 +336,8 @@ describe('PlayGround', () => {
     };
     expect(element.querySelector('.move-history')).toBeNull();
     expect(element.textContent).not.toContain('Secret variation');
-    await click('Train White');
+    expect(element.textContent).not.toContain('Train White');
+    expect(component.training()?.color()).toBe('w');
     move('d2', 'd4');
     await fixture.whenStable();
     expect(component.training()?.mistakes()).toBe(1);

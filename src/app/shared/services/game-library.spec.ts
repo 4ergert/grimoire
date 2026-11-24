@@ -36,10 +36,25 @@ describe('GameLibrary', () => {
     await library.createFolder(' Training ');
     expect(database.set).toHaveBeenCalledWith('gameLibrary/user-a/folders/new-id', {
       name: 'Training',
+      color: 'w',
+    });
+    await library.createFolder('Defence', 'b');
+    expect(database.set).toHaveBeenLastCalledWith('gameLibrary/user-a/folders/new-id', {
+      name: 'Defence',
+      color: 'b',
     });
     await expect(library.createFolder(' ')).rejects.toThrow('name');
     user.set(null);
     await expect(library.list()).rejects.toThrow('sign in');
+  });
+
+  it('should change the practise color of a folder and reject invalid input', async () => {
+    await library.setFolderColor('folder-1', 'b');
+    expect(database.set).toHaveBeenCalledWith('gameLibrary/user-a/folders/folder-1/color', 'b');
+    database.set.mockClear();
+    await expect(library.setFolderColor('../other', 'b')).rejects.toThrow('valid folder');
+    await expect(library.setFolderColor('folder-1', 'x' as 'w')).rejects.toThrow('White or Black');
+    expect(database.set).not.toHaveBeenCalled();
   });
 
   it('should save valid PGN to the selected folder and isolate users', async () => {
@@ -106,17 +121,33 @@ describe('GameLibrary', () => {
       child: (field: string) =>
         field === 'name'
           ? { val: () => 'Training' }
-          : { forEach: (visit: (value: typeof game) => void) => visit(game) },
+          : field === 'color'
+            ? { val: () => 'b' }
+            : { forEach: (visit: (value: typeof game) => void) => visit(game) },
+    };
+    const legacy = {
+      key: 'folder-2',
+      child: (field: string): { val?: () => unknown; forEach?: () => void } =>
+        field === 'name'
+          ? { val: () => 'Old' }
+          : field === 'color'
+            ? { val: () => null }
+            : { forEach: () => undefined },
     };
     database.get.mockResolvedValue({
-      forEach: (visit: (value: typeof folder) => void) => visit(folder),
+      forEach: (visit: (value: typeof folder | typeof legacy) => void) => {
+        visit(folder);
+        visit(legacy);
+      },
     });
     await expect(library.list()).resolves.toEqual([
       {
         id: 'folder-1',
         name: 'Training',
+        color: 'b',
         games: [{ id: 'game-1', name: 'Opening', pgn: '1. e4 *' }],
       },
+      { id: 'folder-2', name: 'Old', color: 'w', games: [] },
     ]);
   });
 });

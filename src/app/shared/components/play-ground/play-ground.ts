@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, input, output, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
 import { Chess, Color, Square } from 'chess.js';
 import { GameFolder } from '../../services/game-library';
 import { TrainingSession } from './sessions/training-session';
@@ -149,11 +149,13 @@ export class PlayGround {
       }
     });
     effect(() => {
-      if (this.trainingFolder()) this.setEngineMode('off');
+      const folder = this.trainingFolder();
+      if (folder) this.setEngineMode('off');
       this.training.set(null);
       this.trainingError.set('');
       this.selected.set(null);
       this.promotion.set(null);
+      if (folder) untracked(() => this.startTraining(folder.color));
     });
     effect(() => {
       const pgn = this.replayPgn();

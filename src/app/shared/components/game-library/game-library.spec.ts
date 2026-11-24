@@ -7,6 +7,7 @@ describe('GameLibrary component', () => {
   const library = {
     list: vi.fn(),
     createFolder: vi.fn(),
+    setFolderColor: vi.fn(),
     save: vi.fn(),
     deleteGame: vi.fn(),
     deleteFolder: vi.fn(),
@@ -18,6 +19,7 @@ describe('GameLibrary component', () => {
       {
         id: 'folder-1',
         name: 'Training',
+        color: 'w',
         games: [{ id: 'game-1', name: 'Opening', pgn: '1. e4 *' }],
       },
     ]);
@@ -42,8 +44,19 @@ describe('GameLibrary component', () => {
     await component.save('My game');
     expect(library.save).toHaveBeenCalledWith('folder-1', 'My game', '1. d4 *');
     expect(component.message()).toBe('Game saved.');
-    await component.createFolder('Endgames');
-    expect(library.createFolder).toHaveBeenCalledWith('Endgames');
+    await component.createFolder('Endgames', 'b');
+    expect(library.createFolder).toHaveBeenCalledWith('Endgames', 'b');
+  });
+
+  it('should toggle the practise color of a folder', async () => {
+    const fixture = TestBed.createComponent(GameLibrary);
+    await fixture.whenStable();
+    const component = fixture.componentInstance;
+    await component.toggleFolderColor(component.folders()[0]);
+    expect(library.setFolderColor).toHaveBeenCalledWith('folder-1', 'b');
+    expect(component.folders()[0].color).toBe('b');
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('.practise_tag').textContent).toContain('Black');
   });
 
   it('should show failed reads and writes explicitly', async () => {
@@ -54,7 +67,7 @@ describe('GameLibrary component', () => {
       'Permission denied',
     );
     library.createFolder.mockRejectedValue(new Error('Offline'));
-    await fixture.componentInstance.createFolder('Training');
+    await fixture.componentInstance.createFolder('Training', 'w');
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('Offline');
     expect(fixture.componentInstance.pending()).toBe(false);
@@ -78,7 +91,7 @@ describe('GameLibrary component', () => {
     fixture.componentInstance.create.subscribe(create);
 
     const button = fixture.nativeElement.querySelector('details .folder_actions .create_game_button');
-    expect(button.textContent.trim()).toBe('Create');
+    expect(button.textContent.trim()).toBe('new line');
     button.click();
 
     expect(create).toHaveBeenCalledOnce();
@@ -87,8 +100,8 @@ describe('GameLibrary component', () => {
 
   it('should require confirmation and remove a folder only after successful deletion', async () => {
     library.list.mockResolvedValue([
-      { id: 'folder-1', name: 'Training', games: [{ id: 'game-1', name: 'Opening', pgn: '1. e4 *' }] },
-      { id: 'folder-2', name: 'Endgames', games: [] },
+      { id: 'folder-1', name: 'Training', color: 'w', games: [{ id: 'game-1', name: 'Opening', pgn: '1. e4 *' }] },
+      { id: 'folder-2', name: 'Endgames', color: 'w', games: [] },
     ]);
     const fixture = TestBed.createComponent(GameLibrary);
     await fixture.whenStable();
@@ -97,7 +110,7 @@ describe('GameLibrary component', () => {
     const buttonLabels = () =>
       Array.from(first().querySelectorAll('.folder_actions button'), (b) => b.textContent?.trim());
 
-    expect(buttonLabels()).toEqual(['Create', 'Delete folder']);
+    expect(buttonLabels()).toEqual(['new line', 'Practise as White', 'Delete folder']);
     first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();
     await fixture.whenStable();
     expect(library.deleteFolder).not.toHaveBeenCalled();
@@ -105,9 +118,9 @@ describe('GameLibrary component', () => {
       'Delete folder "Training" with 1 game permanently?',
     );
 
-    first().querySelectorAll<HTMLButtonElement>('.folder_actions button')[2].click();
+    first().querySelectorAll<HTMLButtonElement>('.folder_actions button')[3].click();
     await fixture.whenStable();
-    expect(buttonLabels()).toEqual(['Create', 'Delete folder']);
+    expect(buttonLabels()).toEqual(['new line', 'Practise as White', 'Delete folder']);
     expect(library.deleteFolder).not.toHaveBeenCalled();
 
     first().querySelector<HTMLButtonElement>('.delete_folder_button')!.click();

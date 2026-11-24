@@ -27,6 +27,9 @@
             "name": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
             },
+            "color": {
+              ".validate": "newData.isString() && (newData.val() === 'w' || newData.val() === 'b')"
+            },
             "games": {
               "$gameId": {
                 ".validate": "newData.hasChildren(['name', 'pgn'])",

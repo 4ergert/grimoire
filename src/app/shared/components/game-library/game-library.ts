@@ -32,11 +32,21 @@ export class GameLibrary implements OnInit {
     this.folders.set(await this.library.list());
   }
 
-  async createFolder(name: string): Promise<void> {
+  async createFolder(name: string, color: string): Promise<void> {
     await this.run(async () => {
-      await this.library.createFolder(name);
+      await this.library.createFolder(name, color === 'b' ? 'b' : 'w');
       await this.reload();
       this.message.set('Folder created.');
+    });
+  }
+
+  async toggleFolderColor(folder: GameFolder): Promise<void> {
+    const color = folder.color === 'w' ? 'b' : 'w';
+    await this.run(async () => {
+      await this.library.setFolderColor(folder.id, color);
+      this.folders.update((folders) =>
+        folders.map((item) => (item.id === folder.id ? { ...item, color } : item)),
+      );
     });
   }
 
