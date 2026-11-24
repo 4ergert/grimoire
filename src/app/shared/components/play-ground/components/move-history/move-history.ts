@@ -125,17 +125,17 @@ import { GameTurn } from '../../sessions/game-session';
             <form (submit)="$event.preventDefault(); importPgn.emit(pgnInput.value)">
               <label for="pgn-input">PGN</label>
               <textarea #pgnInput id="pgn-input" rows="5" required></textarea>
-              <button class="save_button" type="submit">Spiel laden</button>
-              <button class="save_button" type="button" (click)="importOpen.set(false)">
-                Abbrechen
-              </button>
+              <div class="load_game">
+                <button class="save_button" type="submit">load game</button>
+                <button class="save_button" type="button" (click)="importOpen.set(false)">cancel</button>
+              </div>
             </form>
             @if (importError()) {
               <p role="alert">{{ importError() }}</p>
             }
           } @else {
             <button class="save_button" type="button" (click)="importOpen.set(true)">
-              PGN einfügen
+              Insert PGN
             </button>
           }
         } @else {

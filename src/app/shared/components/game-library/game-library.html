@@ -16,7 +16,7 @@
           <div>
             {{ folder.name }}
           </div>
-          <p (click)="practise.emit(folder)">
+          <p class="practise_tag" (click)="practise.emit(folder)">
             practise
           </p>
         </div>
@@ -58,7 +58,7 @@
         <div class="folder_actions">
           <button custom-button type="button" class="text_button create_game_button" [disabled]="pending()"
             (click)="create.emit()">
-            Create
+            new line
           </button>
           @if (deleteFolderTarget() === folder.id) {
           <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of folder ' + folder.name">
@@ -112,7 +112,7 @@
         <option [value]="folder.id">{{ folder.name }}</option>
         }
       </select>
-      <button [disabled]="pending()">Save PGN</button>
+      <button custom-button [disabled]="pending()">Save PGN</button>
     </form>
     }
     @if (error(); as errorMessage) {

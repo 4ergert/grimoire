@@ -8,6 +8,7 @@
 
   <h1>{{ privacy ? 'Privacy policy' : terms ? 'Terms of Use' : 'Legal notice' }}</h1>
   <p role="note">This English translation is an unreviewed draft and has not been legally reviewed.</p>
+  <p>Draft last updated: 22 November 2026</p>
 
   @if (privacy) {
     <section>
@@ -67,6 +68,27 @@
         is Article 6(1)(b) GDPR, as this processing is necessary to perform the user agreement set
         out in the <a routerLink="/nutzungsbedingungen">Terms of Use</a>. Data needed for a feature
         is required to provide that feature; saving games is optional.
+      </p>
+      <p>
+        Each username is reserved in the Realtime Database by storing your user ID under the
+        lowercase form of the name, so that every name is unique. Signed-in users can look up
+        an individual name to see whether it is taken; this also reveals the user ID stored for it.
+        The database does not allow listing all reserved names. Email addresses are not stored in
+        the Realtime Database.
+      </p>
+      <p>
+        After registration, and whenever you request it from the main menu, the application asks
+        Firebase Authentication to send a verification email to your email address. The email is
+        sent through Google's infrastructure using the configured Firebase template in English and
+        contains a link that returns you to grimoire.julian-hergert.de. Whether your address is
+        verified is processed as part of your account data. Verification is required to use the
+        account-based game features. The legal basis is Article 6(1)(b) GDPR.
+      </p>
+      <p>
+        Guest mode does not create an account, and the application does not store guest games in
+        Firebase. Chess analysis and the moves of the computer opponent are calculated locally in
+        your browser; the positions are not sent to a server. The connection data described in
+        section 2 is still processed when the website is accessed.
       </p>
       <p>
         User accounts and profiles are generally stored until the account is deleted. There is no
@@ -137,6 +159,14 @@
         fixed general deletion period. You can delete locally stored website data in your browser
         settings; this may also end an existing session. The entries may be created again when you
         use the website again.
+      </p>
+      <p>
+        The application also stores your display preferences in the browser's local storage: the
+        selected board color theme (key <code>grimoire.boardTheme</code>) and, if you use the
+        custom theme, the two square colors you picked (key
+        <code>grimoire.boardTheme.custom</code>). These values are not personal data in themselves,
+        are not sent to a server, and are only read by the application to restore your choice.
+        They remain until you delete the website data in your browser settings.
       </p>
       <p>
         Firebase Analytics is not initialized in the application code. Advertising and additional
