@@ -1,5 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
+import { tr } from '../i18n/i18n';
+
 export interface BoardTheme {
   id: string;
   name: string;
@@ -10,13 +12,13 @@ export interface BoardTheme {
 export const CUSTOM_THEME_ID = 'custom';
 
 export const BOARD_THEMES: readonly BoardTheme[] = [
-  { id: 'classic', name: 'Classic', dark: '#0000003e', light: '#fafafab0' },
-  { id: 'walnut', name: 'Walnut', dark: '#6b4428d9', light: '#e8cfa4d9' },
-  { id: 'forest', name: 'Forest', dark: '#3d6b45d9', light: '#e1e8c9d9' },
-  { id: 'ocean', name: 'Ocean', dark: '#3a5a7ad9', light: '#d3e0ecd9' },
-  { id: 'rose', name: 'Rose', dark: '#8a4a5ed9', light: '#f3dde3d9' },
+  { id: 'classic', name: tr('Classic'), dark: '#0000003e', light: '#fafafab0' },
+  { id: 'walnut', name: tr('Walnut'), dark: '#6b4428d9', light: '#e8cfa4d9' },
+  { id: 'forest', name: tr('Forest'), dark: '#3d6b45d9', light: '#e1e8c9d9' },
+  { id: 'ocean', name: tr('Ocean'), dark: '#3a5a7ad9', light: '#d3e0ecd9' },
+  { id: 'rose', name: tr('Rose'), dark: '#8a4a5ed9', light: '#f3dde3d9' },
   // The colors of the custom theme are replaced by the user's choice.
-  { id: CUSTOM_THEME_ID, name: 'Custom', dark: '#7a5a3c', light: '#e9d8b4' },
+  { id: CUSTOM_THEME_ID, name: tr('Custom'), dark: '#7a5a3c', light: '#e9d8b4' },
 ];
 
 export type SquareColor = 'dark' | 'light';

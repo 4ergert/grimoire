@@ -22,6 +22,14 @@ h1 {
   font-size: 42px;
 }
 
+// Language switcher in the top right corner of full-page views.
+.lang-corner {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+}
+
 @media (max-width: 500px) {
   body {
     padding: 0 8px;

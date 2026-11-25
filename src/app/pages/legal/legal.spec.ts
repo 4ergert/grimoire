@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
+import { I18n } from '../../shared/i18n/i18n';
 import { Legal } from './legal';
 
 describe('Legal pages', () => {
@@ -66,5 +67,71 @@ describe('Legal pages', () => {
     expect(harness.routeNativeElement?.textContent).toContain('currently offered free of charge');
     expect(harness.routeNativeElement?.textContent).toContain('guest mode without an account');
     expect(harness.routeNativeElement?.textContent).toContain('Mandatory consumer protection rights');
+  });
+
+  describe('in German', () => {
+    beforeEach(() => {
+      localStorage.removeItem('grimoire.language');
+      TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+      TestBed.inject(I18n).setLanguage('de');
+    });
+
+    afterEach(() => {
+      TestBed.inject(I18n).setLanguage('en');
+      localStorage.removeItem('grimoire.language');
+    });
+
+    it('should show the German legal notice, privacy policy and terms and switch back', async () => {
+      const harness = await RouterTestingHarness.create();
+      const text = () => harness.routeNativeElement?.textContent ?? '';
+      const link = (selector: string) => harness.routeNativeElement?.querySelector(selector);
+
+      await harness.navigateByUrl('/impressum', Legal);
+      expect(link('h1')?.textContent).toBe('Impressum');
+      expect(document.title).toBe('Impressum | Grimoire');
+      expect(link('[role="note"]')?.textContent).toContain(
+        'Dieser Text ist ein Entwurf und wurde nicht rechtlich geprüft.',
+      );
+      expect(text()).toContain('Entwurf, zuletzt aktualisiert: 22. November 2026');
+      expect(text()).toContain('Zurück zu Grimoire');
+      expect(text()).toContain('Betreiber von Grimoire');
+      expect(text()).toContain('Material Dritter');
+      expect(text()).toContain('Prüfung vor der Veröffentlichung');
+      expect(text()).not.toContain('Third-party material');
+      expect(link('a[href="mailto:julian.konken@gmx.net"]')).not.toBeNull();
+      expect(link('a[href="https://creativecommons.org/licenses/by-sa/3.0/"]')).not.toBeNull();
+      expect(link('a[href="stockfish/Copying.txt"]')).not.toBeNull();
+      expect(link('a[href="/"]')).not.toBeNull();
+
+      await harness.navigateByUrl('/datenschutz', Legal);
+      expect(link('h1')?.textContent).toBe('Datenschutzerklärung');
+      expect(document.title).toBe('Datenschutzerklärung | Grimoire');
+      expect(text()).toContain('Verantwortlicher');
+      expect(text()).toContain('Auftragsverarbeitungsvertrag');
+      expect(text()).toContain('Art. 6 Abs. 1 lit. f DSGVO');
+      expect(text()).toContain('Standardvertragsklauseln');
+      expect(text()).toContain('Aufsichtsbehörde');
+      expect(text()).toContain('Das bloße Abmelden löscht das Konto nicht.');
+      expect(link('a[href^="mailto:"]')).not.toBeNull();
+      expect(link('a[href="https://www.ldi.nrw.de/kontakt"]')).not.toBeNull();
+      expect(link('a[href="https://firebase.google.com/terms/subprocessors"]')).not.toBeNull();
+      expect(link('a[href="/nutzungsbedingungen"]')).not.toBeNull();
+
+      await harness.navigateByUrl('/nutzungsbedingungen', Legal);
+      expect(link('h1')?.textContent).toBe('Nutzungsbedingungen');
+      expect(document.title).toBe('Nutzungsbedingungen | Grimoire');
+      expect(text()).toContain('derzeit unentgeltlich');
+      expect(text()).toContain('Gastmodus ohne Konto');
+      expect(text()).toContain('Zwingende Verbraucherschutzrechte bleiben unberührt');
+      expect(link('a[href="mailto:julian.konken@gmx.net"]')).not.toBeNull();
+
+      TestBed.inject(I18n).setLanguage('en');
+      harness.detectChanges();
+      expect(link('h1')?.textContent).toBe('Terms of Use');
+      expect(document.title).toBe('Terms of Use | Grimoire');
+      expect(text()).toContain('Back to Grimoire');
+      expect(text()).toContain('Mandatory consumer protection rights');
+      expect(text()).not.toContain('Zwingende Verbraucherschutzrechte');
+    });
   });
 });

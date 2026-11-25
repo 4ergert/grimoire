@@ -1,45 +1,45 @@
 <ng-content />
 <details #menu class="game-menu" (keydown.escape)="menu.open = false">
-  <summary aria-label="Game menu" title="Game menu">
+  <summary [attr.aria-label]="'Game menu' | t" [title]="'Game menu' | t">
     <span aria-hidden="true">&#x2630;</span>
   </summary>
   <div class="game-menu-actions">
     <ng-container [ngTemplateOutlet]="actions" />
   </div>
 </details>
-<nav class="game-nav" aria-label="Game">
+<nav class="game-nav" [attr.aria-label]="'Game' | t">
   <ng-container [ngTemplateOutlet]="actions" />
 </nav>
 
 <ng-template #actions>
   @if (computerGame() && !training()) {
   <button type="button" [attr.aria-pressed]="analysis()" (click)="menu.open = false; analyse.emit()">
-    Analyse position
+    {{ 'Analyse position' | t }}
   </button>
   }
 
   @if (!training()) {
   <button type="button" (click)="menu.open = false; restart.emit()">
-    {{ computerGame() ? 'New game' : 'Create New' }}
+    {{ computerGame() ? ('New game' | t) : ('Create New' | t) }}
   </button>
   }
 
-  <button type="button" aria-label="Flip board" [attr.aria-pressed]="flipped()"
+  <button type="button" [attr.aria-label]="'Flip board' | t" [attr.aria-pressed]="flipped()"
     (click)="menu.open = false; flip.emit()">
-    Flip board
+    {{ 'Flip board' | t }}
   </button>
 
   <button type="button" (click)="menu.open = false; settings.emit()">
-    Settings
+    {{ 'Settings' | t }}
   </button>
 
   <button type="button" (click)="menu.open = false; back.emit()">
-    Main Menu
+    {{ 'Main Menu' | t }}
   </button>
 
   @if (!guest()) {
   <button type="button" [disabled]="pending()" (click)="menu.open = false; logout.emit()">
-    Log Out
+    {{ 'Log Out' | t }}
   </button>
   }
 </ng-template>

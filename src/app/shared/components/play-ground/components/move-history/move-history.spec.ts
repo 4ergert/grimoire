@@ -56,7 +56,7 @@ describe('MoveHistory PGN copy', () => {
 
   const button = () =>
     Array.from(element.querySelectorAll<HTMLButtonElement>('.move-history-footer button')).find(
-      (candidate) => candidate.textContent?.includes('PGN') || candidate.textContent?.includes('Kopieren'),
+      (candidate) => candidate.textContent?.includes('PGN') || candidate.textContent?.includes('Copy'),
     );
 
   beforeEach(async () => {
@@ -81,17 +81,17 @@ describe('MoveHistory PGN copy', () => {
 
   it('copies the PGN and confirms it briefly once a move is recorded', async () => {
     fixture.detectChanges();
-    expect(button()?.textContent?.trim()).toBe('PGN kopieren');
+    expect(button()?.textContent?.trim()).toBe('Copy PGN');
 
     button()!.click();
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(writeText).toHaveBeenCalledWith('1. e4 *');
-    expect(button()?.textContent?.trim()).toBe('PGN kopiert');
+    expect(button()?.textContent?.trim()).toBe('PGN copied');
 
     await vi.advanceTimersByTimeAsync(2000);
     fixture.detectChanges();
-    expect(button()?.textContent?.trim()).toBe('PGN kopieren');
+    expect(button()?.textContent?.trim()).toBe('Copy PGN');
   });
 
   it('reports a failed copy when the clipboard is unavailable', async () => {
@@ -104,7 +104,7 @@ describe('MoveHistory PGN copy', () => {
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
 
-    expect(button()?.textContent?.trim()).toBe('Kopieren fehlgeschlagen');
+    expect(button()?.textContent?.trim()).toBe('Copy failed');
   });
 
   it('is hidden while no move is recorded', () => {

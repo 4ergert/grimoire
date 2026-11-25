@@ -15,7 +15,7 @@
   (menu)="back.emit()" (dismiss)="resultDismissed.set(true)" />
 }
 
-<section class="game" [class.game-wide]="!isTraining" aria-label="Chess playground">
+<section class="game" [class.game-wide]="!isTraining" [attr.aria-label]="'Chess playground' | t">
   <app-game-controls [training]="isTraining" [computerGame]="computerGame()" [guest]="guest()" [pending]="pending()"
     [flipped]="flipped()" [analysis]="engineAnalysis()" (back)="back.emit()" (restart)="restart()"
     (logout)="logout.emit()" (flip)="flipped.set(!flipped())" (analyse)="setEngineMode('analysis')"
@@ -23,11 +23,11 @@
     <div class="game-status-row">
       <p class="game-status" role="status" aria-live="polite">
         @if (trainingFolder()) {
-        Practice your repertoire
+        {{ 'Practice your repertoire' | t }}
         } @else if (isReplaying) {
-        Replay
+        {{ 'Replay' | t }}
         } @else {
-        {{ status() }}
+        {{ status() | t }}
         }
       </p>
     </div>
@@ -40,7 +40,7 @@
   <ng-container [ngTemplateOutlet]="boardNotices" />
   </div>
   <div class="side-column">
-  <app-training-panel [session]="training()" [error]="trainingError()" (start)="startTraining($event)"
+  <app-training-panel [session]="training()" [error]="trainingError() | t" (start)="startTraining($event)"
     (next)="nextTrainingGame()" (playSolution)="playTrainingSolution()" />
   </div>
   </div>
@@ -54,7 +54,8 @@
   @if (!computerGame() || engineAnalysis()) {
   <div class="analysis-row">
     @if (!computerGame() && !alwaysAnalyse()) {
-    <button class="analyse-position" type="button" aria-label="Analyse position" title="Analyse position"
+    <button class="analyse-position" type="button" [attr.aria-label]="'Analyse position' | t"
+      [title]="'Analyse position' | t"
       [attr.aria-pressed]="engineAnalysis()" (click)="setEngineMode('analysis')">
       <img src="icon/analyse-position.png" alt="" width="52" height="52" />
     </button>
@@ -68,7 +69,7 @@
   <app-move-history [replaying]="isReplaying" [replayMoves]="replayMoves()" [history]="moveHistory()"
     [pgn]="exportPgn()"
     [historyPlys]="game.historyPlys()" [showSave]="!guest()" [canSave]="!!moveHistory().length && promotion() === null"
-    [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError()"
+    [showImport]="mode() === 'play' && !computerGame()" [importError]="pgnImportError() | t"
     [showNavigation]="canNavigate()" [currentPly]="game.cursor()" [comments]="comments()"
     [allowComments]="canNavigate()" (save)="save()" (commentChange)="setComment($event)"
     (importPgn)="importPgn($event)" (navigate)="game.navigate($event)" />
@@ -96,16 +97,16 @@
 
 <ng-template #boardNotices>
   @if (replayError(); as error) {
-  <p role="alert">{{ error }}</p>
+  <p role="alert">{{ error | t }}</p>
   }
   @if (promotion(); as move) {
   <app-promotion-controls [square]="move.to" (choose)="promote($event)" (cancel)="promotion.set(null)" />
   }
   @if (engineError(); as error) {
-  <p role="alert">{{ error }}</p>
+  <p role="alert">{{ error | t }}</p>
   }
   @if (computerGame() && !engineAnalysis() && stockfishPanel()?.analysisError(); as error) {
-  <p role="alert">{{ error }}</p>
-  <button type="button" (click)="stockfishPanel()?.retry()">Retry engine</button>
+  <p role="alert">{{ error | t }}</p>
+  <button type="button" (click)="stockfishPanel()?.retry()">{{ 'Retry engine' | t }}</button>
   }
 </ng-template>

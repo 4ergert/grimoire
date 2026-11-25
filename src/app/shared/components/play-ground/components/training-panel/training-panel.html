@@ -1,40 +1,45 @@
-<section class="training-panel" aria-label="Folder training">
+<section class="training-panel" [attr.aria-label]="'Folder training' | t">
   @if (session(); as session) {
   <p>
-    Playing {{ session.color() === 'w' ? 'White' : 'Black' }}. Game
-    {{ session.gameIndex() + 1 }} / {{ session.gameCount() }}. Moves {{ session.ply() }} /
-    {{ session.moveCount() }}.
+    {{
+      (session.color() === 'w'
+        ? 'Playing White. Game {game} / {games}. Moves {ply} / {moves}.'
+        : 'Playing Black. Game {game} / {games}. Moves {ply} / {moves}.')
+      | t: { game: session.gameIndex() + 1, games: session.gameCount(), ply: session.ply(), moves: session.moveCount() }
+    }}
   </p>
   <p>
-    Round totals: {{ session.mistakes() }} mistakes, {{ session.hints() }} hints,
-    {{ session.shownMoves() }} shown moves.
+    {{
+      'Round totals: {mistakes} mistakes, {hints} hints, {shown} shown moves.'
+      | t: { mistakes: session.mistakes(), hints: session.hints(), shown: session.shownMoves() }
+    }}
   </p>
-  <p role="status" aria-live="polite">{{ session.feedback() }}</p>
+  <p role="status" aria-live="polite">{{ session.feedback() | t }}</p>
   @if (session.complete()) {
-  <h2>{{ session.roundComplete() ? 'Round complete!' : 'Game complete!' }}</h2>
+  <h2>{{ (session.roundComplete() ? 'Round complete!' : 'Game complete!') | t }}</h2>
   @if (session.roundComplete()) {
   <button custom-button type="button" class="restart" (click)="start.emit(session.color())">
-    Restart round
+    {{ 'Restart round' | t }}
   </button>
   } @else {
-  <button custom-button type="button" class="restart" (click)="next.emit()">Next game</button>
+  <button custom-button type="button" class="restart" (click)="next.emit()">{{ 'Next game' | t }}</button>
   }
   } @else {
   @if (session.revealedMove()) {
-  <p>Saved move: {{ session.revealedMove() }}</p>
+  <p>{{ 'Saved move: {move}' | t: { move: session.revealedMove() } }}</p>
   <button custom-button type="button" class="restart" (click)="playSolution.emit()">
-    Play shown move
+    {{ 'Play shown move' | t }}
   </button>
   }
   <div class="help_section">
-    <button custom-button type="button" class="restart" (click)="session.hint()">Hint</button>
-    <button custom-button type="button" class="restart" (click)="session.reveal()">Show</button>
+    <button custom-button type="button" class="restart" (click)="session.hint()">{{ 'Hint' | t }}</button>
+    <button custom-button type="button" class="restart" (click)="session.reveal()">{{ 'Show' | t }}</button>
   </div>
   }
   } @else if (!error()) {
-  <p>Preparing your training…</p>
+  <p>{{ 'Preparing your training…' | t }}</p>
   }
   @if (error()) {
-  <p role="alert">{{ error() }}</p>
+  <p role="alert">{{ error() | t }}</p>
   }
 </section>

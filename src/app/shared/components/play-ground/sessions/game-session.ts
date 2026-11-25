@@ -1,5 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { Chess, Color, Move, Square } from 'chess.js';
+import { tr } from '../../../i18n/i18n';
 
 export interface GameTurn {
   number: number;
@@ -88,23 +89,29 @@ export class GameSession {
     this.position();
     if (!this.game.isGameOver()) return null;
     if (this.game.isCheckmate()) {
-      return { winner: this.game.turn() === 'w' ? 'b' : 'w', reason: 'Checkmate' };
+      return { winner: this.game.turn() === 'w' ? 'b' : 'w', reason: tr('Checkmate') };
     }
-    if (this.game.isStalemate()) return { winner: null, reason: 'Stalemate' };
-    if (this.game.isInsufficientMaterial()) return { winner: null, reason: 'Insufficient material' };
-    if (this.game.isThreefoldRepetition()) return { winner: null, reason: 'Threefold repetition' };
-    return { winner: null, reason: 'Fifty-move rule' };
+    if (this.game.isStalemate()) return { winner: null, reason: tr('Stalemate') };
+    if (this.game.isInsufficientMaterial()) {
+      return { winner: null, reason: tr('Insufficient material') };
+    }
+    if (this.game.isThreefoldRepetition()) {
+      return { winner: null, reason: tr('Threefold repetition') };
+    }
+    return { winner: null, reason: tr('Fifty-move rule') };
   });
   readonly status = computed(() => {
     this.position();
-    const player = this.game.turn() === 'w' ? 'White' : 'Black';
-    if (this.game.isCheckmate())
-      return `Checkmate! ${player === 'White' ? 'Black' : 'White'} wins.`;
-    if (this.game.isStalemate()) return 'Draw by stalemate.';
-    if (this.game.isInsufficientMaterial()) return 'Draw by insufficient material.';
-    if (this.game.isThreefoldRepetition()) return 'Draw by threefold repetition.';
-    if (this.game.isDrawByFiftyMoves()) return 'Draw by the fifty-move rule.';
-    return `${player} to move${this.game.isCheck() ? ' - Check!' : '.'}`;
+    const white = this.game.turn() === 'w';
+    if (this.game.isCheckmate()) {
+      return white ? tr('Checkmate! Black wins.') : tr('Checkmate! White wins.');
+    }
+    if (this.game.isStalemate()) return tr('Draw by stalemate.');
+    if (this.game.isInsufficientMaterial()) return tr('Draw by insufficient material.');
+    if (this.game.isThreefoldRepetition()) return tr('Draw by threefold repetition.');
+    if (this.game.isDrawByFiftyMoves()) return tr('Draw by the fifty-move rule.');
+    if (this.game.isCheck()) return white ? tr('White to move - Check!') : tr('Black to move - Check!');
+    return white ? tr('White to move.') : tr('Black to move.');
   });
 
   get(square: Square) {

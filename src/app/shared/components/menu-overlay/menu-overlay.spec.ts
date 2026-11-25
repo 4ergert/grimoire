@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
 import { MenuOverlay } from './menu-overlay';
+import { I18n } from '../../i18n/i18n';
 import { afterEach, vi } from 'vitest';
 
 describe('MenuOverlay', () => {
@@ -143,5 +144,23 @@ describe('MenuOverlay', () => {
     dialog.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
     expect(dialog.open).toBe(true);
+  });
+
+  it('renders the menu and translated errors in German', async () => {
+    TestBed.inject(I18n).setLanguage('de');
+    try {
+      fixture.componentRef.setInput('username', 'Ada');
+      fixture.componentRef.setInput('error', 'The email or password is incorrect.');
+      await fixture.whenStable();
+      const text = (fixture.nativeElement as HTMLElement).textContent;
+      expect(text).toContain('Willkommen zurück, Ada');
+      expect(text).toContain('Gegen Stockfish spielen');
+      expect(text).toContain('Abmelden');
+      expect(text).toContain('Die E-Mail-Adresse oder das Passwort ist falsch.');
+    } finally {
+      localStorage.removeItem('grimoire.language');
+      TestBed.inject(I18n).setLanguage('en');
+      localStorage.removeItem('grimoire.language');
+    }
   });
 });

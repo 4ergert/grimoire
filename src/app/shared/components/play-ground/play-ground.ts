@@ -1,6 +1,18 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { Chess, Color, Square } from 'chess.js';
+import { I18n, tr } from '../../i18n/i18n';
+import { TranslatePipe } from '../../i18n/translate-pipe';
 import { GameFolder } from '../../services/game-library';
 import { TrainingSession } from './sessions/training-session';
 import { ChessBoard } from './components/chess-board/chess-board';
@@ -36,11 +48,13 @@ import {
     SettingsDialog,
     GameOverDialog,
     OpeningName,
+    TranslatePipe,
   ],
   templateUrl: './play-ground.html',
   styleUrl: './play-ground.scss',
 })
 export class PlayGround {
+  private readonly i18n = inject(I18n);
   readonly stockfishPanel = viewChild(StockfishPanel);
   readonly computerGame = input(false);
   readonly guest = input(false);
@@ -95,11 +109,17 @@ export class PlayGround {
       return null;
     }
     const title = !outcome.winner
-      ? 'Draw'
+      ? tr('Draw')
       : outcome.winner === this.playerColor()
-        ? 'You win!'
-        : 'Stockfish wins';
-    return { title, detail: `${outcome.reason} · Level ${this.engineStrength()}` };
+        ? tr('You win!')
+        : tr('Stockfish wins');
+    return {
+      title: this.i18n.t(title),
+      detail: this.i18n.t('{reason} · Level {level}', {
+        reason: this.i18n.t(outcome.reason),
+        level: this.engineStrength(),
+      }),
+    };
   });
   readonly showResult = computed(() => !!this.gameResult() && !this.resultDismissed());
   readonly selected = signal<Square | null>(null);
@@ -221,7 +241,7 @@ export class PlayGround {
     } catch (error) {
       console.error('Stockfish move could not be played', error);
       this.engineError.set(
-        'Stockfish returned an invalid move. Return to the menu and start a new game.',
+        tr('Stockfish returned an invalid move. Return to the menu and start a new game.'),
       );
     }
   }
@@ -239,7 +259,7 @@ export class PlayGround {
     } catch (error) {
       console.error('Training could not be started', error);
       this.trainingError.set(
-        error instanceof Error ? error.message : 'Training could not be started.',
+        error instanceof Error ? error.message : tr('Training could not be started.'),
       );
     }
   }
@@ -266,7 +286,7 @@ export class PlayGround {
       this.clearSelection();
     } catch (error) {
       console.error('PGN could not be imported', error);
-      this.pgnImportError.set('Dieses PGN konnte nicht geladen werden.');
+      this.pgnImportError.set(tr('This PGN could not be loaded.'));
     }
   }
   readonly moveHistory = this.game.history;

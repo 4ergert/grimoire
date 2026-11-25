@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { LoginOverlay } from './login-overlay';
 import { Auth, UsernameTakenError } from '../../services/auth';
 import { GameLibrary } from '../../services/game-library';
+import { I18n } from '../../i18n/i18n';
 
 describe('LoginOverlay', () => {
   let component: LoginOverlay;
@@ -75,6 +76,26 @@ describe('LoginOverlay', () => {
       'Privacy policy',
       'Terms of Use',
     ]);
+  });
+
+  it('renders the sign-up form and validation errors in German', async () => {
+    TestBed.inject(I18n).setLanguage('de');
+    try {
+      component.isSignUp.set(true);
+      await fixture.whenStable();
+      const element: HTMLElement = fixture.nativeElement;
+      expect(element.textContent).toContain('Benutzername');
+      expect(element.textContent).toContain('Passwort bestätigen');
+      expect(element.textContent).toContain('Bitte lies die Nutzungsbedingungen, bevor du dein Konto erstellst.');
+      element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+      await fixture.whenStable();
+      expect(element.textContent).toContain('Bitte gib einen Namen ein.');
+      expect(element.querySelector('.field_error')?.getAttribute('title')).toBe('Bitte gib einen Namen ein.');
+    } finally {
+      localStorage.removeItem('grimoire.language');
+      TestBed.inject(I18n).setLanguage('en');
+      localStorage.removeItem('grimoire.language');
+    }
   });
 
   it('toggles login and confirmation password visibility independently', async () => {

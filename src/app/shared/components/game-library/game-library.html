@@ -1,14 +1,14 @@
 @let deletion = deleteTarget();
 
-<section class="game_library" aria-label="Saved games" [attr.aria-busy]="pending()">
+<section class="game_library" [attr.aria-label]="'Saved games' | t" [attr.aria-busy]="pending()">
   <header class="header">
-    <h2>Repertoire</h2>
-    <button custom-button type="button" (click)="close.emit()" [disabled]="pending()">Back</button>
+    <h2>{{ 'Repertoire' | t }}</h2>
+    <button custom-button type="button" (click)="close.emit()" [disabled]="pending()">{{ 'Back' | t }}</button>
   </header>
 
   <!-- Repertoire folders section -->
   <section class="repertoire_folders">
-    <p>Your repertoires:</p>
+    <p>{{ 'Your repertoires:' | t }}</p>
     @for (folder of folders(); track folder.id) {
     <details>
       <summary>
@@ -17,9 +17,9 @@
             {{ folder.name }}
           </div>
           <p class="practise_tag" (click)="practise.emit(folder)">
-            drill
+            {{ 'drill' | t }}
             <span class="color_square" [class.black]="folder.color === 'b'" role="img"
-              [attr.aria-label]="folder.color === 'w' ? 'White' : 'Black'"></span>
+              [attr.aria-label]="(folder.color === 'w' ? 'White' : 'Black') | t"></span>
           </p>
         </div>
       </summary>
@@ -31,7 +31,7 @@
               {{ game.name }}
             </button>
             <button custom-button type="button" class="delete-game" [disabled]="pending()"
-              [attr.aria-label]="'Delete ' + game.name" title="Delete game"
+              [attr.aria-label]="'Delete {name}' | t: { name: game.name }" [attr.title]="'Delete game' | t"
               (click)="deleteTarget.set({ folderId: folder.id, gameId: game.id })">
               <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -39,49 +39,53 @@
               </svg>
             </button>
             @if (deletion?.folderId === folder.id && deletion?.gameId === game.id) {
-            <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of ' + game.name">
-              <p>Delete "{{ game.name }}" permanently?</p>
+            <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of {name}' | t: { name: game.name }">
+              <p>{{ 'Delete "{name}" permanently?' | t: { name: game.name } }}</p>
               <div class="delet_section">
                 <button custom-button type="button" [disabled]="pending()" (click)="deleteGame()">
-                  Delete
+                  {{ 'Delete' | t }}
                 </button>
                 <button custom-button type="button" [disabled]="pending()" (click)="deleteTarget.set(null)">
-                  Cancel
+                  {{ 'Cancel' | t }}
                 </button>
               </div>
             </div>
             }
           </li>
           } @empty {
-          <p>folder is empty</p>
+          <p>{{ 'folder is empty' | t }}</p>
           }
         </ul>
 
         <div class="folder_actions">
           <button custom-button type="button" class="text_button create_game_button" [disabled]="pending()"
             (click)="create.emit()">
-            new line
+            {{ 'new line' | t }}
           </button>
           @if (deleteFolderTarget() === folder.id) {
-          <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of folder ' + folder.name">
+          <div class="delete-confirmation" role="group" [attr.aria-label]="'Confirm deletion of folder {name}' | t: { name: folder.name }">
             <p>
-              Delete folder "{{ folder.name }}" with {{ folder.games.length }}
-              {{ folder.games.length === 1 ? 'game' : 'games' }} permanently?
+              {{
+                (folder.games.length === 1
+                  ? 'Delete folder "{name}" with {count} game permanently?'
+                  : 'Delete folder "{name}" with {count} games permanently?')
+                | t: { name: folder.name, count: folder.games.length }
+              }}
             </p>
             <div class="delet_section">
               <button custom-button type="button" class="confirm-delete-folder" [disabled]="pending()"
                 (click)="deleteFolder()">
-                Delete
+                {{ 'Delete' | t }}
               </button>
               <button custom-button type="button" [disabled]="pending()" (click)="deleteFolderTarget.set(null)">
-                Cancel
+                {{ 'Cancel' | t }}
               </button>
             </div>
           </div>
           } @else {
           <button custom-button type="button" class="text_button delete_folder_button" [disabled]="pending()"
             (click)="deleteFolderTarget.set(folder.id)">
-            Delete folder
+            {{ 'Delete folder' | t }}
           </button>
           }
         </div>
@@ -89,46 +93,46 @@
     </details>
     } @empty {
     @if (!pending() && !error()) {
-    <p>No folders yet. Create your first folder above.</p>
+    <p>{{ 'No folders yet. Create your first folder above.' | t }}</p>
     }
     }
 
 
     <!-- Create new folder and save PGN section -->
     <form (submit)="$event.preventDefault(); createFolder(folderName.value, folderColor.value)">
-      <label for="folder-name">Create new folder</label>
+      <label for="folder-name">{{ 'Create new folder' | t }}</label>
       <div class="create_folder_section">
         <input id="folder-name" #folderName required maxlength="100" />
-        <select id="folder-color" #folderColor aria-label="Practise as">
-          <option value="w">White</option>
-          <option value="b">Black</option>
+        <select id="folder-color" #folderColor [attr.aria-label]="'Practise as' | t">
+          <option value="w">{{ 'White' | t }}</option>
+          <option value="b">{{ 'Black' | t }}</option>
         </select>
         <button custom-button class="create_folder" [disabled]="pending()">+</button>
       </div>
     </form>
     @if (pgn()) {
     <form (submit)="$event.preventDefault(); save(gameName.value)">
-      <label for="game-name">Game name</label>
+      <label for="game-name">{{ 'Game name' | t }}</label>
       <input id="game-name" #gameName required maxlength="100" />
-      <label for="save-folder">Save in folder</label>
+      <label for="save-folder">{{ 'Save in folder' | t }}</label>
       <select id="save-folder" required [value]="selectedFolder()" (change)="selectedFolder.set(folderSelect.value)"
         #folderSelect>
-        <option value="" disabled>Select folder</option>
+        <option value="" disabled>{{ 'Select folder' | t }}</option>
         @for (folder of folders(); track folder.id) {
         <option [value]="folder.id">{{ folder.name }}</option>
         }
       </select>
-      <button custom-button [disabled]="pending()">Save PGN</button>
+      <button custom-button [disabled]="pending()">{{ 'Save PGN' | t }}</button>
     </form>
     }
     @if (error(); as errorMessage) {
-    <p role="alert">{{ errorMessage }}</p>
+    <p role="alert">{{ errorMessage | t }}</p>
     }
     @if (message(); as statusMessage) {
-    <p role="status">{{ statusMessage }}</p>
+    <p role="status">{{ statusMessage | t }}</p>
     }
     @if (pending()) {
-    <p role="status">Please wait...</p>
+    <p role="status">{{ 'Please wait...' | t }}</p>
     }
   </section>
 

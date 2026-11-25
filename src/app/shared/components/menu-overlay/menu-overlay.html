@@ -1,17 +1,18 @@
 <section class="login_overlay">
+  <app-language-switcher class="overlay_lang" />
   <header>
-    <img src="icon/favicon.png" alt="Grimoire Icon" />
+    <img src="icon/favicon.png" [attr.alt]="'Grimoire Icon' | t" />
     <h1>Grimoire</h1>
   </header>
 
   <p class="auth_status" role="status">
-    {{ pending() ? 'Please wait...' : 'Welcome back ' + username() }}
+    {{ pending() ? ('Please wait...' | t) : ('Welcome back {name}' | t: { name: username() }) }}
   </p>
 
   @if (!emailVerified()) {
-    <p>Please verify your email address using the link in your inbox.</p>
+    <p>{{ 'Please verify your email address using the link in your inbox.' | t }}</p>
     @if (verificationNotice()) {
-      <p class="auth_status" role="status">{{ verificationNotice() }}</p>
+      <p class="auth_status" role="status">{{ verificationNotice() | t }}</p>
     }
     <button
       custom-button
@@ -20,7 +21,7 @@
       [disabled]="pending()"
       (click)="resendVerification.emit()"
     >
-      Resend verification email
+      {{ 'Resend verification email' | t }}
     </button>
     <button
       custom-button
@@ -29,30 +30,30 @@
       [disabled]="pending()"
       (click)="checkVerification.emit()"
     >
-      I have verified
+      {{ 'I have verified' | t }}
     </button>
   }
 
   @if (emailVerified()) {
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="play.emit()">
-    Create
+    {{ 'Create' | t }}
   </button>
 
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="library.emit()">
-    Repertoire
+    {{ 'Repertoire' | t }}
   </button>
 
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="computer.emit()">
-    Play against Stockfish
+    {{ 'Play against Stockfish' | t }}
   </button>
   }
 
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="settings.showModal()">
-    Settings
+    {{ 'Settings' | t }}
   </button>
 
   <button custom-button class="menu_button" type="button" [disabled]="pending()" (click)="logout.emit()">
-    Log Out
+    {{ 'Log Out' | t }}
   </button>
 
   <dialog
@@ -60,16 +61,15 @@
     aria-labelledby="settings-title"
     (cancel)="pending() ? $event.preventDefault() : closeSettings(settings, deleteForm, deletion)"
   >
-    <h2 id="settings-title">Settings</h2>
+    <h2 id="settings-title">{{ 'Settings' | t }}</h2>
     <details #deletion class="account-deletion">
-    <summary>Delete account</summary>
+    <summary>{{ 'Delete account' | t }}</summary>
     <p>
-      Permanently delete your account, profile, and all saved folders and games.
-      This cannot be undone. Enter your current password to confirm.
+      {{ 'Permanently delete your account, profile, and all saved folders and games. This cannot be undone. Enter your current password to confirm.' | t }}
     </p>
     <form #deleteForm (submit)="confirmDeletion($event, deleteForm, deletePassword)">
       <fieldset [disabled]="pending()">
-        <label for="delete-password">Current password</label>
+        <label for="delete-password">{{ 'Current password' | t }}</label>
         <div class="password_input">
           <input
             #deletePassword
@@ -81,7 +81,7 @@
           <button
             class="password_visibility"
             type="button"
-            [attr.aria-label]="deletionPasswordVisible() ? 'Hide password' : 'Show password'"
+            [attr.aria-label]="deletionPasswordVisible() ? ('Hide password' | t) : ('Show password' | t)"
             [attr.aria-pressed]="deletionPasswordVisible()"
             (click)="deletionPasswordVisible.update((visible) => !visible)"
           >
@@ -97,15 +97,15 @@
           </button>
         </div>
         <button custom-button type="submit">
-          {{ pending() ? 'Please wait...' : 'Permanently delete my account' }}
+          {{ pending() ? ('Please wait...' | t) : ('Permanently delete my account' | t) }}
         </button>
-        <button type="button" (click)="deleteForm.reset(); deletion.open = false">Cancel</button>
+        <button type="button" (click)="deleteForm.reset(); deletion.open = false">{{ 'Cancel' | t }}</button>
       </fieldset>
     </form>
     </details>
 
     @if (error()) {
-      <p class="auth_error" role="alert">{{ error() }}</p>
+      <p class="auth_error" role="alert">{{ error() | t }}</p>
     }
     <button
       custom-button
@@ -114,12 +114,12 @@
       [disabled]="pending()"
       (click)="closeSettings(settings, deleteForm, deletion)"
     >
-      Back
+      {{ 'Back' | t }}
     </button>
   </dialog>
 
   @if (error() && !settings.open) {
-  <p class="auth_error" role="alert">{{ error() }}</p>
+  <p class="auth_error" role="alert">{{ error() | t }}</p>
   }
   <app-legal-footer />
 </section>

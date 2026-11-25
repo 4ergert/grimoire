@@ -2,6 +2,7 @@ import { Component, ElementRef, afterNextRender, output, signal, viewChild } fro
 import { Color } from 'chess.js';
 import { CustomButton } from '../../../button/button';
 import { EngineStrength } from '../engine-strength/engine-strength';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 export interface EngineGameOptions {
   color: Color;
@@ -10,11 +11,11 @@ export interface EngineGameOptions {
 
 @Component({
   selector: 'app-engine-side-dialog',
-  imports: [CustomButton, EngineStrength],
+  imports: [CustomButton, EngineStrength, TranslatePipe],
   template: `
     <dialog #dialog aria-labelledby="engine-side-title" (cancel)="cancel.emit()">
-      <h2 id="engine-side-title">Play against Stockfish</h2>
-      <p>Choose your side.</p>
+      <h2 id="engine-side-title">{{ 'Play against Stockfish' | t }}</h2>
+      <p>{{ 'Choose your side.' | t }}</p>
       <app-engine-strength [(strength)]="strength" />
       <div class="side-actions">
         <button
@@ -23,16 +24,16 @@ export interface EngineGameOptions {
           autofocus
           (click)="choose.emit({ color: 'w', strength: strength() })"
         >
-          Play as White
+          {{ 'Play as White' | t }}
         </button>
         <button
           custom-button
           type="button"
           (click)="choose.emit({ color: 'b', strength: strength() })"
         >
-          Play as Black
+          {{ 'Play as Black' | t }}
         </button>
-        <button custom-button type="button" (click)="cancel.emit()">Back</button>
+        <button custom-button type="button" (click)="cancel.emit()">{{ 'Back' | t }}</button>
       </div>
     </dialog>
   `,

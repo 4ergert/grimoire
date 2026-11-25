@@ -1,20 +1,25 @@
 import { Component, ElementRef, afterNextRender, input, output, viewChild } from '@angular/core';
 import { CustomButton } from '../../../button/button';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-game-over-dialog',
-  imports: [CustomButton],
+  imports: [CustomButton, TranslatePipe],
   template: `
     <dialog #dialog aria-labelledby="game-over-title" (cancel)="dismiss.emit()">
       <h2 id="game-over-title">{{ title() }}</h2>
       <p>{{ detail() }}</p>
       <div class="game-over-actions">
-        <button custom-button type="button" autofocus (click)="newGame.emit()">New game…</button>
-        <button custom-button type="button" (click)="analyse.emit()">Analyse game</button>
+        <button custom-button type="button" autofocus (click)="newGame.emit()">
+          {{ 'New game…' | t }}
+        </button>
+        <button custom-button type="button" (click)="analyse.emit()">{{ 'Analyse game' | t }}</button>
         @if (canSave()) {
-          <button custom-button type="button" (click)="save.emit()">Save to repertoire</button>
+          <button custom-button type="button" (click)="save.emit()">
+            {{ 'Save to repertoire' | t }}
+          </button>
         }
-        <button custom-button type="button" (click)="menu.emit()">Back to menu</button>
+        <button custom-button type="button" (click)="menu.emit()">{{ 'Back to menu' | t }}</button>
       </div>
     </dialog>
   `,

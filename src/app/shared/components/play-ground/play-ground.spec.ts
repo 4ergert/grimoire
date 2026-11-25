@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlayGround } from './play-ground';
+import { I18n } from '../../i18n/i18n';
 import { Square } from 'chess.js';
 import { vi } from 'vitest';
 
@@ -58,7 +59,7 @@ describe('PlayGround', () => {
     expect(component.moveHistory()).toEqual([]);
     expect(component.board()[6][4]?.type).toBe('p');
     expect(element.querySelector('.move-history [role="alert"]')?.textContent).toContain(
-      'Dieses PGN konnte nicht geladen werden.',
+      'This PGN could not be loaded.',
     );
   });
 
@@ -246,6 +247,26 @@ describe('PlayGround', () => {
     expect(squares[0].classList.contains('light')).toBe(true);
     expect(squares[1].classList.contains('light')).toBe(false);
     expect(squares[8].classList.contains('light')).toBe(false);
+  });
+
+  it('should render the game status, controls and piece labels in German', async () => {
+    const i18n = TestBed.inject(I18n);
+    try {
+      i18n.setLanguage('de');
+      await fixture.whenStable();
+      const element: HTMLElement = fixture.nativeElement;
+      expect(element.querySelector('.game-status')?.textContent).toContain('Weiß ist am Zug.');
+      expect(element.querySelector('[aria-label="Brett drehen"]')).not.toBeNull();
+      expect(element.querySelector('[aria-label="e2 Weißer Bauer"]')).not.toBeNull();
+
+      move('e2', 'e4');
+      await fixture.whenStable();
+      expect(element.querySelector('.game-status')?.textContent).toContain('Schwarz ist am Zug.');
+    } finally {
+      localStorage.removeItem('grimoire.language');
+      i18n.setLanguage('en');
+      localStorage.removeItem('grimoire.language');
+    }
   });
 
   function move(from: Square, to: Square): void {

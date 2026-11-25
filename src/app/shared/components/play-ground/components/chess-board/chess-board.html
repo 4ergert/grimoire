@@ -16,7 +16,7 @@
       [boardFlipped]="flipped()"
       [boardDrops]="drops()"
       role="grid"
-      aria-label="Chessboard, files a to h and ranks 1 to 8"
+      [attr.aria-label]="'Chessboard, files a to h and ranks 1 to 8' | t"
       (pointerdown)="dragStart($event)"
       (pointermove)="dragMove($event)"
       (pointerup)="dragEnd($event)"
@@ -40,10 +40,7 @@
                 [disabled]="disabled()"
                 [attr.aria-pressed]="selected() === square"
                 [attr.aria-label]="
-                  square +
-                  (piece
-                    ? ' ' + (piece.color === 'w' ? 'White ' : 'Black ') + pieceNames[piece.type]
-                    : '')
+                  piece ? square + ' ' + (pieceLabels[piece.color][piece.type] | t) : square
                 "
                 (click)="squareClicked(square)"
               >
@@ -66,8 +63,8 @@
       role="img"
       [attr.aria-label]="
         evaluationLabel()
-          ? 'Stockfish evaluation ' + evaluationLabel()
-          : 'Stockfish evaluation unavailable'
+          ? ('Stockfish evaluation {value}' | t: { value: evaluationLabel() })
+          : ('Stockfish evaluation unavailable' | t)
       "
     >
       <div class="black-advantage" [style.height.%]="100 - whiteAdvantage()"></div>

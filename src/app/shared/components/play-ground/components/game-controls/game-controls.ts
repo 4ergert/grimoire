@@ -1,9 +1,10 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, HostListener, input, output, ViewChild } from '@angular/core';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-game-controls',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, TranslatePipe],
   templateUrl: './game-controls.html',
   styleUrl: './game-controls.scss',
 })

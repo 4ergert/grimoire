@@ -1,6 +1,7 @@
 import { computed, signal } from '@angular/core';
 import { Chess, Color, Move, Square } from 'chess.js';
 import { SavedGame } from '../../../services/game-library';
+import { tr } from '../../../i18n/i18n';
 
 interface TrainingLine {
   initial: string;
@@ -38,13 +39,13 @@ export class TrainingSession {
   }
 
   start(games: readonly SavedGame[], color: Color): void {
-    if (!games.length) throw new Error('This folder has no games to practise.');
+    if (!games.length) throw new Error(tr('This folder has no games to practise.'));
     const lines = games.map((saved) => {
       const game = new Chess();
       game.loadPgn(saved.pgn);
       const moves = game.history({ verbose: true });
       if (!moves.some((move) => move.color === color)) {
-        throw new Error('Each game must contain at least one move for your chosen color.');
+        throw new Error(tr('Each game must contain at least one move for your chosen color.'));
       }
       return { initial: moves[0].before, moves };
     });
@@ -89,13 +90,13 @@ export class TrainingSession {
     const expected = this.line().moves[this.ply()];
     if (expected.from !== from || expected.to !== to || expected.promotion !== promotion) {
       this.mistakes.update((value) => value + 1);
-      this.feedback.set('Not the saved move. Try again; your position has not changed.');
+      this.feedback.set(tr('Not the saved move. Try again; your position has not changed.'));
       return false;
     }
     this.game.move(expected.san);
     this.ply.update((value) => value + 1);
     this.clearHelp();
-    this.feedback.set('Correct!');
+    this.feedback.set(tr('Correct!'));
     this.playOpponent();
     return true;
   }

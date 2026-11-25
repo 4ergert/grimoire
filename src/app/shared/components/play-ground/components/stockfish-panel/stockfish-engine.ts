@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { Chess } from 'chess.js';
+import { tr } from '../../../../i18n/i18n';
 
 interface Search {
   fen: string;
@@ -49,17 +50,17 @@ export class StockfishEngine {
   search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true, depth?: number): void {
     // Validate input parameters 
     if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
-      this.fail('Stockfish Skill Level must be an integer between 0 and 20.');
+      this.fail(tr('Stockfish Skill Level must be an integer between 0 and 20.'));
       return;
     }
     // Validate candidate count
     if (!Number.isInteger(candidateCount) || candidateCount < 1 || candidateCount > 5) {
-      this.fail('Stockfish candidate count must be an integer between 1 and 5.');
+      this.fail(tr('Stockfish candidate count must be an integer between 1 and 5.'));
       return;
     }
     // Validate search depth
     if (depth !== undefined && (!Number.isInteger(depth) || depth < 1)) {
-      this.fail('Stockfish search depth must be a positive integer.');
+      this.fail(tr('Stockfish search depth must be a positive integer.'));
       return;
     }
     this.desired = { fen, position, skill, candidateCount, randomize, depth };
@@ -99,14 +100,14 @@ export class StockfishEngine {
       };
       this.worker.onerror = (event) => {
         event.preventDefault();
-        this.fail('Stockfish could not be loaded. Check that the engine assets are available.');
+        this.fail(tr('Stockfish could not be loaded. Check that the engine assets are available.'));
       };
-      this.worker.onmessageerror = () => this.fail('Stockfish returned an unreadable message.');
-      this.watchdog(30000, 'Stockfish initialization timed out. Please try again.');
+      this.worker.onmessageerror = () => this.fail(tr('Stockfish returned an unreadable message.'));
+      this.watchdog(30000, tr('Stockfish initialization timed out. Please try again.'));
       this.send('uci');
     } catch (error) {
       this.fail(
-        error instanceof Error ? error.message : 'Stockfish is not supported in this browser.',
+        error instanceof Error ? error.message : tr('Stockfish is not supported in this browser.'),
       );
     }
   }
@@ -172,7 +173,7 @@ export class StockfishEngine {
         this.busy.set(false);
         const bestMove = line.split(' ')[1];
         if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(bestMove)) {
-          this.fail('Stockfish returned no legal move for this position.');
+          this.fail(tr('Stockfish returned no legal move for this position.'));
           return;
         }
         if (!this.validateMoves(finished.fen, [bestMove])) return;
@@ -201,7 +202,7 @@ export class StockfishEngine {
     if (!this.send(`setoption name Skill Level value ${this.active.skill}`)) return;
     if (!this.send(`setoption name MultiPV value ${this.active.candidateCount}`)) return;
     if (!this.send(`position ${this.active.position}`)) return;
-    this.watchdog(22222, 'Stockfish did not finish its search. Please try again.');
+    this.watchdog(22222, tr('Stockfish did not finish its search. Please try again.'));
     this.send(this.active.depth === undefined ? 'go movetime 11111' : `go depth ${this.active.depth}`);
   }
 
@@ -222,14 +223,14 @@ export class StockfishEngine {
 
   private send(command: string): boolean {
     if (!this.worker) {
-      this.fail('Stockfish worker is not available.');
+      this.fail(tr('Stockfish worker is not available.'));
       return false;
     }
     try {
       this.worker.postMessage(command);
       return true;
     } catch (error) {
-      this.fail(error instanceof Error ? error.message : 'Stockfish communication failed.');
+      this.fail(error instanceof Error ? error.message : tr('Stockfish communication failed.'));
       return false;
     }
   }
@@ -240,7 +241,7 @@ export class StockfishEngine {
       for (const move of moves) chess.move(move);
       return true;
     } catch (error) {
-      this.fail(error instanceof Error ? error.message : 'Stockfish returned an invalid move.');
+      this.fail(error instanceof Error ? error.message : tr('Stockfish returned an invalid move.'));
       return false;
     }
   }

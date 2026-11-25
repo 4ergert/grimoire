@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { GameLibrary } from './game-library';
 import { GameLibrary as Library } from '../../services/game-library';
+import { I18n } from '../../i18n/i18n';
 
 describe('GameLibrary component', () => {
   const library = {
@@ -27,6 +28,23 @@ describe('GameLibrary component', () => {
       imports: [GameLibrary],
       providers: [{ provide: Library, useValue: library }],
     });
+  });
+
+  it('should show the library in German and keep folder names untouched', async () => {
+    TestBed.inject(I18n).setLanguage('de');
+    try {
+      const fixture = TestBed.createComponent(GameLibrary);
+      await fixture.whenStable();
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('Deine Repertoires:');
+      expect(text).toContain('Neue Variante');
+      expect(text).toContain('Ordner löschen');
+      expect(text).toContain('Training');
+      expect(text).not.toContain('Delete folder');
+    } finally {
+      TestBed.inject(I18n).setLanguage('en');
+      localStorage.removeItem('grimoire.language');
+    }
   });
 
   it('should list folders, open saved PGN and save into the selected folder', async () => {

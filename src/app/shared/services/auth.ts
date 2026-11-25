@@ -15,6 +15,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { get, getDatabase, onValue, ref, update } from 'firebase/database';
+import { tr } from '../i18n/i18n';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDJTN1L2sANKl2yMkLLbrf6OixiFzZncHM',
@@ -32,7 +33,7 @@ const USERNAME_PATTERN = /^[A-Za-z0-9_]+(?: [A-Za-z0-9_]+)*$/;
 
 export class UsernameTakenError extends Error {
   constructor() {
-    super('This name is already in use.');
+    super(tr('This name is already in use.'));
   }
 }
 
@@ -113,7 +114,7 @@ export class Auth {
       || !USERNAME_PATTERN.test(normalizedUsername)
     ) {
       throw new Error(
-        'Names must contain 4 to 42 letters, numbers, underscores, and single spaces between words.',
+        tr('Names must contain 4 to 42 letters, numbers, underscores, and single spaces between words.'),
       );
     }
     const key = normalizedUsername.toLowerCase();
@@ -148,7 +149,7 @@ export class Auth {
         if (rollbackError instanceof UsernameTakenError) throw rollbackError;
         throw new AggregateError(
           [error, rollbackError],
-          'Registration failed and the new account could not be fully removed. Please sign in to delete it or contact support.',
+          tr('Registration failed and the new account could not be fully removed. Please sign in to delete it or contact support.'),
         );
       }
       throw error;
@@ -161,15 +162,15 @@ export class Auth {
     } catch (error) {
       throw new AggregateError(
         [error],
-        'Your account was created, but the verification email could not be sent. Please try sending it again.',
+        tr('Your account was created, but the verification email could not be sent. Please try sending it again.'),
       );
     }
   }
 
   async sendVerificationEmail(): Promise<void> {
     const user = this.user();
-    if (!user) throw new Error('Please sign in to request a verification email.');
-    if (user.emailVerified) throw new Error('Your email address is already verified.');
+    if (!user) throw new Error(tr('Please sign in to request a verification email.'));
+    if (user.emailVerified) throw new Error(tr('Your email address is already verified.'));
     this.auth.languageCode = 'en';
     await this.api.sendEmailVerification(user, {
       url: 'https://grimoire.julian-hergert.de/',
@@ -182,10 +183,10 @@ export class Auth {
 
   async refreshVerification(): Promise<boolean> {
     const user = this.user();
-    if (!user) throw new Error('Please sign in to check your email verification.');
+    if (!user) throw new Error(tr('Please sign in to check your email verification.'));
     await this.api.reload(user);
     await user.getIdToken(true);
-    if (this.user() !== user) throw new Error('Your session changed. Please sign in again.');
+    if (this.user() !== user) throw new Error(tr('Your session changed. Please sign in again.'));
     this.verified.set(user.emailVerified);
     this.currentUser.set(user);
     return user.emailVerified;
@@ -194,7 +195,7 @@ export class Auth {
   async deleteAccount(password: string): Promise<void> {
     const user = this.user();
     if (!user?.email || !password) {
-      throw new Error('Please sign in and enter your current password to delete your account.');
+      throw new Error(tr('Please sign in and enter your current password to delete your account.'));
     }
     await this.api.reauthenticateWithCredential(
       user,
@@ -212,7 +213,7 @@ export class Auth {
         || username.length > MAX_USERNAME_LENGTH
         || !USERNAME_PATTERN.test(username)
       ) {
-        throw new Error('The username must be migrated before this account can be deleted. Please contact support.');
+        throw new Error(tr('The username must be migrated before this account can be deleted. Please contact support.'));
       }
       changes[`users/${user.uid}`] = null;
       changes[`usernames/${username.toLowerCase()}`] = null;
@@ -223,7 +224,7 @@ export class Auth {
     } catch (error) {
       throw new AggregateError(
         [error],
-        'Your profile and saved games were deleted, but your sign-in account could not be deleted. Please retry account deletion or contact support.',
+        tr('Your profile and saved games were deleted, but your sign-in account could not be deleted. Please retry account deletion or contact support.'),
       );
     }
     this.currentUser.set(null);

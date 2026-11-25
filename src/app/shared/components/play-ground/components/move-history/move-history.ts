@@ -11,17 +11,20 @@ import {
   viewChild,
 } from '@angular/core';
 import { GameTurn } from '../../sessions/game-session';
+import { tr } from '../../../../i18n/i18n';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-move-history',
   styleUrl: './move-history.scss',
+  imports: [TranslatePipe],
   template: `
-    <section class="move-history" aria-label="Move history">
+    <section class="move-history" [attr.aria-label]="'Move history' | t">
       <header class="move-history-header">
-        <h2>History</h2>
+        <h2>{{ 'History' | t }}</h2>
         @if (!replaying() && showSave()) {
           <button class="save_button" type="button" [disabled]="!canSave()" (click)="save.emit()">
-            Save to repertoire
+            {{ 'Save to repertoire' | t }}
           </button>
         }
       </header>
@@ -35,11 +38,11 @@ import { GameTurn } from '../../sessions/game-session';
         <table>
           <thead>
             <tr>
-              <th scope="col">Move</th>
-              <th scope="col">White</th>
-              <th scope="col">Black</th>
+              <th scope="col">{{ 'Move' | t }}</th>
+              <th scope="col">{{ 'White' | t }}</th>
+              <th scope="col">{{ 'Black' | t }}</th>
               @if (allowComments()) {
-                <th scope="col" class="comment-col"><span class="visually-hidden">Comment</span></th>
+                <th scope="col" class="comment-col"><span class="visually-hidden">{{ 'Comment' | t }}</span></th>
               }
             </tr>
           </thead>
@@ -81,8 +84,9 @@ import { GameTurn } from '../../sessions/game-session';
                         class="comment-button"
                         type="button"
                         [attr.aria-label]="
-                          (comments()[turn.number] ? 'Edit comment for move ' : 'Add comment to move ') +
-                          turn.number
+                          comments()[turn.number]
+                            ? ('Edit comment for move {number}' | t: { number: turn.number })
+                            : ('Add comment to move {number}' | t: { number: turn.number })
                         "
                         [attr.aria-pressed]="editingTurn() === turn.number"
                         [class.has-comment]="!!comments()[turn.number]"
@@ -101,7 +105,7 @@ import { GameTurn } from '../../sessions/game-session';
                       class="comment-input"
                       type="text"
                       maxlength="500"
-                      [attr.aria-label]="'Comment for move ' + turn.number"
+                      [attr.aria-label]="'Comment for move {number}' | t: { number: turn.number }"
                       [value]="comments()[turn.number] || ''"
                       (keydown.enter)="commitComment(turn.number, commentInput.value)"
                       (keydown.escape)="editingTurn.set(null)"
@@ -123,29 +127,29 @@ import { GameTurn } from '../../sessions/game-session';
         @if (showImport()) {
           @if (importOpen()) {
             <form (submit)="$event.preventDefault(); importPgn.emit(pgnInput.value)">
-              <label for="pgn-input">PGN</label>
+              <label for="pgn-input">{{ 'PGN' | t }}</label>
               <textarea #pgnInput id="pgn-input" rows="5" required></textarea>
               <div class="load_game">
-                <button class="save_button" type="submit">load game</button>
-                <button class="save_button" type="button" (click)="importOpen.set(false)">cancel</button>
+                <button class="save_button" type="submit">{{ 'load game' | t }}</button>
+                <button class="save_button" type="button" (click)="importOpen.set(false)">{{ 'cancel' | t }}</button>
               </div>
             </form>
             @if (importError()) {
-              <p role="alert">{{ importError() }}</p>
+              <p role="alert">{{ importError() | t }}</p>
             }
           } @else {
             <button class="save_button" type="button" (click)="importOpen.set(true)">
-              Insert PGN
+              {{ 'Insert PGN' | t }}
             </button>
           }
         } @else {
-          <p>No moves yet.</p>
+          <p>{{ 'No moves yet.' | t }}</p>
         }
       }
       @if (pgn() && (replaying() ? replayMoves().length : history().length)) {
         <footer class="move-history-footer">
           <button class="save_button" type="button" (click)="copyPgn()">
-            {{ copyLabel() }}
+            {{ copyLabel() | t }}
           </button>
         </footer>
       }
@@ -161,10 +165,10 @@ export class MoveHistory {
   readonly copyLabel = computed(() => {
     const status = this.copyStatus();
     return status === 'copied'
-      ? 'PGN kopiert'
+      ? tr('PGN copied')
       : status === 'failed'
-        ? 'Kopieren fehlgeschlagen'
-        : 'PGN kopieren';
+        ? tr('Copy failed')
+        : tr('Copy PGN');
   });
   private readonly commentInput = viewChild<ElementRef<HTMLInputElement>>('commentInput');
   readonly replaying = input.required<boolean>();

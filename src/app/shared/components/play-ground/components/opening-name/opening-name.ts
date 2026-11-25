@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 interface Opening {
   eco: string;
@@ -8,6 +9,7 @@ interface Opening {
 
 @Component({
   selector: 'app-opening-name',
+  imports: [TranslatePipe],
   template: `
     @if (opening(); as opening) {
       <p class="opening" role="status">
@@ -15,13 +17,13 @@ interface Opening {
       </p>
     } @else {
       <p class="opening" role="status">
-        Good luck
+        {{ 'Good luck' | t }}
       </p>
     }
     @if (error()) {
       <p class="opening-error" role="alert">
-        Opening names could not be loaded.
-        <button type="button" (click)="load()">Retry</button>
+        {{ 'Opening names could not be loaded.' | t }}
+        <button type="button" (click)="load()">{{ 'Retry' | t }}</button>
       </p>
     }
   `,

@@ -1,5 +1,5 @@
 <dialog #dialog aria-labelledby="settings-title" (cancel)="close.emit()">
-  <h2 id="settings-title">Settings</h2>
+  <h2 id="settings-title">{{ 'Settings' | t }}</h2>
   <div
     class="preview"
     [class.editable]="themes.isCustom()"
@@ -13,25 +13,27 @@
           <input
             type="color"
             [value]="themes.theme()[square]"
-            [attr.aria-label]="'Color of the ' + square + ' squares'"
-            [title]="'Choose the color of the ' + square + ' squares'"
+            [attr.aria-label]="squareLabels[square].label | t"
+            [title]="squareLabels[square].title | t"
             (input)="pick(square, $event)"
           />
         }
       </span>
     }
   </div>
-  <p role="status">Board colors: {{ themes.theme().name }}</p>
+  <p role="status">{{ 'Board colors: {name}' | t: { name: (themes.theme().name | t) } }}</p>
   @if (themes.isCustom()) {
     <p class="hint">
-      Click a square to choose its color. Both light squares share one color, and so do both dark
-      squares.
+      {{
+        'Click a square to choose its color. Both light squares share one color, and so do both dark squares.'
+          | t
+      }}
     </p>
   }
   <div class="settings-actions">
     <button custom-button type="button" autofocus (click)="themes.next()">
-      Change board colors
+      {{ 'Change board colors' | t }}
     </button>
-    <button custom-button type="button" (click)="close.emit()">Close</button>
+    <button custom-button type="button" (click)="close.emit()">{{ 'Close' | t }}</button>
   </div>
 </dialog>

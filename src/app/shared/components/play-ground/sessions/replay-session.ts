@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { Chess } from 'chess.js';
+import { tr } from '../../../i18n/i18n';
 
 export class ReplaySession {
   readonly positions = signal<string[]>([]);
@@ -19,7 +20,7 @@ export class ReplaySession {
     } catch (error) {
       console.error('PGN replay could not be loaded', error);
       this.clear();
-      this.error.set('This saved PGN could not be loaded.');
+      this.error.set(tr('This saved PGN could not be loaded.'));
     }
   }
 

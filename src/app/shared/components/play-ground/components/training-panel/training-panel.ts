@@ -2,11 +2,12 @@ import { Component, input, output } from '@angular/core';
 import { Color } from 'chess.js';
 import { TrainingSession } from '../../sessions/training-session';
 import { CustomButton } from '../../../button/button';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-training-panel',
   styleUrl: '../controls.scss',
-  imports: [CustomButton],
+  imports: [CustomButton, TranslatePipe],
   templateUrl: './training-panel.html',
 })
 export class TrainingPanel {

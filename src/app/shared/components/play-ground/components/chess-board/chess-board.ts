@@ -2,6 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { Chess, Color, PieceSymbol, Square, SQUARES } from 'chess.js';
 import { BoardThemeService } from '../../../../services/board-theme';
+import { tr } from '../../../../i18n/i18n';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 import { BoardMotion } from './board-motion';
 
 const DRAG_THRESHOLD = 5;
@@ -22,7 +24,7 @@ interface Press {
 
 @Component({
   selector: 'app-chess-board',
-  imports: [BoardMotion],
+  imports: [BoardMotion, TranslatePipe],
   templateUrl: './chess-board.html',
   styleUrl: './chess-board.scss',
   host: {
@@ -65,13 +67,23 @@ export class ChessBoard {
     const board = new Chess(this.position()).board();
     return this.flipped() ? board.map((row) => [...row].reverse()).reverse() : board;
   });
-  readonly pieceNames: Record<PieceSymbol, string> = {
-    k: 'King',
-    q: 'Queen',
-    r: 'Rook',
-    b: 'Bishop',
-    n: 'Knight',
-    p: 'Pawn',
+  readonly pieceLabels: Record<Color, Record<PieceSymbol, string>> = {
+    w: {
+      k: tr('White King'),
+      q: tr('White Queen'),
+      r: tr('White Rook'),
+      b: tr('White Bishop'),
+      n: tr('White Knight'),
+      p: tr('White Pawn'),
+    },
+    b: {
+      k: tr('Black King'),
+      q: tr('Black Queen'),
+      r: tr('Black Rook'),
+      b: tr('Black Bishop'),
+      n: tr('Black Knight'),
+      p: tr('Black Pawn'),
+    },
   };
 
   pieceImagePath(type: PieceSymbol, color: Color): string {

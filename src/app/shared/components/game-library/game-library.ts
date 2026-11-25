@@ -1,11 +1,13 @@
 import { Component, OnInit, PendingTasks, inject, input, output, signal } from '@angular/core';
 import { GameFolder, GameLibrary as Library } from '../../services/game-library';
 import { CustomButton } from '../button/button';
+import { TranslatePipe } from '../../i18n/translate-pipe';
+import { tr } from '../../i18n/i18n';
 
 @Component({
   selector: 'app-game-library',
   templateUrl: './game-library.html',
-  imports: [CustomButton],
+  imports: [CustomButton, TranslatePipe],
   styleUrl: './game-library.scss',
 })
 export class GameLibrary implements OnInit {
@@ -36,14 +38,14 @@ export class GameLibrary implements OnInit {
     await this.run(async () => {
       await this.library.createFolder(name, color === 'b' ? 'b' : 'w');
       await this.reload();
-      this.message.set('Folder created.');
+      this.message.set(tr('Folder created.'));
     });
   }
 
   async save(name: string): Promise<void> {
     await this.run(async () => {
       await this.library.save(this.selectedFolder(), name, this.pgn());
-      this.message.set('Game saved.');
+      this.message.set(tr('Game saved.'));
       await this.reload();
     });
   }
@@ -57,7 +59,7 @@ export class GameLibrary implements OnInit {
       this.deleteFolderTarget.set(null);
       if (this.deleteTarget()?.folderId === folderId) this.deleteTarget.set(null);
       if (this.selectedFolder() === folderId) this.selectedFolder.set('');
-      this.message.set('Folder deleted.');
+      this.message.set(tr('Folder deleted.'));
     });
   }
 
@@ -74,7 +76,7 @@ export class GameLibrary implements OnInit {
         ),
       );
       this.deleteTarget.set(null);
-      this.message.set('Game deleted.');
+      this.message.set(tr('Game deleted.'));
     });
   }
 
@@ -91,7 +93,7 @@ export class GameLibrary implements OnInit {
       this.error.set(
         error instanceof Error
           ? error.message
-          : 'The game library could not be accessed. Please try again.',
+          : tr('The game library could not be accessed. Please try again.'),
       );
     } finally {
       this.pending.set(false);

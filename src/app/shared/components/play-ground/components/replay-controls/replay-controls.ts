@@ -1,18 +1,19 @@
 import { Component, input, output } from '@angular/core';
 import { CustomButton } from '../../../button/button';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-replay-controls',
   styleUrls: ['../controls.scss', './replay-controls.scss'],
-  imports: [CustomButton],
+  imports: [CustomButton, TranslatePipe],
   template: `
-    <nav class="game-toolbar" aria-label="Move navigation">
+    <nav class="game-toolbar" [attr.aria-label]="'Move navigation' | t">
       <button
         custom-button
         class="restart"
         type="button"
-        aria-label="Start"
-        title="Start"
+        [attr.aria-label]="'Start' | t"
+        [attr.title]="'Start' | t"
         [disabled]="index() === 0"
         (click)="navigate.emit(0)"
       >
@@ -22,8 +23,8 @@ import { CustomButton } from '../../../button/button';
         custom-button
         class="restart"
         type="button"
-        aria-label="Previous move"
-        title="Previous move"
+        [attr.aria-label]="'Previous move' | t"
+        [attr.title]="'Previous move' | t"
         [disabled]="index() === 0"
         (click)="navigate.emit(index() - 1)"
       >
@@ -36,8 +37,8 @@ import { CustomButton } from '../../../button/button';
         custom-button
         class="restart"
         type="button"
-        aria-label="Next move"
-        title="Next move"
+        [attr.aria-label]="'Next move' | t"
+        [attr.title]="'Next move' | t"
         [disabled]="index() === moves().length"
         (click)="navigate.emit(index() + 1)"
       >
@@ -47,8 +48,8 @@ import { CustomButton } from '../../../button/button';
         custom-button
         class="restart"
         type="button"
-        aria-label="End"
-        title="End"
+        [attr.aria-label]="'End' | t"
+        [attr.title]="'End' | t"
         [disabled]="index() === moves().length"
         (click)="navigate.emit(moves().length)"
       >

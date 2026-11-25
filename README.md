@@ -21,6 +21,12 @@ and Firebase Realtime Database.
   reversible board perspective.
 - Selectable board color themes (**Settings** in the game menu), remembered in
   the browser.
+- English/German language switcher (**EN | DE**, top right of every page and in
+  the game menu bar), remembered in the browser (`grimoire.language`); the first
+  visit follows the browser language. English texts are the translation keys,
+  the German texts are in [src/app/shared/i18n/de/](./src/app/shared/i18n/de/).
+  A test fails if a translated text has no German entry. Opening names stay in
+  English. The German legal pages are unreviewed translations of the English drafts.
 - Opening names and ECO codes, using a local snapshot of
   [Lichess chess-openings](https://github.com/lichess-org/chess-openings).
   Names are in English. The latest known opening is retained as play continues;
@@ -466,7 +472,8 @@ when deploying or redistributing the engine.
   the repertoire) or folder renaming.
 - PGN variations are not supported.
 - No alternative-move evaluation in training; only the saved line is accepted.
-- The interface mixes English and German labels.
+- Opening names and the legal pages' English drafts are not machine-translated;
+  the German legal texts need legal review.
 
 ## Deployment and legal notices
 

@@ -1,7 +1,7 @@
 <footer>
-  <nav class="legal_links" aria-label="Legal information">
-    <a routerLink="/impressum">Legal notice</a>
-    <a routerLink="/datenschutz">Privacy policy</a>
-    <a routerLink="/nutzungsbedingungen">Terms of Use</a>
+  <nav class="legal_links" [attr.aria-label]="'Legal information' | t">
+    <a routerLink="/impressum">{{ 'Legal notice' | t }}</a>
+    <a routerLink="/datenschutz">{{ 'Privacy policy' | t }}</a>
+    <a routerLink="/nutzungsbedingungen">{{ 'Terms of Use' | t }}</a>
   </nav>
 </footer>

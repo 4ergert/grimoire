@@ -1,0 +1,23 @@
+<div class="language-switcher" role="group" [attr.aria-label]="'Language' | t" (click)="toggle()">
+  <span
+    class="indicator"
+    aria-hidden="true"
+    [class.indicator-de]="i18n.language() === 'de'"
+  ></span>
+  <button
+    type="button"
+    lang="en"
+    aria-label="English"
+    [attr.aria-pressed]="i18n.language() === 'en'"
+  >
+    EN
+  </button>
+  <button
+    type="button"
+    lang="de"
+    aria-label="Deutsch"
+    [attr.aria-pressed]="i18n.language() === 'de'"
+  >
+    DE
+  </button>
+</div>

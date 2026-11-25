@@ -1,9 +1,11 @@
 import { Component, model } from '@angular/core';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-engine-strength',
+  imports: [TranslatePipe],
   template: `
-    <label for="engine-strength">Level (1–10)</label>
+    <label for="engine-strength">{{ 'Level (1–10)' | t }}</label>
     <select id="engine-strength" #strengthSelect (change)="strength.set(+strengthSelect.value)">
       @for (level of levels; track level) {
         <option [value]="level" [selected]="level === strength()">{{ level }}</option>

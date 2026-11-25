@@ -8,6 +8,9 @@ import { GameLibrary } from '../game-library/game-library';
 import { GameFolder } from '../../services/game-library';
 import { CustomButton } from '../button/button';
 import { LegalFooter } from '../legal-footer/legal-footer';
+import { LanguageSwitcher } from '../language-switcher/language-switcher';
+import { TranslatePipe } from '../../i18n/translate-pipe';
+import { tr } from '../../i18n/i18n';
 
 type AuthField = 'name' | 'email' | 'password' | 'confirm-password' | 'terms';
 type FieldErrors = Partial<Record<AuthField, string>>;
@@ -17,7 +20,7 @@ const MIN_PASSWORD_LENGTH = 8;
 
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton, LegalFooter],
+  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton, LegalFooter, LanguageSwitcher, TranslatePipe],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
@@ -126,28 +129,28 @@ export class LoginOverlay {
     }
 
     if (this.isSignUp()) {
-      if (!name) errors.name = 'Please enter a name.';
-      else if (rawName.length > MAX_AUTH_FIELD_LENGTH) errors.name = 'Please enter no more than 42 characters.';
-      else if (name.length < MIN_NAME_LENGTH) errors.name = 'Please enter at least 4 characters.';
+      if (!name) errors.name = tr('Please enter a name.');
+      else if (rawName.length > MAX_AUTH_FIELD_LENGTH) errors.name = tr('Please enter no more than 42 characters.');
+      else if (name.length < MIN_NAME_LENGTH) errors.name = tr('Please enter at least 4 characters.');
       else if (!/^[A-Za-z0-9_]+(?: [A-Za-z0-9_]+)*$/.test(name)) {
-        errors.name = 'Use letters A-Z, numbers, underscores, and single spaces between words.';
+        errors.name = tr('Use letters A-Z, numbers, underscores, and single spaces between words.');
       }
     }
-    if (!email) errors.email = 'Please enter your email address.';
-    else if (rawEmail.length > MAX_AUTH_FIELD_LENGTH) errors.email = 'Please enter no more than 42 characters.';
-    else if (emailInput.validity.typeMismatch) errors.email = 'Please enter a valid email address.';
-    if (!password) errors.password = 'Please enter your password.';
-    else if (password.length > MAX_AUTH_FIELD_LENGTH) errors.password = 'Please enter no more than 42 characters.';
+    if (!email) errors.email = tr('Please enter your email address.');
+    else if (rawEmail.length > MAX_AUTH_FIELD_LENGTH) errors.email = tr('Please enter no more than 42 characters.');
+    else if (emailInput.validity.typeMismatch) errors.email = tr('Please enter a valid email address.');
+    if (!password) errors.password = tr('Please enter your password.');
+    else if (password.length > MAX_AUTH_FIELD_LENGTH) errors.password = tr('Please enter no more than 42 characters.');
     else if (this.isSignUp() && password.length < MIN_PASSWORD_LENGTH) {
-      errors.password = `Please enter at least ${MIN_PASSWORD_LENGTH} characters.`;
+      errors.password = tr('Please enter at least 8 characters.');
     }
     if (this.isSignUp()) {
       const confirmation = String(data.get('confirm-password') ?? '');
-      if (!confirmation) errors['confirm-password'] = 'Please confirm your password.';
-      else if (confirmation.length > MAX_AUTH_FIELD_LENGTH) errors['confirm-password'] = 'Please enter no more than 42 characters.';
-      else if (password !== confirmation) errors['confirm-password'] = 'The passwords do not match.';
+      if (!confirmation) errors['confirm-password'] = tr('Please confirm your password.');
+      else if (confirmation.length > MAX_AUTH_FIELD_LENGTH) errors['confirm-password'] = tr('Please enter no more than 42 characters.');
+      else if (password !== confirmation) errors['confirm-password'] = tr('The passwords do not match.');
       if (data.get('accept-terms') !== 'on') {
-        errors.terms = 'You must accept the Terms of Use to create an account.';
+        errors.terms = tr('You must accept the Terms of Use to create an account.');
       }
     }
     return errors;
@@ -178,7 +181,7 @@ export class LoginOverlay {
     try {
       if (this.isSignUp()) {
         await this.auth.register(username, email, password);
-        this.verificationNotice.set('Verification email sent. Please check your inbox and spam folder.');
+        this.verificationNotice.set(tr('Verification email sent. Please check your inbox and spam folder.'));
       } else {
         await this.auth.login(email, password);
       }
@@ -205,13 +208,13 @@ export class LoginOverlay {
     this.pending.set(true);
     try {
       await this.auth.sendVerificationEmail();
-      this.verificationNotice.set('Verification email sent. Please check your inbox and spam folder.');
+      this.verificationNotice.set(tr('Verification email sent. Please check your inbox and spam folder.'));
     } catch (error) {
       console.error('Verification email could not be sent', error);
       this.error.set(
         error instanceof FirebaseError && error.code === 'auth/too-many-requests'
-          ? 'Too many requests. Please wait before requesting another verification email.'
-          : 'The verification email could not be sent. Please try again later.',
+          ? tr('Too many requests. Please wait before requesting another verification email.')
+          : tr('The verification email could not be sent. Please try again later.'),
       );
     } finally {
       this.pending.set(false);
@@ -226,12 +229,12 @@ export class LoginOverlay {
     try {
       if (!(await this.auth.refreshVerification())) {
         this.verificationNotice.set(
-          'Your email is not verified yet. Open the link in your email, then check again.',
+          tr('Your email is not verified yet. Open the link in your email, then check again.'),
         );
       }
     } catch (error) {
       console.error('Email verification check failed', error);
-      this.error.set('Verification could not be checked. Please try again or sign in again.');
+      this.error.set(tr('Verification could not be checked. Please try again or sign in again.'));
     } finally {
       this.pending.set(false);
     }
@@ -239,7 +242,7 @@ export class LoginOverlay {
 
   private requireVerifiedEmail(): boolean {
     if (this.auth.user() && this.auth.emailVerified()) return true;
-    this.error.set('Please verify your email address before using this feature.');
+    this.error.set(tr('Please verify your email address before using this feature.'));
     return false;
   }
 
@@ -279,8 +282,8 @@ export class LoginOverlay {
           ? error.message
           : error instanceof FirebaseError &&
               ['auth/invalid-credential', 'auth/wrong-password', 'auth/invalid-login-credentials'].includes(error.code)
-            ? 'The password is incorrect. Your account was not deleted.'
-            : 'Account deletion could not be completed. Please retry or contact support.',
+            ? tr('The password is incorrect. Your account was not deleted.')
+            : tr('Account deletion could not be completed. Please retry or contact support.'),
       );
     } finally {
       this.pending.set(false);
@@ -296,27 +299,27 @@ export class LoginOverlay {
         case 'auth/invalid-credential':
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-          return 'The email or password is incorrect.';
+          return tr('The email or password is incorrect.');
         case 'auth/email-already-in-use':
-          return 'An account with this email already exists.';
+          return tr('An account with this email already exists.');
         case 'auth/weak-password':
-          return `Please choose a stronger password with at least ${MIN_PASSWORD_LENGTH} characters.`;
+          return tr('Please choose a stronger password with at least 8 characters.');
         case 'auth/password-does-not-meet-requirements':
-          return `The password does not meet the password requirements. Please use at least ${MIN_PASSWORD_LENGTH} characters.`;
+          return tr('The password does not meet the password requirements. Please use at least 8 characters.');
         case 'auth/invalid-email':
-          return 'Please enter a valid email address.';
+          return tr('Please enter a valid email address.');
         case 'auth/too-many-requests':
-          return 'Too many attempts. Please try again later.';
+          return tr('Too many attempts. Please try again later.');
         case 'auth/network-request-failed':
-          return 'Connection failed. Please check your internet connection.';
+          return tr('Connection failed. Please check your internet connection.');
         case 'auth/operation-not-allowed':
-          return 'Email/password sign-in is not enabled in Firebase.';
+          return tr('Email/password sign-in is not enabled in Firebase.');
         case 'PERMISSION_DENIED':
         case 'permission-denied':
-          return 'The profile could not be saved. Check the Firebase database rules and try registering again.';
+          return tr('The profile could not be saved. Check the Firebase database rules and try registering again.');
       }
     }
     console.error('Firebase authentication failed', error);
-    return 'Authentication failed. Please try again.';
+    return tr('Authentication failed. Please try again.');
   }
 }

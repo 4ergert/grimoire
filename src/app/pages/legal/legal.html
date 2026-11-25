@@ -1,16 +1,25 @@
 @let privacy = routeData()?.['privacy'];
 @let terms = routeData()?.['terms'];
 
+<app-language-switcher class="lang-corner" />
 <main>
   <nav aria-label="Page navigation">
-    <a routerLink="/">Back to Grimoire</a>
+    <a routerLink="/">{{ german() ? 'Zurück zu Grimoire' : 'Back to Grimoire' }}</a>
   </nav>
 
-  <h1>{{ privacy ? 'Privacy policy' : terms ? 'Terms of Use' : 'Legal notice' }}</h1>
-  <p role="note">This English translation is an unreviewed draft and has not been legally reviewed.</p>
-  <p>Draft last updated: 22 November 2026</p>
+  @if (german()) {
+    <h1>{{ privacy ? 'Datenschutzerklärung' : terms ? 'Nutzungsbedingungen' : 'Impressum' }}</h1>
+    <p role="note">Dieser Text ist ein Entwurf und wurde nicht rechtlich geprüft.</p>
+    <p>Entwurf, zuletzt aktualisiert: 22. November 2026</p>
+  } @else {
+    <h1>{{ privacy ? 'Privacy policy' : terms ? 'Terms of Use' : 'Legal notice' }}</h1>
+    <p role="note">This English translation is an unreviewed draft and has not been legally reviewed.</p>
+    <p>Draft last updated: 22 November 2026</p>
+  }
 
-  @if (privacy) {
+  @if (german()) {
+    <app-legal-de [privacy]="!!privacy" [terms]="!!terms" />
+  } @else if (privacy) {
     <section>
       <h2>1. Controller</h2>
       <p>

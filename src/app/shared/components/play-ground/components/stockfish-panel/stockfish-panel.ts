@@ -12,6 +12,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { Chess, Color } from 'chess.js';
+import { I18n } from '../../../../i18n/i18n';
+import { TranslatePipe } from '../../../../i18n/translate-pipe';
 import { EngineResult, StockfishEngine } from './stockfish-engine';
 
 const ANALYSIS_ENGINE = new InjectionToken<StockfishEngine>('Stockfish full-strength analysis');
@@ -27,6 +29,7 @@ export interface EngineMove {
 @Component({
   selector: 'app-stockfish-panel',
   providers: [StockfishEngine, { provide: ANALYSIS_ENGINE, useClass: StockfishEngine }],
+  imports: [TranslatePipe],
   templateUrl: './stockfish-panel.html',
   styleUrl: './stockfish-panel.scss',
 })
@@ -34,6 +37,7 @@ export class StockfishPanel {
   private static nextTooltipId = 0;
   readonly tooltipId = StockfishPanel.nextTooltipId++;
   readonly analysisView = viewChild<TemplateRef<unknown>>('analysisView');
+  private readonly i18n = inject(I18n);
   readonly engine = inject(StockfishEngine);
   private readonly analysisEngine = inject(ANALYSIS_ENGINE);
   readonly position = input(new Chess().fen());
@@ -78,9 +82,11 @@ export class StockfishPanel {
   private formatEvaluation(score: EngineResult['score'] | undefined): string {
     if (!score) return '';
     if (score.type === 'mate') {
-      return score.value === 0
-        ? 'Checkmate'
-        : `Mate in ${Math.abs(score.value)} for ${score.value > 0 ? 'White' : 'Black'}`;
+      if (score.value === 0) return this.i18n.t('Checkmate');
+      const moves = Math.abs(score.value);
+      return score.value > 0
+        ? this.i18n.t('Mate in {moves} for White', { moves })
+        : this.i18n.t('Mate in {moves} for Black', { moves });
     }
     const value = score.value / 100;
     return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;

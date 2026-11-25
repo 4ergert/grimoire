@@ -1,10 +1,12 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CustomButton } from '../button/button';
 import { LegalFooter } from '../legal-footer/legal-footer';
+import { LanguageSwitcher } from '../language-switcher/language-switcher';
+import { TranslatePipe } from '../../i18n/translate-pipe';
 
 @Component({
   selector: 'app-menu-overlay',
-  imports: [CustomButton, LegalFooter],
+  imports: [CustomButton, LegalFooter, LanguageSwitcher, TranslatePipe],
   templateUrl: './menu-overlay.html',
   styleUrl: './menu-overlay.scss',
 })

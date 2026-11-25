@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+a,
+h2 {
+  color: #ffed84;
+}
+
+a:focus-visible {
+  outline: 2px solid #ffed84;
+  outline-offset: 4px;
+}
