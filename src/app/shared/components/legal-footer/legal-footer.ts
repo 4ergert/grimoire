@@ -8,4 +8,5 @@ import { TranslatePipe } from '../../i18n/translate-pipe';
   templateUrl: './legal-footer.html',
   styleUrl: './legal-footer.scss',
 })
+/** Footer with links to the legal pages. */
 export class LegalFooter {}

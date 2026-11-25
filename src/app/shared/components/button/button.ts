@@ -5,4 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './button.html',
   styleUrls: ['./button.scss'],
 })
+/** Styled button; apply it to a native element as `<button custom-button>`. */
 export class CustomButton {}

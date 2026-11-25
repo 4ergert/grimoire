@@ -2,6 +2,7 @@ import { Injectable, effect, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { DE } from './de';
 
+/** Supported UI languages: English (source text) and German. */
 export type Language = 'en' | 'de';
 
 const STORAGE_KEY = 'grimoire.language';
@@ -14,12 +15,15 @@ export function tr(text: string): string {
   return text;
 }
 
+/** Values substituted for `{name}` placeholders in a translated string. */
 export type TranslationParams = Record<string, string | number>;
 
 // English source text is the key. A missing German entry falls back to the English text.
+/** Holds the current UI language (persisted in local storage) and translates English source strings. */
 @Injectable({ providedIn: 'root' })
 export class I18n {
   private readonly document = inject(DOCUMENT);
+  /** Current language; initialised from storage, else the browser language, else English. */
   readonly language = signal<Language>(this.restore());
 
   constructor() {
@@ -28,6 +32,7 @@ export class I18n {
     });
   }
 
+  /** Sets the language and remembers it in local storage; if storage is unavailable it only applies to this session. */
   setLanguage(language: Language): void {
     this.language.set(language);
     try {
@@ -37,6 +42,12 @@ export class I18n {
     }
   }
 
+  /**
+   * Translates an English source string into the current language, reading the language signal
+   * so reactive callers update on change.
+   * @param text - English source text, used as the lookup key; returned unchanged if there is no German entry.
+   * @param params - Values for `{name}` placeholders; placeholders without a matching key are left as is.
+   */
   t(text: string, params?: TranslationParams): string {
     const translated = this.language() === 'de' ? (DE[text] ?? text) : text;
     return params

@@ -2,6 +2,7 @@ import { Component, ElementRef, afterNextRender, input, output, viewChild } from
 import { CustomButton } from '../../../button/button';
 import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
+/** Modal dialog shown when a game ends, offering follow-up actions; opens itself after the first render. */
 @Component({
   selector: 'app-game-over-dialog',
   imports: [CustomButton, TranslatePipe],
@@ -53,13 +54,21 @@ import { TranslatePipe } from '../../../../i18n/translate-pipe';
   `,
 })
 export class GameOverDialog {
+  /** Headline describing the result. */
   readonly title = input.required<string>();
+  /** Optional additional explanation of the result. */
   readonly detail = input('');
+  /** Whether the "Save to repertoire" action is offered. */
   readonly canSave = input(false);
+  /** Emits when the user wants to start a new game. */
   readonly newGame = output<void>();
+  /** Emits when the user wants to analyse the finished game. */
   readonly analyse = output<void>();
+  /** Emits when the user wants to save the game to the repertoire. */
   readonly save = output<void>();
+  /** Emits when the user wants to return to the menu. */
   readonly menu = output<void>();
+  /** Emits when the dialog is dismissed without choosing an action (e.g. Escape). */
   readonly dismiss = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 

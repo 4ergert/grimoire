@@ -5,6 +5,7 @@ import { DE_LIBRARY } from './de/library';
 import { DE_PLAYGROUND } from './de/play-ground';
 
 // German translations, keyed by the English source text.
+/** German translations, merged from the per-area dictionaries and keyed by the English source text. */
 export const DE: Record<string, string> = {
   ...DE_COMMON,
   ...DE_ACCOUNT,

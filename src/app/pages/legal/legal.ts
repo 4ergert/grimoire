@@ -13,9 +13,15 @@ import { LegalDe } from './legal-de/legal-de';
   templateUrl: './legal.html',
   styleUrl: './legal.scss',
 })
+/**
+ * Legal page shared by the legal notice, privacy policy and terms of use routes.
+ * The route `data` flags (`privacy`, `terms`) select which document is shown.
+ */
 export class Legal {
+  /** Data of the active route; `undefined` until the first emission. */
   readonly routeData = toSignal(inject(ActivatedRoute).data);
   private readonly i18n = inject(I18n);
+  /** Whether the current UI language is German, which selects the German legal texts. */
   readonly german = computed(() => this.i18n.language() === 'de');
   private readonly title = inject(Title);
 

@@ -434,6 +434,25 @@ describe('LoginOverlay', () => {
     expect(element.querySelector('app-legal-footer')).toBeNull();
   });
 
+  it('should open and close the about dialog from the login form', async () => {
+    const element: HTMLElement = fixture.nativeElement;
+    const aboutButton = element.querySelector<HTMLButtonElement>('.about_button')!;
+
+    expect(aboutButton.textContent?.trim()).toBe('About');
+    expect(aboutButton.previousElementSibling?.classList).toContain('guest_button');
+    expect(element.querySelector('app-about-dialog')).toBeNull();
+
+    aboutButton.click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-about-dialog dialog')?.textContent).toContain(
+      'browser-based chess app',
+    );
+
+    element.querySelector<HTMLButtonElement>('app-about-dialog button')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-about-dialog')).toBeNull();
+  });
+
   it('should show the login form initially', () => {
     const element: HTMLElement = fixture.nativeElement;
 

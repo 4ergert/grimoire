@@ -8,4 +8,5 @@ import { TranslatePipe } from '../../shared/i18n/translate-pipe';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
+/** Landing page at the root route; shows a background image with the login overlay. */
 export class Login {}

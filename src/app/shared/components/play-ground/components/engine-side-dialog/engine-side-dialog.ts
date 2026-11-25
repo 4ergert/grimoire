@@ -4,11 +4,15 @@ import { CustomButton } from '../../../button/button';
 import { EngineStrength } from '../engine-strength/engine-strength';
 import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
+/** Settings chosen for a game against the engine. */
 export interface EngineGameOptions {
+  /** Side the user plays. */
   color: Color;
+  /** Engine level, 1 (weakest) to 10 (strongest). */
   strength: number;
 }
 
+/** Modal dialog for choosing side and engine strength before playing against Stockfish; opens itself after the first render. */
 @Component({
   selector: 'app-engine-side-dialog',
   imports: [CustomButton, EngineStrength, TranslatePipe],
@@ -67,8 +71,11 @@ export interface EngineGameOptions {
   `,
 })
 export class EngineSideDialog {
+  /** Emits the chosen side together with the selected strength. */
   readonly choose = output<EngineGameOptions>();
+  /** Currently selected engine level, bound to the strength selector. */
   readonly strength = signal(1);
+  /** Emits when the user goes back or dismisses the dialog. */
   readonly cancel = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 

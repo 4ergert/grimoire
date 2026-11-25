@@ -14,6 +14,11 @@ import { GameTurn } from '../../sessions/game-session';
 import { tr } from '../../../../i18n/i18n';
 import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
+/**
+ * Move list of a game, either as a table of turns or as a plain list of replay moves.
+ *
+ * Optionally offers move navigation, per-turn comments, PGN import (when empty), saving and copying the PGN.
+ */
 @Component({
   selector: 'app-move-history',
   styleUrl: './move-history.scss',
@@ -159,9 +164,13 @@ import { TranslatePipe } from '../../../../i18n/translate-pipe';
 export class MoveHistory {
   private readonly destroyRef = inject(DestroyRef);
   private copyTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Whether the PGN import form is shown (only relevant while there are no moves). */
   readonly importOpen = signal(false);
+  /** Full-move number whose comment is being edited, or `null`. */
   readonly editingTurn = signal<number | null>(null);
+  /** Outcome of the last copy attempt; resets to `idle` after two seconds. */
   readonly copyStatus = signal<'idle' | 'copied' | 'failed'>('idle');
+  /** Translated label of the copy button reflecting {@link MoveHistory.copyStatus}. */
   readonly copyLabel = computed(() => {
     const status = this.copyStatus();
     return status === 'copied'
@@ -171,22 +180,39 @@ export class MoveHistory {
         : tr('Copy PGN');
   });
   private readonly commentInput = viewChild<ElementRef<HTMLInputElement>>('commentInput');
+  /** Shows the plain `replayMoves` list instead of the turn table and hides saving. */
   readonly replaying = input.required<boolean>();
+  /** SAN moves displayed while `replaying` is true. */
   readonly replayMoves = input.required<string[]>();
+  /** Turns of the current game. */
   readonly history = input.required<GameTurn[]>();
+  /** Per turn, the 1-based ply of each side's move, parallel to `history`; emitted by `navigate`. */
   readonly historyPlys = input.required<{ white: number | null; black: number | null }[]>();
+  /** PGN text to copy; the copy button is hidden while empty. */
   readonly pgn = input('');
+  /** Comments keyed by full-move number. */
   readonly comments = input<Record<number, string>>({});
+  /** Enables the comment editing column. */
   readonly allowComments = input(false);
+  /** Whether the save button is enabled. */
   readonly canSave = input.required<boolean>();
+  /** Renders moves as buttons that emit `navigate`. */
   readonly showNavigation = input(false);
+  /** Ply of the move to mark as current when navigation is shown. */
   readonly currentPly = input(0);
+  /** Offers PGN import when there are no moves. */
   readonly showImport = input(false);
+  /** Untranslated or translatable error message to show below the import form. */
   readonly importError = input('');
+  /** Whether the save button is available. */
   readonly showSave = input(true);
+  /** Emits when the user asks to save the game to the repertoire. */
   readonly save = output<void>();
+  /** Emits the PGN text entered in the import form. */
   readonly importPgn = output<string>();
+  /** Emits the 1-based ply (timeline index) of the clicked move. */
   readonly navigate = output<number>();
+  /** Emits the committed comment text for a turn; empty text means the comment is to be removed. */
   readonly commentChange = output<{ turn: number; text: string }>();
 
   constructor() {
@@ -194,6 +220,7 @@ export class MoveHistory {
     this.destroyRef.onDestroy(() => clearTimeout(this.copyTimer));
   }
 
+  /** Copies the PGN to the clipboard and shows the result briefly in the button label. */
   async copyPgn(): Promise<void> {
     this.copyStatus.set((await this.writeToClipboard(this.pgn())) ? 'copied' : 'failed');
     clearTimeout(this.copyTimer);
@@ -224,10 +251,12 @@ export class MoveHistory {
     }
   }
 
+  /** Opens the comment editor for a turn, or closes it if it is already open for that turn. */
   toggleEditing(turn: number): void {
     this.editingTurn.update((current) => (current === turn ? null : turn));
   }
 
+  /** Closes the editor and emits the comment; ignored if that turn is no longer being edited (guards Enter followed by blur). */
   commitComment(turn: number, text: string): void {
     if (this.editingTurn() !== turn) return;
     this.editingTurn.set(null);

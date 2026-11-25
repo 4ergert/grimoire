@@ -31,6 +31,7 @@ const MIN_USERNAME_LENGTH = 4;
 const MAX_USERNAME_LENGTH = 42;
 const USERNAME_PATTERN = /^[A-Za-z0-9_]+(?: [A-Za-z0-9_]+)*$/;
 
+/** Thrown by {@link Auth.register} when the requested username is already reserved by another account. */
 export class UsernameTakenError extends Error {
   constructor() {
     super(tr('This name is already in use.'));
@@ -38,6 +39,7 @@ export class UsernameTakenError extends Error {
 }
 
 // Injected so tests can replace Firebase without mocking its modules.
+/** Injection token for the Firebase app, auth and database functions used by {@link Auth}. */
 export const FIREBASE_API = new InjectionToken('Firebase API', {
   providedIn: 'root',
   factory: () => ({
@@ -61,19 +63,25 @@ export const FIREBASE_API = new InjectionToken('Firebase API', {
   }),
 });
 
+/** Wraps Firebase email/password authentication and the user's profile (username) in the Realtime Database. */
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private readonly api = inject(FIREBASE_API);
   private readonly app = this.api.initializeApp(firebaseConfig);
   private readonly auth = this.api.getAuth(this.app);
+  /** The Realtime Database instance of the Firebase app. */
   readonly database = this.api.getDatabase(this.app);
   private readonly currentUser = signal<User | null>(null, { equal: () => false });
+  /** The signed-in user, or `null`; notifies on every set, even for the same object. */
   readonly user = this.currentUser.asReadonly();
   private readonly verified = signal(false);
+  /** Whether the signed-in user's email address is verified. */
   readonly emailVerified = this.verified.asReadonly();
   private readonly profileName = signal<string | null>(null);
+  /** The username from the profile, or `null` while loading, when signed out, or when it is unreadable. */
   readonly username = this.profileName.asReadonly();
   private readonly profileReadError = signal(false);
+  /** Whether the last attempt to read the username from the database failed. */
   readonly usernameUnavailable = this.profileReadError.asReadonly();
 
   constructor() {
@@ -102,10 +110,23 @@ export class Auth {
     });
   }
 
+  /** Signs in with email and password; Firebase errors propagate unchanged. */
   async login(email: string, password: string): Promise<void> {
     await this.api.signInWithEmailAndPassword(this.auth, email, password);
   }
 
+  /**
+   * Creates an account, writes its profile and username reservation in one atomic update, and sends a verification email.
+   *
+   * If saving the profile fails, the new account is rolled back (profile, reservation and sign-in account are removed).
+   *
+   * @param username - Whitespace is trimmed and collapsed; 4 to 42 letters, digits, underscores and single spaces.
+   *   Reservations are case-insensitive.
+   * @throws Error if the username is invalid (checked before the account is created).
+   * @throws UsernameTakenError if the reservation belongs to another account; the new account was removed.
+   * @throws AggregateError if saving failed and the rollback also failed, so the account may remain;
+   *   or if the account was created but the verification email could not be sent.
+   */
   async register(username: string, email: string, password: string): Promise<void> {
     const normalizedUsername = username.trim().replace(/\s+/g, ' ');
     if (
@@ -167,6 +188,11 @@ export class Auth {
     }
   }
 
+  /**
+   * Sends the verification email to the signed-in user, always in English.
+   *
+   * @throws Error if nobody is signed in or the email address is already verified.
+   */
   async sendVerificationEmail(): Promise<void> {
     const user = this.user();
     if (!user) throw new Error(tr('Please sign in to request a verification email.'));
@@ -177,10 +203,17 @@ export class Auth {
     });
   }
 
+  /** Signs the current user out. */
   async logout(): Promise<void> {
     await this.api.signOut(this.auth);
   }
 
+  /**
+   * Reloads the user from Firebase, refreshes the ID token, and updates {@link Auth.emailVerified}.
+   *
+   * @returns Whether the email address is now verified.
+   * @throws Error if nobody is signed in, or if the signed-in user changed while reloading.
+   */
   async refreshVerification(): Promise<boolean> {
     const user = this.user();
     if (!user) throw new Error(tr('Please sign in to check your email verification.'));
@@ -192,6 +225,17 @@ export class Auth {
     return user.emailVerified;
   }
 
+  /**
+   * Deletes the signed-in user's data and then the account itself.
+   *
+   * Re-authenticates with the password first, then removes the game library, profile and username
+   * reservation in one atomic update, and only afterwards deletes the sign-in account.
+   *
+   * @param password - The current password, required for re-authentication.
+   * @throws Error if nobody is signed in, the password is empty, or the stored username is invalid
+   *   (nothing is deleted in that case).
+   * @throws AggregateError if the data was deleted but the sign-in account could not be; the deletion can be retried.
+   */
   async deleteAccount(password: string): Promise<void> {
     const user = this.user();
     if (!user?.email || !password) {

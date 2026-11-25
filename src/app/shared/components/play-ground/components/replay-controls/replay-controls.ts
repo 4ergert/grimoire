@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { CustomButton } from '../../../button/button';
 import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
+/** Toolbar for stepping through a recorded game: start, previous, next and end buttons plus a move counter. */
 @Component({
   selector: 'app-replay-controls',
   styleUrls: ['../controls.scss', './replay-controls.scss'],
@@ -59,7 +60,10 @@ import { TranslatePipe } from '../../../../i18n/translate-pipe';
   `,
 })
 export class ReplayControls {
+  /** Number of moves currently applied; `0` is the starting position. */
   readonly index = input.required<number>();
+  /** All moves of the replayed game; only its length is used for the counter and bounds. */
   readonly moves = input.required<string[]>();
+  /** Emits the target move index (clamped by the disabled buttons to `0..moves.length`). */
   readonly navigate = output<number>();
 }

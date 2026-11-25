@@ -10,9 +10,17 @@ import {
 } from '@angular/core';
 import { Chess, Piece, Square, SQUARES } from 'chess.js';
 
+/**
+ * Animates pieces sliding between squares when the bound position changes by a single move.
+ *
+ * Derives the moved pieces by diffing the previous and new FEN; large jumps (resets, replay
+ * seeking), drag-and-drop moves and `prefers-reduced-motion` users are not animated.
+ */
 @Directive({ selector: '[appBoardMotion]' })
 export class BoardMotion implements OnChanges, OnDestroy {
+  /** Current position as FEN. */
   @Input({ required: true }) appBoardMotion = '';
+  /** Whether the board is rendered from Black's side, which inverts the slide direction. */
   @Input() boardFlipped = false;
   // Increments when a piece was dragged onto its target, so that move is not animated again.
   @Input() boardDrops = 0;
@@ -23,6 +31,7 @@ export class BoardMotion implements OnChanges, OnDestroy {
   private animations: Animation[] = [];
   private render?: ReturnType<typeof afterNextRender>;
 
+  /** Cancels running animations and, if the position changed by one move, schedules a slide animation after the next render. */
   ngOnChanges(): void {
     const before = this.previous;
     this.previous = this.appBoardMotion;
@@ -107,6 +116,7 @@ export class BoardMotion implements OnChanges, OnDestroy {
     this.animations = [];
   }
 
+  /** Cancels any pending render callback and running animations. */
   ngOnDestroy(): void {
     this.render?.destroy();
     this.cancel();

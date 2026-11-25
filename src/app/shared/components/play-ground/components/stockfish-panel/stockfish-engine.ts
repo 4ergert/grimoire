@@ -3,6 +3,7 @@ import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { Chess } from 'chess.js';
 import { tr } from '../../../../i18n/i18n';
 
+/** A requested search; `fen` is the position being analysed, `position` the UCI `position` argument sent to the engine. */
 interface Search {
   fen: string;
   position: string;
@@ -12,6 +13,7 @@ interface Search {
   depth?: number;
 }
 
+/** One principal variation (MultiPV line) reported by the engine; `rank` is the 1-based MultiPV index, `score` is from White's perspective. */
 export interface EngineVariation {
   rank: number;
   depth: number;
@@ -19,6 +21,11 @@ export interface EngineVariation {
   line: string[];
 }
 
+/**
+ * Latest engine output for one position. Scores are in centipawns (`cp`) or moves to mate
+ * (`mate`) from White's perspective; moves are in UCI coordinate notation (e.g. `e2e4`, `e7e8q`).
+ * `bestMove` stays `null` until the search has finished.
+ */
 export interface EngineResult {
   fen: string;
   depth: number;
@@ -28,6 +35,12 @@ export interface EngineResult {
   variations: EngineVariation[];
 }
 
+/**
+ * Wraps a Stockfish Web Worker spoken to via the UCI protocol. The worker is created lazily on the
+ * first search and terminated on failure, `reset()` or destruction of the injector. Only the most
+ * recently requested search is kept: UCI has no request IDs, so an older search is stopped and its
+ * `bestmove` discarded before the newest one starts. Provide it per component, not as a singleton.
+ */
 @Injectable()
 export class StockfishEngine {
   private readonly document = inject(DOCUMENT);
@@ -38,15 +51,31 @@ export class StockfishEngine {
   private readonly candidates = new Map<number, string>();
   private stopping = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  /** True once the engine has answered `isready` after the UCI handshake. */
   readonly ready = signal(false);
+  /** True while a requested search has not yet produced its final `bestmove`. */
   readonly busy = signal(false);
+  /** Translated message of the last failure; empty when healthy. Cleared by `reset()`. */
   readonly error = signal('');
+  /** Latest result for the current search; cleared whenever a new search is requested or stopped. */
   readonly result = signal<EngineResult | null>(null);
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dispose());
   }
 
+  /**
+   * Requests a search, superseding any pending one; a running search is stopped first and the
+   * engine is initialized on demand. Invalid arguments set `error` instead of throwing, and
+   * no search is started while `error` is set until `reset()` is called.
+   * Without `depth` the search is time-limited, otherwise it runs to the given depth.
+   * @param fen - Position to analyse; used to validate engine moves and to orient scores.
+   * @param position - UCI `position` argument sent to the engine (e.g. `fen <fen> moves ...`).
+   * @param skill - Stockfish Skill Level, integer 0-20.
+   * @param candidateCount - Number of lines (MultiPV) to compute, integer 1-5.
+   * @param randomize - Pick the final move randomly among the candidates of the deepest iteration instead of the best one.
+   * @param depth - Optional positive integer search depth.
+   */
   search(fen: string, position: string, skill = 20, candidateCount = 1, randomize = true, depth?: number): void {
     // Validate input parameters 
     if (!Number.isInteger(skill) || skill < 0 || skill > 20) {
@@ -76,6 +105,7 @@ export class StockfishEngine {
     }
   }
 
+  /** Cancels the pending and running search and clears the result; its `bestmove` is discarded. */
   stop(): void {
     this.desired = null;
     this.result.set(null);
@@ -83,12 +113,14 @@ export class StockfishEngine {
     this.stopActive();
   }
 
+  /** Terminates the worker and clears error and result so the next `search()` starts a fresh engine. */
   reset(): void {
     this.dispose();
     this.error.set('');
     this.result.set(null);
   }
 
+  /** Spawns the worker, wires its handlers and starts the UCI handshake (`uci`) under a watchdog. */
   private initialize(): void {
     try {
       this.worker = new Worker(
@@ -112,6 +144,11 @@ export class StockfishEngine {
     }
   }
 
+  /**
+   * Handles one UCI output line: `uciok` continues the handshake, `readyok` starts the pending
+   * search, `info` lines update `result` (only for the current search) and `bestmove` finishes it.
+   * A `bestmove` of an outdated search is dropped and the latest search is started instead.
+   */
   private receive(line: string): void {
     if (line === 'uciok') {
       if (this.send('setoption name Hash value 16')) this.send('isready');
@@ -193,6 +230,7 @@ export class StockfishEngine {
     }
   }
 
+  /** Configures the engine and sends `go` for the desired search; no-op while not ready or a search is running. */
   private startSearch(): void {
     if (!this.ready() || !this.desired || this.active) return;
     this.active = this.desired;
@@ -206,6 +244,7 @@ export class StockfishEngine {
     this.send(this.active.depth === undefined ? 'go movetime 11111' : `go depth ${this.active.depth}`);
   }
 
+  /** Picks a random move among the candidates of the deepest iteration, or `bestMove` if fewer than two exist. */
   private selectCandidate(bestMove: string): string {
     const candidates = [...this.candidates.entries()]
       .sort(([rankA], [rankB]) => rankA - rankB)
@@ -214,6 +253,7 @@ export class StockfishEngine {
     return candidates[Math.floor(Math.random() * candidates.length)] ?? bestMove;
   }
 
+  /** Sends UCI `stop` to the running search (once); the resulting `bestmove` is handled in `receive()`. */
   private stopActive(): void {
     if (!this.active || this.stopping) return;
     // UCI has no request IDs: drain the old bestmove before starting the latest position.
@@ -221,6 +261,7 @@ export class StockfishEngine {
     this.send('stop');
   }
 
+  /** Posts a UCI command to the worker. @returns `false` (after failing the engine) if it could not be sent. */
   private send(command: string): boolean {
     if (!this.worker) {
       this.fail(tr('Stockfish worker is not available.'));
@@ -235,6 +276,7 @@ export class StockfishEngine {
     }
   }
 
+  /** Plays the UCI moves on `fen` to check they are legal. @returns `false` (after failing the engine) if any is not. */
   private validateMoves(fen: string, moves: string[]): boolean {
     try {
       const chess = new Chess(fen);
@@ -246,6 +288,7 @@ export class StockfishEngine {
     }
   }
 
+  /** (Re)arms the single timeout that fails the engine with `message` if it is not cleared in time. */
   private watchdog(milliseconds: number, message: string): void {
     this.clearTimer();
     this.timer = setTimeout(() => this.fail(message), milliseconds);
@@ -256,6 +299,7 @@ export class StockfishEngine {
     this.timer = null;
   }
 
+  /** Logs the failure, tears the worker down and exposes `message` via `error`. */
   private fail(message: string): void {
     console.error('Stockfish engine failed', message);
     this.dispose();
@@ -263,6 +307,7 @@ export class StockfishEngine {
     this.result.set(null);
   }
 
+  /** Terminates the worker and resets all search state; unlike `reset()` it keeps `error` and `result`. */
   private dispose(): void {
     this.clearTimer();
     if (this.worker) {

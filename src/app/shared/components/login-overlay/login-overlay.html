@@ -195,6 +195,18 @@
     >
       {{ 'guest' | t }}
     </button>
+    <button
+      custom-button
+      class="auth_button about_button"
+      type="button"
+      [disabled]="pending()"
+      (click)="aboutOpen.set(true)"
+    >
+      {{ 'About' | t }}
+    </button>
+    @if (aboutOpen()) {
+      <app-about-dialog (close)="aboutOpen.set(false)" />
+    }
     <p class="signup_prompt">
       {{ signingUp ? ('Already have an account?' | t) : ("Don't have an account?" | t) }}
       <br />

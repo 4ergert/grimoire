@@ -36,6 +36,9 @@ export const DE_ACCOUNT: Record<string, string> = {
   'Please read the {terms} before creating your account.':
     'Bitte lies die {terms}, bevor du dein Konto erstellst.',
   'guest': 'Gast',
+  'About': 'Über',
+  'Grimoire is a browser-based chess app for analysis, play and opening practice. You can play against Stockfish at several strength levels or analyze positions, save games as PGN to your own repertoire, replay them, and drill them in randomized training rounds. The interface is available in German and English. Built with Angular, TypeScript, chess.js and Stockfish.js, using Firebase for accounts and storage. The engine runs entirely in the browser, and a guest mode works without an account.':
+    'Grimoire ist eine browserbasierte Schach-Anwendung zum Analysieren, Spielen und Üben von Eröffnungen. Man spielt gegen Stockfish in mehreren Stärkestufen oder lässt Stellungen analysieren, speichert Partien als PGN in einem eigenen Repertoire, spielt sie nach und trainiert sie in Ordnern als zufällige Übungsrunden. Die Oberfläche gibt es auf Deutsch und Englisch. Gebaut mit Angular, TypeScript, chess.js und Stockfish.js, mit Firebase für Konten und Datenspeicherung. Die Engine läuft komplett lokal im Browser, und ein Gastmodus funktioniert ohne Konto.',
   'Already have an account?': 'Du hast bereits ein Konto?',
   "Don't have an account?": 'Du hast noch kein Konto?',
   'Your username could not be loaded. Please try signing in again.':

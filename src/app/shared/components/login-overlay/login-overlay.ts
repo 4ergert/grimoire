@@ -9,6 +9,7 @@ import { GameFolder } from '../../services/game-library';
 import { CustomButton } from '../button/button';
 import { LegalFooter } from '../legal-footer/legal-footer';
 import { LanguageSwitcher } from '../language-switcher/language-switcher';
+import { AboutDialog } from '../about-dialog/about-dialog';
 import { TranslatePipe } from '../../i18n/translate-pipe';
 import { tr } from '../../i18n/i18n';
 
@@ -18,9 +19,10 @@ const MAX_AUTH_FIELD_LENGTH = 42;
 const MIN_NAME_LENGTH = 4;
 const MIN_PASSWORD_LENGTH = 8;
 
+/** Root view that handles sign-in/registration, guest mode and the signed-in menu, game and library flows. */
 @Component({
   selector: 'login-overlay',
-  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton, LegalFooter, LanguageSwitcher, TranslatePipe],
+  imports: [MenuOverlay, PlayGround, GameLibrary, RouterLink, CustomButton, LegalFooter, LanguageSwitcher, AboutDialog, TranslatePipe],
   templateUrl: './login-overlay.html',
   styleUrl: './login-overlay.scss',
 })
@@ -30,16 +32,24 @@ export class LoginOverlay {
   readonly passwordVisible = signal(false);
   readonly confirmationPasswordVisible = signal(false);
   readonly isPlaying = signal(false);
+  /** Whether the user continues without an account. */
   readonly guest = signal(false);
+  readonly aboutOpen = signal(false);
+  /** Whether the current game is played against the computer. */
   readonly computerGame = signal(false);
+  /** Whether an auth request is in flight; guards against duplicate submissions. */
   readonly pending = signal(false);
   readonly error = signal('');
+  /** Validation messages per form field; filled only after the first submit attempt. */
   readonly fieldErrors = signal<FieldErrors>({});
   private validationAttempted = false;
   readonly verificationNotice = signal('');
   readonly libraryOpen = signal(false);
+  /** PGN handed to the library for saving. */
   readonly savePgn = signal('');
+  /** PGN of the saved game being replayed. */
   readonly replayPgn = signal('');
+  /** The folder being practised, or `null` outside training. */
   readonly trainingFolder = signal<GameFolder | null>(null);
 
   startGuest(): void {
@@ -52,6 +62,7 @@ export class LoginOverlay {
     this.guest.set(false);
   }
 
+  /** Starts practising a folder; requires a verified email. */
   startTraining(folder: GameFolder): void {
     if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(false);
@@ -61,6 +72,7 @@ export class LoginOverlay {
     this.libraryOpen.set(false);
   }
 
+  /** Leaves any running game and training and goes back to the menu. */
   returnToMenu(): void {
     this.computerGame.set(false);
     this.isPlaying.set(false);
@@ -68,12 +80,18 @@ export class LoginOverlay {
     this.trainingFolder.set(null);
   }
 
+  /**
+   * Opens the game library; requires a verified email.
+   *
+   * @param pgn - Game to offer for saving; empty to just browse.
+   */
   openLibrary(pgn = ''): void {
     if (!this.requireVerifiedEmail()) return;
     this.savePgn.set(pgn);
     this.libraryOpen.set(true);
   }
 
+  /** Replays a saved game and closes the library; requires a verified email. */
   openReplay(pgn: string): void {
     if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(false);
@@ -83,6 +101,11 @@ export class LoginOverlay {
     this.libraryOpen.set(false);
   }
 
+  /**
+   * Starts a fresh game; requires a verified email.
+   *
+   * @param computer - Whether to play against the computer.
+   */
   startPlaying(computer = false): void {
     if (!this.requireVerifiedEmail()) return;
     this.computerGame.set(computer);
@@ -91,11 +114,13 @@ export class LoginOverlay {
     this.isPlaying.set(true);
   }
 
+  /** Starts a fresh game from the library and closes the library. */
   startCreating(): void {
     this.startPlaying();
     this.libraryOpen.set(false);
   }
 
+  /** Toggles between sign-in and registration, clearing the form, errors and password visibility. */
   switchAuthMode(form: HTMLFormElement): void {
     form.reset();
     this.error.set('');
@@ -110,6 +135,7 @@ export class LoginOverlay {
     this.fieldErrors.set({});
   }
 
+  /** Clears the general error and, once a submit was attempted, re-validates the fields live. */
   validateOnInput(form: HTMLFormElement): void {
     this.error.set('');
     if (this.validationAttempted) this.fieldErrors.set(this.validate(form));
@@ -156,6 +182,13 @@ export class LoginOverlay {
     return errors;
   }
 
+  /**
+   * Validates the form and then logs in or registers, depending on the mode.
+   *
+   * Ignored while a request is pending. On invalid input the first invalid field is focused. After a registration
+   * that created an account but failed later, the form is reset, since the user is already signed in.
+   * A taken username is shown as a name field error instead of the general error.
+   */
   async submit(event: Event, form: HTMLFormElement): Promise<void> {
     event.preventDefault();
     if (this.pending()) return;
@@ -201,6 +234,7 @@ export class LoginOverlay {
     }
   }
 
+  /** Requests another verification email; ignored while a request is pending. */
   async resendVerificationEmail(): Promise<void> {
     if (this.pending()) return;
     this.error.set('');
@@ -221,6 +255,7 @@ export class LoginOverlay {
     }
   }
 
+  /** Rechecks whether the email is verified and shows a notice if it is not; ignored while a request is pending. */
   async checkVerification(): Promise<void> {
     if (this.pending()) return;
     this.error.set('');
@@ -240,12 +275,14 @@ export class LoginOverlay {
     }
   }
 
+  /** Whether the user is signed in with a verified email; otherwise sets an error and returns `false`. */
   private requireVerifiedEmail(): boolean {
     if (this.auth.user() && this.auth.emailVerified()) return true;
     this.error.set(tr('Please verify your email address before using this feature.'));
     return false;
   }
 
+  /** Signs out and, on success, closes any running game and the library. */
   async logout(): Promise<void> {
     this.error.set('');
     this.verificationNotice.set('');
@@ -264,6 +301,11 @@ export class LoginOverlay {
     }
   }
 
+  /**
+   * Deletes the account after password confirmation and returns to the sign-in screen on success.
+   *
+   * @param password - The current password.
+   */
   async deleteAccount(password: string): Promise<void> {
     if (this.pending()) return;
     this.error.set('');
@@ -290,6 +332,7 @@ export class LoginOverlay {
     }
   }
 
+  /** Maps an error to a user-facing message; unknown errors are logged and replaced by a generic one. */
   private errorMessage(error: unknown): string {
     if (error instanceof AggregateError) {
       return error.message;

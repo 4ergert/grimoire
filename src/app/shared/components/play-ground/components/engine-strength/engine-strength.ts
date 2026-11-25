@@ -1,6 +1,7 @@
 import { Component, model } from '@angular/core';
 import { TranslatePipe } from '../../../../i18n/translate-pipe';
 
+/** Select box for the engine level; supports two-way binding via `[(strength)]`. */
 @Component({
   selector: 'app-engine-strength',
   imports: [TranslatePipe],
@@ -51,6 +52,8 @@ import { TranslatePipe } from '../../../../i18n/translate-pipe';
   `,
 })
 export class EngineStrength {
+  /** Selected engine level (1–10). */
   readonly strength = model(1);
+  /** Selectable levels. */
   readonly levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 }

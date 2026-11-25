@@ -1,0 +1,10 @@
+<dialog #dialog aria-labelledby="about-title" (cancel)="close.emit()">
+  <h2 id="about-title">{{ 'About' | t }}</h2>
+  <p>
+    {{
+      'Grimoire is a browser-based chess app for analysis, play and opening practice. You can play against Stockfish at several strength levels or analyze positions, save games as PGN to your own repertoire, replay them, and drill them in randomized training rounds. The interface is available in German and English. Built with Angular, TypeScript, chess.js and Stockfish.js, using Firebase for accounts and storage. The engine runs entirely in the browser, and a guest mode works without an account.'
+        | t
+    }}
+  </p>
+  <button custom-button type="button" autofocus (click)="close.emit()">{{ 'Close' | t }}</button>
+</dialog>
