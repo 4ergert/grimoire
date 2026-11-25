@@ -112,22 +112,22 @@
       Dienstleisters zu unterscheiden.
     </p>
     <p>
-      Wir nutzen Firebase Authentication und die Firebase Realtime Database als Dienste der Google
-      Cloud Platform. Nach Auskunft des Firebase-Supports unterliegen diese Dienste den
-      <a href="https://cloud.google.com/terms/">Google Cloud Platform Terms of Service</a>, und
-      der
+      Wir nutzen Firebase Authentication und die Firebase Realtime Database. Nach den
+      <a href="https://firebase.google.com/terms">veröffentlichten Firebase-Bedingungen</a>
+      unterliegt Firebase Authentication den
+      <a href="https://cloud.google.com/terms/">Google Cloud Platform Terms of Service</a>; für die
+      Realtime Database gelten die Google APIs Terms of Service, die Firebase Data Processing and
+      Security Terms und das Firebase Paid Services Agreement. Nach Auskunft des Firebase-Supports
+      findet außerdem der
       <a href="https://cloud.google.com/terms/data-processing-addendum">Cloud Data Processing
         Addendum</a>
-      von Google (Auftragsverarbeitungsvertrag) findet Anwendung. Laut Google werden die
-      anwendbaren Nutzungsbedingungen bei der Erstellung eines Projekts digital akzeptiert. Die
-      vertragsschließende Google-Gesellschaft hängt von der Rechnungsadresse ab und davon, ob der
-      Kunde als Unternehmen oder als Privatperson kontrahiert; sie muss für dieses Projekt anhand
-      der
-      <a href="https://cloud.google.com/terms/google-entity">Informationen zur vertragsschließenden Gesellschaft</a>
-      von Google bestimmt werden. Die für das Projekt dokumentierte Annahme und der CDPA-Status
-      wurden für diesen Entwurf nicht unabhängig überprüft. Laut Google lassen sich diese
-      Aufzeichnungen und CDPA-Einstellungen in der Cloud Console unter IAM &amp; Admin →
-      Privacy &amp; Security (oder Legal &amp; Compliance) einsehen.
+      von Google (Auftragsverarbeitungsvertrag) Anwendung. Laut Google werden die anwendbaren
+      Nutzungsbedingungen digital akzeptiert. Der Zusatz zur Verarbeitung von Cloud-Daten (CDPA)
+      wurde für dieses Projekt am 25. November 2026 in der Cloud Console (IAM &amp; Admin →
+      Datenschutz und Sicherheit) akzeptiert. Für dieses Projekt besteht kein Rechnungskonto; welche
+      Google-Gesellschaft Vertragspartner ist, richtet sich nach den jeweils geltenden Bedingungen
+      von Google (siehe
+      <a href="https://cloud.google.com/terms/google-entity">Informationen zur vertragsschließenden Gesellschaft</a>).
     </p>
     <p>
       Die Realtime Database nutzt die Region europe-west1 (Belgien). Das bedeutet nicht, dass alle
@@ -137,7 +137,7 @@
       von Google beschreiben Datenstandorte, Unterauftragsverarbeiter und Mechanismen für
       internationale Datenübermittlungen, darunter das EU-US Data Privacy Framework und
       Standardvertragsklauseln. Der aktuell für den jeweiligen Dienst geltende
-      Übermittlungsmechanismus, die vertragsschließende Gesellschaft und der Zertifizierungsumfang
+      Übermittlungsmechanismus und der Zertifizierungsumfang
       von Google sowie etwaige vereinbarte vertragliche Garantien für dieses Projekt müssen vor der
       Veröffentlichung noch überprüft werden. Die aktuelle
       <a href="https://firebase.google.com/terms/subprocessors">Liste der Firebase-Unterauftragsverarbeiter</a>
@@ -168,11 +168,14 @@
     </p>
     <p>
       Die Anwendung speichert außerdem Ihre Anzeigeeinstellungen im lokalen Speicher des Browsers:
-      das ausgewählte Farbschema des Bretts (Schlüssel <code>grimoire.boardTheme</code>) und, falls
+      die ausgewählte Sprache (Schlüssel <code>grimoire.language</code>), das ausgewählte
+      Farbschema des Bretts (Schlüssel <code>grimoire.boardTheme</code>) und, falls
       Sie das benutzerdefinierte Schema verwenden, die beiden von Ihnen gewählten Feldfarben
       (Schlüssel <code>grimoire.boardTheme.custom</code>). Diese Werte sind für sich genommen keine
       personenbezogenen Daten, werden nicht an einen Server gesendet und von der Anwendung nur
-      gelesen, um Ihre Auswahl wiederherzustellen. Sie bleiben bestehen, bis Sie die Website-Daten
+      gelesen, um Ihre Auswahl wiederherzustellen. Solange Sie keine Sprache gewählt haben, wird
+      sie anhand der Spracheinstellung Ihres Browsers vorausgewählt; diese wird lokal ausgewertet
+      und nicht übermittelt. Sie bleiben bestehen, bis Sie die Website-Daten
       in den Einstellungen Ihres Browsers löschen.
     </p>
     <p>
@@ -275,7 +278,10 @@
   </section>
   <section>
     <h2>Kontakt</h2>
-    <p>E-Mail: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a></p>
+    <p>
+      E-Mail: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a><br />
+      Telefon: <a href="tel:+4917680689958">+49 176 80689958</a>
+    </p>
   </section>
   <section>
     <h2>Material Dritter</h2>
@@ -302,13 +308,5 @@
         per CC0 der Gemeinfreiheit gewidmet.
       </li>
     </ul>
-  </section>
-  <section>
-    <h2>Prüfung vor der Veröffentlichung</h2>
-    <p>
-      Das Projekt wird privat betrieben, ohne Werbung oder kostenpflichtige Angebote. Es sind keine
-      journalistisch-redaktionellen Inhalte geplant. Die für diesen konkreten Dienst erforderlichen
-      Angaben müssen vor der Veröffentlichung rechtlich geprüft werden.
-    </p>
   </section>
 }

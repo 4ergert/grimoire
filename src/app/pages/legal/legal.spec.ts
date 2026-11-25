@@ -96,7 +96,7 @@ describe('Legal pages', () => {
       expect(text()).toContain('Zurück zu Grimoire');
       expect(text()).toContain('Betreiber von Grimoire');
       expect(text()).toContain('Material Dritter');
-      expect(text()).toContain('Prüfung vor der Veröffentlichung');
+      expect(text()).not.toContain('Prüfung vor der Veröffentlichung');
       expect(text()).not.toContain('Third-party material');
       expect(link('a[href="mailto:julian.konken@gmx.net"]')).not.toBeNull();
       expect(link('a[href="https://creativecommons.org/licenses/by-sa/3.0/"]')).not.toBeNull();

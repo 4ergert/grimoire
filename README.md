@@ -520,8 +520,9 @@ Before public operation:
   [Chess Pieces Sprite.svg](https://commons.wikimedia.org/wiki/File:Chess_Pieces_Sprite.svg)
   on Wikimedia Commons (pieces originally by Cburnett, CC BY-SA 3.0). The
   attribution is on the legal notice page. The login background and the icons
-  in `public/img/` and `public/icon/` were created with AI image tools; keep the
-  terms of the tool used and its permission for commercial and public use on file.
+  in `public/img/` and `public/icon/` were created with ChatGPT (OpenAI), whose terms
+  assign the rights in the output to the user. Keep a private record of the tool and
+  plan, the creation date, the prompts if available, and the terms in force at the time.
 
 Account data is retained until account deletion, without automatic inactivity
 deletion. In the signed-in main menu, **Settings > Delete account** requires confirmation

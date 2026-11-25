@@ -122,18 +122,20 @@
         These are distinct from the service provider's internal backup and deletion procedures.
       </p>
       <p>
-        We use Firebase Authentication and Firebase Realtime Database as Google Cloud Platform
-        services. According to Firebase Support, these services are governed by the
-        <a href="https://cloud.google.com/terms/">Google Cloud Platform Terms of Service</a>, and
-        Google's <a href="https://cloud.google.com/terms/data-processing-addendum">Cloud Data
-        Processing Addendum</a> applies. Google says the applicable Terms of Service are accepted
-        digitally when a project is created. The contracting Google entity depends on the billing
-        address and whether the customer contracts as a business or an individual; it must be
-        determined for this project using Google's
-        <a href="https://cloud.google.com/terms/google-entity">contracting entity information</a>.
-        The project's recorded acceptance and CDPA status have not been independently verified for
-        this draft. Google says these records and CDPA settings can be reviewed in Cloud Console
-        under IAM &amp; Admin → Privacy &amp; Security (or Legal &amp; Compliance).
+        We use Firebase Authentication and Firebase Realtime Database. According to the
+        <a href="https://firebase.google.com/terms">published Firebase terms</a>, Firebase
+        Authentication is governed by the
+        <a href="https://cloud.google.com/terms/">Google Cloud Platform Terms of Service</a>; the
+        Realtime Database is governed by the Google APIs Terms of Service, the Firebase Data
+        Processing and Security Terms and the Firebase Paid Services Agreement. According to
+        Firebase Support, Google's
+        <a href="https://cloud.google.com/terms/data-processing-addendum">Cloud Data
+        Processing Addendum</a> also applies. Google says the applicable terms are accepted
+        digitally. The Cloud Data Processing Addendum was accepted for this project in Cloud
+        Console (IAM &amp; Admin → Privacy &amp; Security) on 25 November 2026. This project has no
+        billing account; which Google entity is the contracting party depends on Google's
+        applicable terms (see
+        <a href="https://cloud.google.com/terms/google-entity">contracting entity information</a>).
       </p>
       <p>
         The Realtime Database uses the europe-west1 region (Belgium). This does not mean that all
@@ -142,7 +144,7 @@
         <a href="https://firebase.google.com/support/privacy">Firebase privacy information</a>
         describes data locations, subprocessors and international transfer mechanisms, including
         the EU-US Data Privacy Framework and Standard Contractual Clauses. The current transfer
-        mechanism applicable to each service, Google's contracting entity and certification scope,
+        mechanism applicable to each service, Google's certification scope,
         and any agreed contractual safeguards for this project still need to be verified before
         publication. The current
         <a href="https://firebase.google.com/terms/subprocessors">Firebase subprocessor list</a>
@@ -171,10 +173,13 @@
       </p>
       <p>
         The application also stores your display preferences in the browser's local storage: the
-        selected board color theme (key <code>grimoire.boardTheme</code>) and, if you use the
+        selected language (key <code>grimoire.language</code>), the selected board color theme
+        (key <code>grimoire.boardTheme</code>) and, if you use the
         custom theme, the two square colors you picked (key
         <code>grimoire.boardTheme.custom</code>). These values are not personal data in themselves,
         are not sent to a server, and are only read by the application to restore your choice.
+        Until you choose a language, the application preselects it from your browser's language
+        setting, which is evaluated locally and not transmitted.
         They remain until you delete the website data in your browser settings.
       </p>
       <p>
@@ -273,7 +278,10 @@
     </section>
     <section>
       <h2>Contact</h2>
-      <p>Email: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a></p>
+      <p>
+        Email: <a href="mailto:julian.konken@gmx.net">julian.konken@gmx.net</a><br />
+        Phone: <a href="tel:+4917680689958">+49 176 80689958</a>
+      </p>
     </section>
     <section>
       <h2>Third-party material</h2>
@@ -300,14 +308,6 @@
           dedicated to the public domain under CC0.
         </li>
       </ul>
-    </section>
-    <section>
-      <h2>Review before publication</h2>
-      <p>
-        The project is operated privately, without advertising or paid offerings. No journalistic
-        or editorial content is planned. The information required for this specific service must
-        be reviewed legally before publication.
-      </p>
     </section>
   }
   <app-legal-footer />
